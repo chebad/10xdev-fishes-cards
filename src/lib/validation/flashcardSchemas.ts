@@ -6,7 +6,6 @@ export const CreateFlashcardSchema = z
     answer: z.string().min(3, { message: "Answer must be at least 3 characters long." }),
     isAiGenerated: z.boolean().optional().default(false),
     sourceTextForAi: z.string().optional(),
-    aiModelUsed: z.string().optional(),
   })
   .refine(
     (data) => {

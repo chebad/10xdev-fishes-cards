@@ -64,8 +64,7 @@ Endpoint `POST /api/flashcards` został pomyślnie zaimplementowany zgodnie z pl
   "question": "string (min 5 chars)", // ✅ Zaimplementowane
   "answer": "string (min 3 chars)",   // ✅ Zaimplementowane
   "isAiGenerated": "boolean (optional, default: false)", // ✅ Zaimplementowane
-  "sourceTextForAi": "string (optional, required if isAiGenerated is true)", // ✅ Zaimplementowane
-  "aiModelUsed": "string (optional)" // ⚠️ Przyjmowane ale nie zapisywane w DB
+  "sourceTextForAi": "string (optional, required if isAiGenerated is true)" // ✅ Zaimplementowane
 }
 ```
 
@@ -120,13 +119,7 @@ Endpoint `POST /api/flashcards` został pomyślnie zaimplementowany zgodnie z pl
 - **Rozwiązanie:** Zdefiniowano typy w `src/env.d.ts` i usunięto dyrektywy `@ts-expect-error`
 - **Lokalizacja:** `src/env.d.ts` - deklaracja `App.Locals` interface
 
-### 2. Pole aiModelUsed
-
-- **Problem:** Pole przyjmowane w żądaniu ale nie zapisywane w bazie danych
-- **Powód:** Brak odpowiedniej kolumny w schemacie tabeli `flashcards`
-- **Status:** Zgodne z planem (pole jest dokumentowane jako niewykorzystywane)
-
-## 🧪 Status testowania
+## 📋 Status testowania
 
 - **Testy manualne:** ✅ Przeprowadzone z curl - endpoint działa poprawnie
 - **Dokumentacja testów:** ✅ Utworzona (`.ai/api-tests.md`)

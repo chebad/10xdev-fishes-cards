@@ -49,8 +49,7 @@ curl -X POST http://localhost:4321/api/flashcards \
     "question": "What is polymorphism in programming?",
     "answer": "Polymorphism is the ability of objects of different types to be treated as instances of the same type through a common interface.",
     "isAiGenerated": true,
-    "sourceTextForAi": "Polymorphism is one of the core principles of object-oriented programming. It allows objects of different classes to be treated uniformly through a common interface. This enables code to work with objects at a more abstract level, making it more flexible and reusable. There are several types of polymorphism including runtime polymorphism (achieved through inheritance and virtual functions) and compile-time polymorphism (achieved through function overloading and templates).",
-    "aiModelUsed": "GPT-4"
+    "sourceTextForAi": "Polymorphism is one of the core principles of object-oriented programming. It allows objects of different classes to be treated uniformly through a common interface. This enables code to work with objects at a more abstract level, making it more flexible and reusable. There are several types of polymorphism including runtime polymorphism (achieved through inheritance and virtual functions) and compile-time polymorphism (achieved through function overloading and templates)."
   }'
 ```
 

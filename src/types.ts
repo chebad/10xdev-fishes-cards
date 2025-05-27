@@ -28,7 +28,6 @@ export interface CreateFlashcardCommand {
   answer: TablesInsert<"flashcards">["answer"];
   isAiGenerated?: TablesInsert<"flashcards">["is_ai_generated"];
   sourceTextForAi?: TablesInsert<"flashcards">["source_text_for_ai"];
-  aiModelUsed?: string; // This field is specified in the API plan but not present in the 'flashcards' table.
 }
 
 /**

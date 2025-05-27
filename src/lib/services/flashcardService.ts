@@ -35,8 +35,6 @@ export class FlashcardService {
       // created_at and updated_at will use default values or be set by DB trigger
     };
 
-    // The 'aiModelUsed' field from the command is not part of the 'flashcards' table schema
-    // and will not be saved directly. It could be logged or handled differently if needed.
     const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
     console.log("Session:", sessionData);
     console.log("Session error:", sessionError);

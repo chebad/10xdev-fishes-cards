@@ -18,8 +18,7 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
         "question": "string (min 5 chars)",
         "answer": "string (min 3 chars)",
         "isAiGenerated": "boolean (optional, default: false)",
-        "sourceTextForAi": "string (optional, required if isAiGenerated is true)",
-        "aiModelUsed": "string (optional, e.g., 'GPT-4', if isAiGenerated is true)"
+        "sourceTextForAi": "string (optional, required if isAiGenerated is true)"
     }
     ```
 
@@ -30,7 +29,6 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
   - **Opcjonalne w ciele żądania:**
     - `isAiGenerated: boolean` (domyślnie `false`)
     - `sourceTextForAi: string` (staje się wymagane, jeśli `isAiGenerated` jest `true`)
-    - `aiModelUsed: string` (jeśli `isAiGenerated` jest `true`; to pole nie jest obecnie mapowane na żadną kolumnę w tabeli `flashcards`)
 
 ## 3. Wykorzystywane typy
 
@@ -42,7 +40,6 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
       answer: TablesInsert<"flashcards">["answer"];
       isAiGenerated?: TablesInsert<"flashcards">["is_ai_generated"];
       sourceTextForAi?: TablesInsert<"flashcards">["source_text_for_ai"];
-      aiModelUsed?: string;
     }
     ```
 
@@ -73,7 +70,6 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
       answer: z.string().min(3, { message: "Answer must be at least 3 characters long." }),
       isAiGenerated: z.boolean().optional().default(false),
       sourceTextForAi: z.string().optional(),
-      aiModelUsed: z.string().optional(),
     }).refine(data => {
       if (data.isAiGenerated && (typeof data.sourceTextForAi !== 'string' || data.sourceTextForAi.trim() === '')) {
         return false;
@@ -127,9 +123,8 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
 4. Serwis `flashcardService`:
     a.  Mapuje `CreateFlashcardCommand` na obiekt `TablesInsert<'flashcards'>` dla Supabase.
     b.  Jeśli `isAiGenerated` jest `true`, ustawia `ai_accepted_at` na bieżącą datę/czas. W przeciwnym razie `ai_accepted_at` jest `null`.
-    c.  Pole `aiModelUsed` z żądania nie jest zapisywane w tabeli `flashcards`, ponieważ nie ma tam odpowiedniej kolumny.
-    d.  Wykonuje operację `insert` do tabeli `flashcards` używając klienta Supabase. RLS w bazie danych zapewni, że `user_id` jest zgodne z `auth.uid()`.
-    e.  Zwraca utworzony obiekt fiszki (pełny wiersz z bazy danych).
+    c.  Wykonuje operację `insert` do tabeli `flashcards` używając klienta Supabase. RLS w bazie danych zapewni, że `user_id` jest zgodne z `auth.uid()`.
+    d.  Zwraca utworzony obiekt fiszki (pełny wiersz z bazy danych).
 5. Handler Astro API Route:
     a.  Otrzymuje utworzoną fiszkę z serwisu.
     b.  Mapuje zwrócony obiekt z bazy danych na `FlashcardDto` (jeśli konieczne są drobne transformacje lub zapewnienie zgodności pól).

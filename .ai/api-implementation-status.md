@@ -111,14 +111,6 @@ Endpoint `POST /api/flashcards` został pomyślnie zaimplementowany zgodnie z pl
 - **Dodano:** Ręczne ustawienie `is_deleted`, `created_at`, `updated_at` w serwisie
 - **Powód:** Zapewnienie konsystentności danych niezależnie od domyślnych wartości DB
 
-## ⚠️ Znane ograniczenia
-
-### 1. Typowanie Astro.locals
-
-- **Problem:** ✅ ROZWIĄZANE - Dodano globalne definicje typów dla `session` i `supabase` w `Astro.locals`
-- **Rozwiązanie:** Zdefiniowano typy w `src/env.d.ts` i usunięto dyrektywy `@ts-expect-error`
-- **Lokalizacja:** `src/env.d.ts` - deklaracja `App.Locals` interface
-
 ## 📋 Status testowania
 
 - **Testy manualne:** ✅ Przeprowadzone z curl - endpoint działa poprawnie

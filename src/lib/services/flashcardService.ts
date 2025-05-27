@@ -31,8 +31,6 @@ export class FlashcardService {
       is_deleted: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      // is_deleted and deleted_at will use default values from DB schema
-      // created_at and updated_at will use default values or be set by DB trigger
     };
 
     const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();

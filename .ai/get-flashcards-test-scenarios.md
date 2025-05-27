@@ -9,25 +9,30 @@
 ## 1. Testy Podstawowe
 
 ### 1.1. Test bez uwierzytelnienia (401)
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards" \
   -H "Content-Type: application/json" \
   -v
 ```
+
 **Oczekiwany wynik:** `401 Unauthorized`
 
 ### 1.2. Test z podstawowymi parametrami domyślnymi (200)
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer PUT_BEARER_TOKEN_HERE" \
   -v
 ```
+
 **Oczekiwany wynik:** `200 OK` z domyślnymi parametrami (page=1, limit=10, sortBy=createdAt, sortOrder=desc)
 
 ## 2. Testy Paginacji
 
 ### 2.1. Test z niestandardową paginacją
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?page=2&limit=5" \
   -H "Content-Type: application/json" \
@@ -36,17 +41,20 @@ curl -X GET "http://localhost:3000/api/flashcards?page=2&limit=5" \
 ```
 
 ### 2.2. Test z nieprawidłową paginacją (400)
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?page=0&limit=200" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer PUT_BEARER_TOKEN_HERE" \
   -v
 ```
+
 **Oczekiwany wynik:** `400 Bad Request` z błędami walidacji
 
 ## 3. Testy Sortowania
 
 ### 3.1. Sortowanie po pytaniu (rosnąco)
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?sortBy=question&sortOrder=asc" \
   -H "Content-Type: application/json" \
@@ -55,6 +63,7 @@ curl -X GET "http://localhost:3000/api/flashcards?sortBy=question&sortOrder=asc"
 ```
 
 ### 3.2. Sortowanie po dacie aktualizacji (malejąco)
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?sortBy=updatedAt&sortOrder=desc" \
   -H "Content-Type: application/json" \
@@ -63,17 +72,20 @@ curl -X GET "http://localhost:3000/api/flashcards?sortBy=updatedAt&sortOrder=des
 ```
 
 ### 3.3. Nieprawidłowe pole sortowania (400)
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?sortBy=invalidField" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer PUT_BEARER_TOKEN_HERE" \
   -v
 ```
+
 **Oczekiwany wynik:** `400 Bad Request`
 
 ## 4. Testy Wyszukiwania
 
 ### 4.1. Wyszukiwanie podstawowe
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?search=javascript" \
   -H "Content-Type: application/json" \
@@ -82,6 +94,7 @@ curl -X GET "http://localhost:3000/api/flashcards?search=javascript" \
 ```
 
 ### 4.2. Wyszukiwanie z pustym terminem
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?search=" \
   -H "Content-Type: application/json" \
@@ -90,6 +103,7 @@ curl -X GET "http://localhost:3000/api/flashcards?search=" \
 ```
 
 ### 4.3. Wyszukiwanie ze znakami specjalnymi
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?search=test%25_special" \
   -H "Content-Type: application/json" \
@@ -100,6 +114,7 @@ curl -X GET "http://localhost:3000/api/flashcards?search=test%25_special" \
 ## 5. Testy Filtrowania AI
 
 ### 5.1. Filtrowanie fiszek wygenerowanych przez AI
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?isAiGenerated=true" \
   -H "Content-Type: application/json" \
@@ -108,6 +123,7 @@ curl -X GET "http://localhost:3000/api/flashcards?isAiGenerated=true" \
 ```
 
 ### 5.2. Filtrowanie fiszek NIE wygenerowanych przez AI
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?isAiGenerated=false" \
   -H "Content-Type: application/json" \
@@ -118,6 +134,7 @@ curl -X GET "http://localhost:3000/api/flashcards?isAiGenerated=false" \
 ## 6. Testy Kombinacji Parametrów
 
 ### 6.1. Test z wszystkimi parametrami
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?page=1&limit=3&sortBy=question&sortOrder=asc&search=test&isAiGenerated=false" \
   -H "Content-Type: application/json" \
@@ -128,15 +145,18 @@ curl -X GET "http://localhost:3000/api/flashcards?page=1&limit=3&sortBy=question
 ## 7. Testy Edge Cases
 
 ### 7.1. Test strony poza zakresem
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?page=999" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer PUT_BEARER_TOKEN_HERE" \
   -v
 ```
+
 **Oczekiwany wynik:** `200 OK` z pustą tablicą `data` ale prawidłowymi `pagination` details
 
 ### 7.2. Test z wyszukiwaniem bez wyników
+
 ```bash
 curl -X GET "http://localhost:3000/api/flashcards?search=nonexistentterm12345" \
   -H "Content-Type: application/json" \
@@ -146,7 +166,8 @@ curl -X GET "http://localhost:3000/api/flashcards?search=nonexistentterm12345" \
 
 ## 8. Oczekiwane Struktury Odpowiedzi
 
-### Sukces (200 OK):
+### Sukces (200 OK)
+
 ```json
 {
   "data": [
@@ -170,7 +191,8 @@ curl -X GET "http://localhost:3000/api/flashcards?search=nonexistentterm12345" \
 }
 ```
 
-### Błąd 400 (Bad Request):
+### Błąd 400 (Bad Request)
+
 ```json
 {
   "message": "Invalid query parameters",
@@ -180,14 +202,16 @@ curl -X GET "http://localhost:3000/api/flashcards?search=nonexistentterm12345" \
 }
 ```
 
-### Błąd 401 (Unauthorized):
+### Błąd 401 (Unauthorized)
+
 ```json
 {
   "message": "Unauthorized"
 }
 ```
 
-### Błąd 500 (Internal Server Error):
+### Błąd 500 (Internal Server Error)
+
 ```json
 {
   "message": "Internal Server Error"
@@ -207,4 +231,4 @@ curl -X GET "http://localhost:3000/api/flashcards?search=nonexistentterm12345" \
 - [ ] Edge cases są obsługiwane (strona poza zakresem, brak wyników)
 - [ ] Struktura odpowiedzi jest zgodna ze specyfikacją
 - [ ] RLS zapewnia, że użytkownicy widzą tylko własne fiszki
-- [ ] Tylko nieusunięte fiszki są zwracane (is_deleted = false) 
+- [ ] Tylko nieusunięte fiszki są zwracane (is_deleted = false)

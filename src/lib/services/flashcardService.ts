@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { Tables, TablesInsert } from "../../db/database.types";
-import type { CreateFlashcardCommand } from "../../types";
+import type {
+  CreateFlashcardCommand,
+  GetFlashcardsQuery,
+  FlashcardsListDto,
+  FlashcardListItemDto,
+  PaginationDetails,
+} from "../../types";
 
 /**
  * Handles business logic related to flashcards.
@@ -55,6 +61,149 @@ export class FlashcardService {
     }
 
     return data as Tables<"flashcards">; // Cast to ensure type correctness
+  }
+
+  /**
+   * Retrieves a paginated list of flashcards for a specific user.
+   *
+   * @param userId - The ID of the user whose flashcards to retrieve.
+   * @param query - Query parameters for filtering, sorting, and pagination.
+   * @returns A promise that resolves to the flashcards list with pagination details.
+   * @throws Error if the database operation fails.
+   */
+  async getUserFlashcards(userId: string, query: GetFlashcardsQuery): Promise<FlashcardsListDto> {
+    try {
+      // Validate userId
+      if (!userId || typeof userId !== "string" || userId.trim() === "") {
+        throw new Error("Invalid user ID provided");
+      }
+
+      // Build the base query
+      let supabaseQuery = this.supabase
+        .from("flashcards")
+        .select("id, user_id, question, answer, is_ai_generated, ai_accepted_at, created_at, updated_at", {
+          count: "exact",
+        });
+
+      // Apply search filter if provided (trim and validate)
+      if (query.search && query.search !== null && query.search.trim() !== "") {
+        const searchTerm = query.search.trim();
+        // Escape special characters for ILIKE to prevent injection
+        const escapedSearch = searchTerm.replace(/[%_\\]/g, "\\$&");
+        supabaseQuery = supabaseQuery.ilike("question", `%${escapedSearch}%`);
+      }
+
+      // Apply AI generated filter if provided
+      if (query.isAiGenerated !== undefined && query.isAiGenerated !== null) {
+        supabaseQuery = supabaseQuery.eq("is_ai_generated", query.isAiGenerated);
+      }
+
+      // Apply sorting
+      const sortColumn = this.mapSortByToDbColumn(query.sortBy || "createdAt");
+      supabaseQuery = supabaseQuery.order(sortColumn, { ascending: query.sortOrder === "asc" });
+
+      // Apply pagination
+      const offset = ((query.page || 1) - 1) * (query.limit || 10);
+      const limit = query.limit || 10;
+      supabaseQuery = supabaseQuery.range(offset, offset + limit - 1);
+
+      // Execute the query
+      const { data, error, count } = await supabaseQuery;
+
+      if (error) {
+        console.error("Error fetching flashcards from Supabase:", error);
+        throw new Error(`Failed to fetch flashcards: ${error.message}`);
+      }
+
+      if (!data) {
+        console.error("No data returned from flashcards query, despite no error.");
+        throw new Error("Failed to fetch flashcards: no data returned.");
+      }
+
+      // Map database results to DTOs
+      const flashcardItems: FlashcardListItemDto[] = data.map((item) => ({
+        id: item.id,
+        userId: item.user_id,
+        question: item.question,
+        answer: item.answer,
+        isAiGenerated: item.is_ai_generated,
+        aiAcceptedAt: item.ai_accepted_at,
+        createdAt: item.created_at,
+        updatedAt: item.updated_at,
+      }));
+
+      // Calculate pagination details
+      const totalItems = count || 0;
+      const currentPage = query.page || 1;
+      const limitValue = query.limit || 10;
+      const totalPages = totalItems > 0 ? Math.ceil(totalItems / limitValue) : 0;
+
+      // Validate pagination bounds
+      if (currentPage > totalPages && totalPages > 0) {
+        console.warn(`Requested page ${currentPage} exceeds total pages ${totalPages}`);
+        // Return empty result for out-of-bounds page requests
+        return {
+          data: [],
+          pagination: {
+            currentPage,
+            totalPages,
+            totalItems,
+            limit: limitValue,
+          },
+        };
+      }
+
+      const paginationDetails: PaginationDetails = {
+        currentPage,
+        totalPages,
+        totalItems,
+        limit: limitValue,
+      };
+
+      return {
+        data: flashcardItems,
+        pagination: paginationDetails,
+      };
+    } catch (error) {
+      console.error("Error in getUserFlashcards:", error);
+
+      // Handle specific Supabase errors
+      if (error && typeof error === "object" && "code" in error) {
+        const supabaseError = error as { code: string; message: string };
+        switch (supabaseError.code) {
+          case "PGRST116":
+            throw new Error("Invalid query parameters or table structure");
+          case "PGRST301":
+            throw new Error("Database connection error");
+          default:
+            throw new Error(`Database error: ${supabaseError.message}`);
+        }
+      }
+
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("An unexpected error occurred while fetching flashcards.");
+    }
+  }
+
+  /**
+   * Maps the API sortBy parameter to the corresponding database column name.
+   *
+   * @param sortBy - The sort field from the API.
+   * @returns The corresponding database column name.
+   */
+  private mapSortByToDbColumn(sortBy: string): string {
+    switch (sortBy) {
+      case "createdAt":
+        return "created_at";
+      case "updatedAt":
+        return "updated_at";
+      case "question":
+        return "question";
+      default:
+        return "created_at";
+    }
   }
 }
 

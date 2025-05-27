@@ -68,7 +68,7 @@ Do implementacji tego punktu końcowego wykorzystane zostaną następujące typy
 - **Sukces (200 OK):**
   - Struktura odpowiedzi (JSON):
 
-        ```json
+    ```json
         {
             "data": [
                 {
@@ -90,7 +90,7 @@ Do implementacji tego punktu końcowego wykorzystane zostaną następujące typy
                 "limit": 10
             }
         }
-        ```
+    ```
 
 - **Błędy:**
   - `400 Bad Request`: Nieprawidłowe parametry zapytania.

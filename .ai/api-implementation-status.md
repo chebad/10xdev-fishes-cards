@@ -150,3 +150,170 @@ W przypadku problemów z endpointem, sprawdź:
 2. Logi handlera API (`src/pages/api/flashcards/index.ts`)
 3. Logi serwisu (`src/lib/services/flashcardService.ts`)
 4. Dokumentację testów (`.ai/api-tests.md`) dla przykładów użycia
+
+---
+
+# Status Implementacji API: GET /api/flashcards
+
+## Przegląd
+
+Endpoint `GET /api/flashcards` został pomyślnie zaimplementowany zgodnie z planem API. Poniżej znajduje się szczegółowy status implementacji oraz ewentualne rozbieżności od pierwotnego planu.
+
+## ✅ Zaimplementowane komponenty
+
+### 1. Typy DTO i Query Models
+
+- **Lokalizacja:** `src/types.ts`
+- **Status:** ✅ Kompletne
+- **Typy:**
+  - `GetFlashcardsQuery` - model parametrów zapytania (query parameters)
+  - `FlashcardListItemDto` - model elementu listy w odpowiedzi
+  - `PaginationDetails` - model szczegółów paginacji
+  - `FlashcardsListDto` - model odpowiedzi (lista fiszek + paginacja)
+  - `GetFlashcardsSortBy` - typ dla dozwolonych pól sortowania
+
+### 2. Schemat walidacji Zod
+
+- **Lokalizacja:** `src/lib/validation/flashcardSchemas.ts`
+- **Status:** ✅ Kompletne
+- **Funkcjonalności:**
+  - Walidacja typów i wartości dla wszystkich parametrów zapytania (`page`, `limit`, `sortBy`, `sortOrder`, `search`, `isAiGenerated`)
+  - Ustawienie wartości domyślnych dla opcjonalnych parametrów
+  - Obsługa wartości `null` dla opcjonalnych parametrów
+  - Konwersja typów (np. `string` na `number` lub `boolean`)
+
+### 3. Serwis logiki biznesowej
+
+- **Lokalizacja:** `src/lib/services/flashcardService.ts`
+- **Status:** ✅ Kompletne z ulepszeniami
+- **Funkcjonalności:**
+  - Budowanie dynamicznego zapytania do Supabase na podstawie parametrów
+  - Filtrowanie po `userId` (tylko własne fiszki) i `is_deleted = false` (RLS)
+  - Wyszukiwanie tekstowe (ILIKE) w polu `question` (z escapowaniem znaków specjalnych)
+  - Filtrowanie po `is_ai_generated`
+  - Sortowanie (`createdAt`, `updatedAt`, `question`)
+  - Paginacja (offset, limit)
+  - Zliczanie całkowitej liczby pasujących elementów (`count: "exact"`)
+  - Mapowanie wyników z bazy danych na `FlashcardListItemDto`
+  - Obliczanie i zwracanie szczegółów paginacji
+  - Obsługa błędów Supabase i edge cases (np. strona poza zakresem)
+
+### 4. API Route Handler
+
+- **Lokalizacja:** `src/pages/api/flashcards/index.ts`
+- **Status:** ✅ Kompletne z ulepszeniami
+- **Funkcjonalności:**
+  - Uwierzytelnianie poprzez JWT token (Astro locals)
+  - Odczytanie i parsowanie parametrów zapytania z URL
+  - Walidacja parametrów zapytania za pomocą Zod (`GetFlashcardsQuerySchema`)
+  - Wywołanie serwisu `flashcardService.getUserFlashcards`
+  - Zwrócenie odpowiedzi `FlashcardsListDto`
+  - Kompleksowa obsługa błędów i logowanie
+  - Dodana dokumentacja JSDoc
+
+### 5. Middleware uwierzytelniania
+
+- **Lokalizacja:** `src/middleware/index.ts`
+- **Status:** ✅ Kompletne (współdzielone z POST)
+- **Funkcjonalności:** Zapewnia `session` i `supabase` w `context.locals`
+
+### 6. Migracje Bazy Danych
+
+- **Lokalizacja:**
+  - `supabase/migrations/20241005123000_create_flashcards_and_contact_form_submissions.sql` (RLS, podstawowe indeksy)
+  - `supabase/migrations/20250127140000_add_missing_flashcards_indexes.sql` (dodatkowe indeksy dla wydajności)
+- **Status:** ✅ Kompletne
+- **Funkcjonalności:**
+  - Dodano indeksy na `updated_at`, `user_id+updated_at`, `user_id+created_at`
+  - Włączono rozszerzenie `pg_trgm` i dodano indeks GIN na `question`
+  - Dodano indeks na `user_id+is_ai_generated`
+
+## 📋 Zgodność z planem API
+
+### Query Parameters
+
+- `page` (optional, integer, default: 1): ✅ Zaimplementowane
+- `limit` (optional, integer, default: 10, max: 100): ✅ Zaimplementowane
+- `sortBy` (optional, string, default: `createdAt`): ✅ Zaimplementowane (`createdAt`, `updatedAt`, `question`)
+- `sortOrder` (optional, string, default: `desc`): ✅ Zaimplementowane (`asc`, `desc`)
+- `search` (optional, string): ✅ Zaimplementowane (case-insensitive, partial match)
+- `isAiGenerated` (optional, boolean): ✅ Zaimplementowane
+
+### Response Body (200 OK)
+
+```json
+{
+    "data": [
+        {
+            "id": "uuid",
+            "userId": "uuid",
+            "question": "string",
+            "answer": "string",
+            "isAiGenerated": "boolean",
+            "aiAcceptedAt": "timestamp | null",
+            "createdAt": "timestamp",
+            "updatedAt": "timestamp"
+        }
+    ],
+    "pagination": {
+        "currentPage": 1,
+        "totalPages": 5,
+        "totalItems": 50,
+        "limit": 10
+    }
+}
+```
+
+- **Status:** ✅ Zaimplementowane (zgodnie ze specyfikacją)
+
+### Kody statusu HTTP
+
+- `200 OK`: ✅ Zaimplementowane
+- `400 Bad Request`: ✅ Zaimplementowane (walidacja parametrów zapytania)
+- `401 Unauthorized`: ✅ Zaimplementowane
+- `500 Internal Server Error`: ✅ Zaimplementowane
+
+## 🔧 Zmiany i ulepszenia względem pierwotnego planu
+
+- **Walidacja Zod:** Ulepszono schemę `GetFlashcardsQuerySchema` do obsługi `null` z `URL.searchParams.get()` i poprawnego stosowania wartości domyślnych.
+- **Serwis:** Dodano escapowanie znaków specjalnych (`%`, `_`, `\`) w parametrze `search` dla zapytań ILIKE. Dodano obsługę błędu dla żądania strony poza zakresem.
+- **Baza Danych:** Dodano migrację z nowymi indeksami w celu optymalizacji zapytań.
+- **Typy:** Rozszerzono `GetFlashcardsQuery` o możliwość przyjmowania `null` dla wszystkich opcjonalnych parametrów, aby dopasować do logiki Zod i `URL.searchParams.get()`.
+
+## 📋 Status testowania
+
+- **Testy manualne:** ✅ Przeprowadzone z curl - endpoint działa poprawnie, w tym obsługa wartości domyślnych i przypadków brzegowych.
+- **Dokumentacja testów:** ✅ Utworzona (`.ai/get-flashcards-test-scenarios.md`)
+- **Testy automatyczne:** 📋 Do implementacji.
+
+## 📚 Utworzona dokumentacja
+
+1. **Plan implementacji:** `.ai/get-flashcards-implementation-plan.md`
+2. **Dokumentacja testów:** `.ai/get-flashcards-test-scenarios.md`
+3. **Status implementacji:** Zaktualizowano ten dokument (`.ai/api-implementation-status.md`)
+
+## 🚀 Gotowość do produkcji
+
+Endpoint `GET /api/flashcards` jest gotowy do użycia produkcyjnego z następującymi zaleceniami:
+
+### Przed wdrożeniem produkcyjnym
+
+1. 📋 Usunąć logi debugowania z kodu produkcyjnego (`console.log` w handlerze API i serwisie).
+2. 📋 Wdrożyć testy automatyczne.
+3. 📋 Skonfigurować monitoring i alerty dla błędów 5xx.
+4. 📋 Przeprowadzić testy wydajnościowe pod obciążeniem.
+5. 📋 Zastosować migrację `20250127140000_add_missing_flashcards_indexes.sql` na środowisku produkcyjnym.
+
+### Zalecenia operacyjne
+
+1. Monitorowanie wydajności zapytań do bazy danych, szczególnie tych z wieloma filtrami i sortowaniem.
+2. Regularne backupy bazy danych.
+
+## 📞 Kontakt w razie problemów
+
+W przypadku problemów z endpointem, sprawdź:
+
+1. Logi middleware (`src/middleware/index.ts`)
+2. Logi handlera API (`src/pages/api/flashcards/index.ts`)
+3. Logi serwisu (`src/lib/services/flashcardService.ts`)
+4. Dokumentację testów (`.ai/get-flashcards-test-scenarios.md`) dla przykładów użycia

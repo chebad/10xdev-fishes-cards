@@ -67,12 +67,12 @@ export type GetFlashcardsSortBy = "createdAt" | "updatedAt" | "question";
  * Used for GET /api/flashcards.
  */
 export interface GetFlashcardsQuery {
-  page?: number;
-  limit?: number;
-  sortBy?: GetFlashcardsSortBy; // Maps to DB columns: created_at, updated_at, question
-  sortOrder?: "asc" | "desc";
-  search?: string;
-  isAiGenerated?: boolean; // Maps to DB column: is_ai_generated
+  page?: number | null;
+  limit?: number | null;
+  sortBy?: GetFlashcardsSortBy | null; // Maps to DB columns: created_at, updated_at, question
+  sortOrder?: "asc" | "desc" | null;
+  search?: string | null;
+  isAiGenerated?: boolean | null; // Maps to DB column: is_ai_generated
 }
 
 /**

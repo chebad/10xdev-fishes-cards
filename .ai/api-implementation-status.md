@@ -119,7 +119,7 @@ Endpoint `POST /api/flashcards` został pomyślnie zaimplementowany zgodnie z pl
 
 ## 📚 Utworzona dokumentacja
 
-1. **Plan implementacji:** `.ai/view-implementation-plan.md`
+1. **Plan implementacji:** `.ai/create-flashcards-implementation-plan.md`
 2. **Dokumentacja testów:** `.ai/api-tests.md`
 3. **Status implementacji:** `.ai/api-implementation-status.md` (ten dokument)
 

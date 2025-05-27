@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../db/database.types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Middleware for handling authentication and Supabase client initialization.
@@ -9,10 +10,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const supabaseUrl = import.meta.env.SUPABASE_URL;
   const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
 
+  // Initialize default Supabase client
+  let supabase: SupabaseClient<Database> = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
   // Handle user session based on JWT token
   const authHeader = context.request.headers.get("Authorization");
   let session = null;
-  let supabase;
 
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.substring(7);
@@ -46,14 +49,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     } catch (e) {
       console.error("Error processing JWT token:", e);
     }
-  } else {
-    supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
   }
 
-  // @ts-expect-error // Temporary workaround for Astro.locals typing issue
   context.locals.supabase = supabase;
-
-  // @ts-expect-error // Temporary workaround for Astro.locals typing issue
   context.locals.session = session;
 
   return next();

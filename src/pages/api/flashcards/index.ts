@@ -8,8 +8,6 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   // 1. Uwierzytelnianie i autoryzacja (z Astro.locals)
-  // TODO: Zdefiniuj poprawnie typy dla locals.session i locals.supabase w src/env.d.ts
-  // @ts-expect-error // Tymczasowe obejście problemu z typowaniem Astro.locals
   const { session, supabase } = locals;
 
   if (!session?.user) {

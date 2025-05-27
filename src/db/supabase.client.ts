@@ -6,5 +6,4 @@ const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
 
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
-// Eksport typu SupabaseClient z odpowiednimi typami bazy danych
 export type SupabaseClient = typeof supabaseClient;

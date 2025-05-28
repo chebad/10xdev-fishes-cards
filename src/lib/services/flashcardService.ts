@@ -188,6 +188,71 @@ export class FlashcardService {
   }
 
   /**
+   * Retrieves a single flashcard by its ID for a specific user.
+   *
+   * @param flashcardId - The ID of the flashcard to retrieve.
+   * @param userId - The ID of the user who should own the flashcard.
+   * @returns A promise that resolves to the flashcard data or null if not found.
+   * @throws Error if the database operation fails or user doesn't have permission.
+   */
+  async getFlashcardById(flashcardId: string, userId: string): Promise<Tables<"flashcards"> | null> {
+    try {
+      // Validate inputs
+      if (!flashcardId || typeof flashcardId !== "string" || flashcardId.trim() === "") {
+        throw new Error("Invalid flashcard ID provided");
+      }
+      if (!userId || typeof userId !== "string" || userId.trim() === "") {
+        throw new Error("Invalid user ID provided");
+      }
+
+      // Build the query to get the flashcard
+      // RLS policies automatically enforce user_id = auth.uid() AND is_deleted = FALSE
+      // So we only need to filter by ID for optimal performance
+      const { data, error } = await this.supabase.from("flashcards").select("*").eq("id", flashcardId).single();
+
+      if (error) {
+        // Handle specific Supabase errors
+        if (error.code === "PGRST116") {
+          // No rows returned (not found or access denied by RLS)
+          console.log(`Flashcard ${flashcardId} not found or access denied for user ${userId}`);
+          return null;
+        }
+
+        console.error("Error fetching flashcard from Supabase:", error);
+        throw new Error(`Failed to fetch flashcard: ${error.message}`);
+      }
+
+      if (!data) {
+        console.log(`Flashcard ${flashcardId} not found for user ${userId}`);
+        return null;
+      }
+
+      return data as Tables<"flashcards">;
+    } catch (error) {
+      console.error("Error in getFlashcardById:", error);
+
+      // Handle specific Supabase errors
+      if (error && typeof error === "object" && "code" in error) {
+        const supabaseError = error as { code: string; message: string };
+        switch (supabaseError.code) {
+          case "PGRST116":
+            // No rows returned - flashcard not found or user doesn't have access
+            return null;
+          case "PGRST301":
+            throw new Error("Database connection error");
+          default:
+            throw new Error(`Database error: ${supabaseError.message}`);
+        }
+      }
+
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("An unexpected error occurred while fetching the flashcard.");
+    }
+  }
+
+  /**
    * Maps the API sortBy parameter to the corresponding database column name.
    *
    * @param sortBy - The sort field from the API.

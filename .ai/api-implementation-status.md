@@ -317,3 +317,207 @@ W przypadku problemów z endpointem, sprawdź:
 2. Logi handlera API (`src/pages/api/flashcards/index.ts`)
 3. Logi serwisu (`src/lib/services/flashcardService.ts`)
 4. Dokumentację testów (`.ai/get-flashcards-test-scenarios.md`) dla przykładów użycia
+
+---
+
+# Status Implementacji API: GET /api/flashcards/{flashcardId}
+
+## Przegląd
+
+Endpoint `GET /api/flashcards/{flashcardId}` został pomyślnie zaimplementowany zgodnie z planem API. Poniżej znajduje się szczegółowy status implementacji oraz ewentualne rozbieżności od pierwotnego planu.
+
+## ✅ Zaimplementowane komponenty
+
+### 1. Typy DTO
+
+- **Lokalizacja:** `src/types.ts`
+- **Status:** ✅ Kompletne (współdzielone z POST)
+- **Typy:**
+  - `FlashcardDto` - model odpowiedzi (używany również przez POST endpoint)
+
+### 2. Schemat walidacji Zod
+
+- **Lokalizacja:** `src/pages/api/flashcards/[flashcardId].ts`
+- **Status:** ✅ Kompletne
+- **Funkcjonalności:**
+  - Walidacja UUID dla `flashcardId` parametru ścieżki
+  - Użycie `z.string().uuid()` z customowym komunikatem błędu
+  - Obsługa zarówno wielkich jak i małych liter w UUID
+
+### 3. Serwis logiki biznesowej
+
+- **Lokalizacja:** `src/lib/services/flashcardService.ts`
+- **Status:** ✅ Kompletne z ulepszeniami
+- **Funkcjonalności:**
+  - Metoda `getFlashcardById(flashcardId: string, userId: string)`
+  - Walidacja parametrów wejściowych
+  - Wykorzystanie RLS policies dla automatycznej filtracji (user_id i is_deleted)
+  - Optymalizowane zapytanie (bez redundantnych warunków WHERE)
+  - Obsługa błędów Supabase z rozróżnieniem na "not found" vs "database error"
+  - Szczegółowe logowanie dla debugowania
+
+### 4. API Route Handler
+
+- **Lokalizacja:** `src/pages/api/flashcards/[flashcardId].ts`
+- **Status:** ✅ Kompletne z ulepszeniami
+- **Funkcjonalności:**
+  - Uwierzytelnianie poprzez JWT token (Astro locals)
+  - Walidacja parametru `flashcardId` z URL params
+  - Walidacja formatu UUID za pomocą Zod
+  - Mapowanie wyniku z bazy danych na `FlashcardDto`
+  - Kompleksowa obsługa błędów (401, 400, 404, 500)
+  - Szczegółowe logowanie żądań
+  - Zgodność z clean code practices (early returns, guard clauses)
+
+### 5. Middleware uwierzytelniania
+
+- **Lokalizacja:** `src/middleware/index.ts`
+- **Status:** ✅ Kompletne (współdzielone z innymi endpointami)
+- **Funkcjonalności:** Zapewnia `session` i `supabase` w `context.locals`
+
+## 📋 Zgodność z planem API
+
+### URL Pattern
+
+- `GET /api/flashcards/{flashcardId}`: ✅ Zaimplementowane
+- Dynamic routing w Astro: `[flashcardId].ts`: ✅ Zaimplementowane
+
+### Path Parameters
+
+- `flashcardId` (string, UUID format, required): ✅ Zaimplementowane z walidacją Zod
+
+### Response Body (200 OK)
+
+```json
+{
+  "id": "uuid",
+  "userId": "uuid", 
+  "question": "string",
+  "answer": "string",
+  "sourceTextForAi": "string | null",
+  "isAiGenerated": "boolean",
+  "aiAcceptedAt": "timestamp | null",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp",
+  "isDeleted": "boolean"
+}
+```
+
+- **Status:** ✅ Zaimplementowane (zgodnie ze specyfikacją)
+
+### Kody statusu HTTP
+
+- `200 OK`: ✅ Zaimplementowane
+- `400 Bad Request`: ✅ Zaimplementowane (walidacja UUID)
+- `401 Unauthorized`: ✅ Zaimplementowane
+- `404 Not Found`: ✅ Zaimplementowane (fiszka nie istnieje, usunięta, lub należy do innego użytkownika)
+- `500 Internal Server Error`: ✅ Zaimplementowane
+
+## 🔧 Zmiany i ulepszenia względem pierwotnego planu
+
+### 1. Optymalizacja zapytań do bazy danych
+
+- **Zmiana:** Usunięto redundantną weryfikację `user_id` w zapytaniu SQL
+- **Powód:** RLS policies automatycznie filtrują według `user_id = auth.uid()` i `is_deleted = false`
+- **Korzyść:** Lepsza wydajność i uproszczenie kodu
+
+### 2. Walidacja UUID
+
+- **Dodano:** Kompleksową walidację UUID z Zod bezpośrednio w route handlerze
+- **Korzyść:** Wczesne wykrywanie błędów i lepsze komunikaty dla użytkownika
+
+### 3. Mapowanie błędów
+
+- **Dodano:** Szczegółowe mapowanie błędów Supabase na odpowiednie kody HTTP
+- **Przypadki:** PGRST116 (no rows) → 404, PGRST301 (connection) → 500
+- **Korzyść:** Lepsze doświadczenie użytkownika i łatwiejsze debugowanie
+
+### 4. Dokumentacja kodu
+
+- **Dodano:** Szczegółowe komentarze JSDoc z przykładami użycia
+- **Dodano:** Informacje o bezpieczeństwie i RLS policies
+- **Dodano:** Przykłady curl w komentarzach
+
+## 📋 Status testowania
+
+- **Testy manualne:** ✅ Przeprowadzone z curl - wszystkie scenariusze działają poprawnie
+- **Dokumentacja testów:** ✅ Utworzona (`.ai/get-single-flashcard-test-scenarios.md`)
+- **Testy automatyczne:** 📋 Do implementacji (przykłady dostępne w dokumentacji)
+
+### Przetestowane scenariusze
+
+- ✅ Pobieranie istniejącej fiszki (200)
+- ✅ Nieprawidłowy format UUID (400)
+- ✅ Brak uwierzytelnienia (401)
+- ✅ Nieistniejąca fiszka (404)
+- ✅ Dostęp do fiszki innego użytkownika (404 - RLS policy)
+- ✅ Błędy serwera (500)
+
+## 📚 Utworzona dokumentacja
+
+1. **Plan implementacji:** `.ai/get-single-flashcard-implementation-plan.md`
+2. **Dokumentacja testów:** `.ai/get-single-flashcard-test-scenarios.md`
+3. **Status implementacji:** Zaktualizowano ten dokument (`.ai/api-implementation-status.md`)
+
+## 🚀 Gotowość do produkcji
+
+Endpoint `GET /api/flashcards/{flashcardId}` jest gotowy do użycia produkcyjnego z następującymi zaleceniami:
+
+### Przed wdrożeniem produkcyjnym
+
+1. 📋 Usunąć logi debugowania z kodu produkcyjnego (`console.log` w handlerze API i serwisie)
+2. 📋 Wdrożyć testy automatyczne
+3. 📋 Skonfigurować monitoring i alerty dla błędów 5xx
+4. 📋 Przeprowadzić testy wydajnościowe dla dużych ilości równoczesnych żądań
+5. 📋 Przegląd bezpieczeństwa (rate limiting, dodatkowe walidacje)
+
+### Zalecenia operacyjne
+
+1. **Monitoring wydajności:** Szczególnie dla zapytań z różnymi UUID (optymalizacja indeksów)
+2. **Logowanie metryk:** Częstotliwość dostępu do fiszek, popularne fiszki
+3. **Cache'owanie:** Rozważyć cache dla często pobieranych fiszek
+4. **Backup strategy:** Regularne backupy bazy danych
+
+### Metryki do monitorowania
+
+- Czas odpowiedzi endpointu
+- Stosunek żądań 200:404:400:500
+- Częstotliwość dostępu do różnych fiszek
+- Błędy RLS policy (wskazujące na problemy z uprawnieniami)
+
+## 🔒 Funkcje bezpieczeństwa
+
+### Implementowane zabezpieczenia
+
+1. **JWT Authentication:** ✅ Wymagane dla wszystkich żądań
+2. **RLS Policies:** ✅ Automatyczna filtracja według user_id i is_deleted
+3. **UUID Validation:** ✅ Zapobiega injection attacks
+4. **Input Sanitization:** ✅ Walidacja wszystkich parametrów wejściowych
+5. **Error Handling:** ✅ Nie wyciekają szczegóły wewnętrzne systemu
+
+### Testy bezpieczeństwa
+
+- ✅ Dostęp bez tokenu (401)
+- ✅ Dostęp z nieprawidłowym tokenem (401)
+- ✅ Próba dostępu do fiszek innych użytkowników (404)
+- ✅ SQL injection poprzez UUID (zabezpieczone przez Zod)
+- ✅ Dostęp do usuniętych fiszek (404)
+
+## 📞 Kontakt w razie problemów
+
+W przypadku problemów z endpointem, sprawdź:
+
+1. **Logi middleware** (`src/middleware/index.ts`) - problemy z uwierzytelnianiem
+2. **Logi handlera API** (`src/pages/api/flashcards/[flashcardId].ts`) - walidacja i żądania
+3. **Logi serwisu** (`src/lib/services/flashcardService.ts`) - problemy z bazą danych
+4. **Dokumentację testów** (`.ai/get-single-flashcard-test-scenarios.md`) - przykłady użycia
+5. **RLS policies** w Supabase - uprawnienia dostępu
+
+### Częste problemy i rozwiązania
+
+| Problem | Możliwa przyczyna | Rozwiązanie |
+|---------|-------------------|-------------|
+| 401 Unauthorized | Brak/nieprawidłowy token | Sprawdź nagłówek Authorization |
+| 400 Bad Request | Nieprawidłowy UUID | Sprawdź format flashcardId |
+| 404 Not Found | Fiszka nie istnieje/nie należy do użytkownika | Sprawdź ownership i is_deleted |
+| 500 Internal Server Error | Błąd bazy danych | Sprawdź logi serwisu i połączenie z Supabase |

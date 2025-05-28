@@ -2,6 +2,8 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 import { getFlashcardService } from "../../../lib/services/flashcardService";
 import type { FlashcardDto } from "../../../types";
+import { updateFlashcardPathParamsSchema, updateFlashcardBodySchema } from "../../../lib/validation/flashcardSchemas";
+import type { UpdateFlashcardCommand } from "../../../types";
 
 export const prerender = false;
 
@@ -121,6 +123,160 @@ export const GET: APIRoute = async ({ locals, params }) => {
       if (error.message.includes("Not found")) {
         return new Response(JSON.stringify({ error: "Flashcard not found." }), {
           status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Fallback error handling with proper logging
+    return new Response(JSON.stringify({ error: "Internal server error." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+};
+
+/**
+ * PATCH /api/flashcards/{flashcardId}
+ *
+ * Updates an existing flashcard by its ID for the authenticated user.
+ * The user must be the owner of the flashcard and the flashcard must not be deleted.
+ * Only provided fields (question and/or answer) will be updated.
+ *
+ * @param locals - Astro locals containing session and supabase client
+ * @param params - Route parameters containing flashcardId
+ * @param request - HTTP request object containing the update data
+ *
+ * @returns JSON response with updated flashcard data
+ *
+ * Response Codes:
+ * - 200: Success with updated flashcard data
+ * - 400: Invalid flashcard ID format or request body validation errors
+ * - 401: User not authenticated
+ * - 403: User doesn't have permission to update this flashcard
+ * - 404: Flashcard not found or deleted
+ * - 500: Internal server error
+ */
+export const PATCH: APIRoute = async ({ locals, params, request }) => {
+  // 1. Uwierzytelnianie i autoryzacja (z Astro.locals)
+  const { session, supabase } = locals;
+
+  if (!session?.user) {
+    return new Response(JSON.stringify({ error: "User not authenticated." }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const userId = session.user.id;
+
+  if (!supabase) {
+    console.error("Supabase client not found in locals. Check middleware setup.");
+    return new Response(JSON.stringify({ error: "Server configuration error." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    // 2. Walidacja flashcardId z parametrów ścieżki
+    const pathParamsValidation = updateFlashcardPathParamsSchema.safeParse({
+      flashcardId: params.flashcardId,
+    });
+
+    if (!pathParamsValidation.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Validation failed",
+          details: pathParamsValidation.error.flatten().fieldErrors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { flashcardId } = pathParamsValidation.data;
+
+    // 3. Pobranie i walidacja ciała żądania
+    let requestBody: unknown;
+    try {
+      requestBody = await request.json();
+    } catch (error) {
+      console.error("Error in PATCH /api/flashcards/[flashcardId]:", error);
+      return new Response(
+        JSON.stringify({
+          error: "Invalid JSON format in request body.",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const bodyValidation = updateFlashcardBodySchema.safeParse(requestBody);
+
+    if (!bodyValidation.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Validation failed",
+          details: bodyValidation.error.flatten().fieldErrors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const validatedBody: UpdateFlashcardCommand = bodyValidation.data;
+
+    // 4. Wywołanie serwisu do aktualizacji fiszki
+    console.log("Updating flashcard:", flashcardId, "for user:", userId, "with data:", validatedBody); // Debug log
+
+    const flashcardService = getFlashcardService(supabase);
+    const updatedFlashcard = await flashcardService.updateFlashcard(userId, flashcardId, validatedBody);
+
+    // 5. Mapowanie wyniku na DTO i zwrócenie odpowiedzi
+    const responseDto: FlashcardDto = {
+      id: updatedFlashcard.id,
+      userId: updatedFlashcard.user_id,
+      question: updatedFlashcard.question,
+      answer: updatedFlashcard.answer,
+      sourceTextForAi: updatedFlashcard.source_text_for_ai,
+      isAiGenerated: updatedFlashcard.is_ai_generated,
+      aiAcceptedAt: updatedFlashcard.ai_accepted_at,
+      createdAt: updatedFlashcard.created_at,
+      updatedAt: updatedFlashcard.updated_at,
+      isDeleted: updatedFlashcard.is_deleted,
+    };
+
+    return new Response(JSON.stringify(responseDto), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error: unknown) {
+    console.error("Error in PATCH /api/flashcards/[flashcardId]:", error);
+
+    // Handle specific service errors first
+    if (error instanceof Error) {
+      if (error.message.includes("Flashcard not found")) {
+        return new Response(JSON.stringify({ error: "Flashcard not found." }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (error.message.includes("Database connection error")) {
+        return new Response(JSON.stringify({ error: "Database connection error." }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      if (error.message.includes("Invalid data")) {
+        return new Response(JSON.stringify({ error: "Invalid data provided." }), {
+          status: 400,
           headers: { "Content-Type": "application/json" },
         });
       }

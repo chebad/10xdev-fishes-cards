@@ -521,3 +521,263 @@ W przypadku problemów z endpointem, sprawdź:
 | 400 Bad Request | Nieprawidłowy UUID | Sprawdź format flashcardId |
 | 404 Not Found | Fiszka nie istnieje/nie należy do użytkownika | Sprawdź ownership i is_deleted |
 | 500 Internal Server Error | Błąd bazy danych | Sprawdź logi serwisu i połączenie z Supabase |
+
+---
+
+# Status Implementacji API: PATCH /api/flashcards/{flashcardId}
+
+## Przegląd
+
+Endpoint `PATCH /api/flashcards/{flashcardId}` został pomyślnie zaimplementowany zgodnie z planem API. Poniżej znajduje się szczegółowy status implementacji oraz ewentualne rozbieżności od pierwotnego planu.
+
+## ✅ Zaimplementowane komponenty
+
+### 1. Typy DTO i Command Models
+
+- **Lokalizacja:** `src/types.ts`
+- **Status:** ✅ Kompletne (współdzielone z innymi endpointami)
+- **Typy:**
+  - `UpdateFlashcardCommand` - model żądania (Partial<Pick<TablesUpdate<"flashcards">, "question" | "answer">>)
+  - `FlashcardDto` - model odpowiedzi (współdzielony z GET i POST)
+
+### 2. Schematy walidacji Zod
+
+- **Lokalizacja:** `src/lib/validation/flashcardSchemas.ts`
+- **Status:** ✅ Kompletne
+- **Funkcjonalności:**
+  - `updateFlashcardPathParamsSchema` - walidacja UUID dla parametru ścieżki `flashcardId`
+  - `updateFlashcardBodySchema` - walidacja ciała żądania z regułą minimum jednego pola
+  - Walidacja minimalnych długości dla `question` (≥5) i `answer` (≥3)
+  - Obsługa opcjonalnych pól z wymuszeniem obecności co najmniej jednego
+  - Zgodność z regułami walidacji bazy danych (CHECK constraints)
+
+### 3. Serwis logiki biznesowej
+
+- **Lokalizacja:** `src/lib/services/flashcardService.ts`
+- **Status:** ✅ Kompletne z ulepszeniami
+- **Funkcjonalności:**
+  - Metoda `updateFlashcard(userId: string, flashcardId: string, data: UpdateFlashcardCommand)`
+  - Walidacja parametrów wejściowych na poziomie serwisu
+  - Konstruowanie obiektu aktualizacji z tylko podanymi polami
+  - Zapytanie UPDATE z warunkami: `id`, `user_id`, `is_deleted = false`
+  - Wykorzystanie RLS policies dla dodatkowego bezpieczeństwa
+  - Automatyczna aktualizacja `updated_at` przez trigger bazodanowy
+  - Szczegółowa obsługa błędów Supabase (PGRST116, PGRST301, 23514)
+  - Mapowanie wyniku na `Tables<"flashcards">`
+
+### 4. API Route Handler
+
+- **Lokalizacja:** `src/pages/api/flashcards/[flashcardId].ts`
+- **Status:** ✅ Kompletne z ulepszeniami
+- **Funkcjonalności:**
+  - Uwierzytelnianie poprzez JWT token (Astro locals)
+  - Walidacja parametru ścieżki `flashcardId` za pomocą `updateFlashcardPathParamsSchema`
+  - Walidacja ciała żądania JSON za pomocą `updateFlashcardBodySchema`
+  - Obsługa błędów parsowania JSON z dedykowanym komunikatem błędu
+  - Wywołanie serwisu `flashcardService.updateFlashcard`
+  - Mapowanie wyniku na `FlashcardDto` i zwracanie odpowiedzi
+  - Kompleksowa obsługa błędów (400, 401, 404, 500)
+  - Szczegółowe logowanie żądań i błędów
+  - Dodana dokumentacja JSDoc z przykładami użycia
+
+### 5. Middleware uwierzytelniania
+
+- **Lokalizacja:** `src/middleware/index.ts`
+- **Status:** ✅ Kompletne (współdzielone z innymi endpointami)
+- **Funkcjonalności:** Zapewnia `session` i `supabase` w `context.locals`
+
+## 📋 Zgodność z planem API
+
+### URL Pattern
+
+- `PATCH /api/flashcards/{flashcardId}`: ✅ Zaimplementowane
+- Dynamic routing w Astro: `[flashcardId].ts`: ✅ Zaimplementowane (współdzielone z GET)
+
+### Path Parameters
+
+- `flashcardId` (string, UUID format, required): ✅ Zaimplementowane z walidacją Zod
+
+### Request Body
+
+```json
+{
+  "question": "string (min 5 chars, optional)",
+  "answer": "string (min 3 chars, optional)"
+}
+```
+
+- **Status:** ✅ Zaimplementowane z walidacją przynajmniej jednego pola
+
+### Response Body (200 OK)
+
+```json
+{
+  "id": "uuid",
+  "userId": "uuid",
+  "question": "string",
+  "answer": "string",
+  "sourceTextForAi": "string | null",
+  "isAiGenerated": "boolean",
+  "aiAcceptedAt": "timestamp | null",
+  "createdAt": "timestamp",
+  "updatedAt": "timestamp", // Automatycznie zaktualizowane
+  "isDeleted": "boolean"
+}
+```
+
+- **Status:** ✅ Zaimplementowane (zgodnie ze specyfikacją)
+
+### Kody statusu HTTP
+
+- `200 OK`: ✅ Zaimplementowane
+- `400 Bad Request`: ✅ Zaimplementowane (walidacja UUID, walidacja ciała żądania, nieprawidłowy JSON)
+- `401 Unauthorized`: ✅ Zaimplementowane
+- `403 Forbidden`: ✅ Zaimplementowane (obsługiwane przez RLS policy → 404)
+- `404 Not Found`: ✅ Zaimplementowane (fiszka nie istnieje, usunięta, lub należy do innego użytkownika)
+- `500 Internal Server Error`: ✅ Zaimplementowane
+
+## 🔧 Zmiany i ulepszenia względem pierwotnego planu
+
+### 1. Schemat walidacji
+
+- **Ulepszenie:** Zastosowano `.refine()` w Zod do wymagania przynajmniej jednego pola w aktualizacji
+- **Korzyść:** Lepsze komunikaty błędów i bardziej precyzyjna walidacja
+
+### 2. Mapowanie błędów RLS
+
+- **Zmiana:** 403 Forbidden błędy są mapowane na 404 Not Found przez RLS policy
+- **Powód:** RLS automatycznie ukrywa fiszki innych użytkowników, więc z perspektywy API wyglądają jak nieistniejące
+- **Korzyść:** Bezpieczeństwo - nie ujawnia informacji o istnieniu fiszek innych użytkowników
+
+### 3. Obsługa błędów bazodanowych
+
+- **Dodano:** Szczegółowe mapowanie kodów błędów Supabase
+- **Przypadki:** PGRST116 (no rows) → 404, PGRST301 (connection) → 500, 23514 (CHECK constraint) → 400
+- **Korzyść:** Lepsze doświadczenie użytkownika i łatwiejsze debugowanie
+
+### 4. Optymalizacja zapytań
+
+- **Implementacja:** Konstrukcja obiektu aktualizacji z tylko podanymi polami
+- **Korzyść:** Wydajność - aktualizowane są tylko rzeczywiście zmieniane kolumny
+
+### 5. Trigger bazodanowy
+
+- **Wykorzystanie:** Automatyczna aktualizacja `updated_at` przez trigger
+- **Korzyść:** Spójność danych i redukcja kompleksności kodu aplikacji
+
+## 📋 Status testowania
+
+- **Testy manualne:** ✅ Przeprowadzone z curl - wszystkie scenariusze działają poprawnie
+- **Dokumentacja testów:** ✅ Utworzona (`.ai/update-flashcard-test-scenarios.md`)
+- **Testy automatyczne:** 📋 Do implementacji (przykłady dostępne w dokumentacji)
+
+### Przetestowane scenariusze
+
+- ✅ Aktualizacja tylko pytania (200)
+- ✅ Aktualizacja tylko odpowiedzi (200)
+- ✅ Aktualizacja obu pól (200)
+- ✅ Puste ciało żądania (400)
+- ✅ Za krótkie pytanie/odpowiedź (400)
+- ✅ Nieprawidłowy format UUID (400)
+- ✅ Nieprawidłowy JSON (400)
+- ✅ Brak uwierzytelnienia (401)
+- ✅ Nieistniejąca fiszka (404)
+- ✅ Fiszka innego użytkownika (404 - RLS policy)
+- ✅ Usuniętą fiszkę (404 - RLS policy)
+- ✅ Zachowanie metadanych AI (`isAiGenerated`, `aiAcceptedAt`, `sourceTextForAi`)
+
+## 📚 Utworzona dokumentacja
+
+1. **Plan implementacji:** `.ai/update-flashcard-implementation-plan.md`
+2. **Dokumentacja testów:** `.ai/update-flashcard-test-scenarios.md`
+3. **Status implementacji:** Zaktualizowano ten dokument (`.ai/api-implementation-status.md`)
+
+## 🚀 Gotowość do produkcji
+
+Endpoint `PATCH /api/flashcards/{flashcardId}` jest gotowy do użycia produkcyjnego z następującymi zaleceniami:
+
+### Przed wdrożeniem produkcyjnym
+
+1. 📋 Usunąć logi debugowania z kodu produkcyjnego (`console.log` w handlerze API i serwisie)
+2. 📋 Wdrożyć testy automatyczne
+3. 📋 Skonfigurować monitoring i alerty dla błędów 5xx
+4. 📋 Przeprowadzić testy wydajnościowe dla dużych ilości równoczesnych aktualizacji
+5. 📋 Przegląd bezpieczeństwa (rate limiting, dodatkowe walidacje)
+6. 📋 Zweryfikować poprawność działania triggerów bazodanowych na środowisku produkcyjnym
+
+### Zalecenia operacyjne
+
+1. **Monitoring wydajności:** Szczególnie dla zapytań UPDATE z różnymi warunkami WHERE
+2. **Logowanie metryk:** Częstotliwość aktualizacji, popularne fiszki do edycji
+3. **Audit trail:** Rozważyć logowanie historii zmian dla fiszek (poza zakresem MVP)
+4. **Cache invalidation:** Jeśli implementowany jest cache, zapewnić jego unieważnienie po aktualizacji
+
+### Metryki do monitorowania
+
+- Czas odpowiedzi endpointu
+- Stosunek żądań 200:400:404:500
+- Częstotliwość aktualizacji różnych pól (`question` vs `answer` vs oba)
+- Błędy RLS policy (wskazujące na problemy z uprawnieniami)
+- Wydajność triggerów bazodanowych (`updated_at`)
+
+## 🔒 Funkcje bezpieczeństwa
+
+### Implementowane zabezpieczenia
+
+1. **JWT Authentication:** ✅ Wymagane dla wszystkich żądań
+2. **RLS Policies:** ✅ Automatyczna filtracja według user_id i is_deleted
+3. **UUID Validation:** ✅ Zapobiega injection attacks
+4. **Input Sanitization:** ✅ Walidacja wszystkich parametrów wejściowych
+5. **Field Validation:** ✅ Ograniczenia długości zgodne z regułami biznesowymi
+6. **Error Handling:** ✅ Nie wyciekają szczegóły wewnętrzne systemu
+7. **Partial Updates:** ✅ Tylko określone pola mogą być aktualizowane
+
+### Testy bezpieczeństwa
+
+- ✅ Dostęp bez tokenu (401)
+- ✅ Dostęp z nieprawidłowym tokenem (401)
+- ✅ Próba aktualizacji fiszek innych użytkowników (404)
+- ✅ SQL injection poprzez UUID (zabezpieczone przez Zod)
+- ✅ Próba aktualizacji usuniętych fiszek (404)
+- ✅ Próba ustawienia dodatkowych pól (ignorowane przez Zod)
+- ✅ Próba obejścia walidacji długości (zabezpieczone przez CHECK constraints)
+
+## 📞 Kontakt w razie problemów
+
+W przypadku problemów z endpointem, sprawdź:
+
+1. **Logi middleware** (`src/middleware/index.ts`) - problemy z uwierzytelnianiem
+2. **Logi handlera API** (`src/pages/api/flashcards/[flashcardId].ts`) - walidacja i żądania
+3. **Logi serwisu** (`src/lib/services/flashcardService.ts`) - problemy z bazą danych
+4. **Dokumentację testów** (`.ai/update-flashcard-test-scenarios.md`) - przykłady użycia
+5. **RLS policies** w Supabase - uprawnienia dostępu
+6. **Triggery bazodanowe** - automatyczne aktualizacje `updated_at`
+
+### Częste problemy i rozwiązania
+
+| Problem | Możliwa przyczyna | Rozwiązanie |
+|---------|-------------------|-------------|
+| 401 Unauthorized | Brak/nieprawidłowy token | Sprawdź nagłówek Authorization |
+| 400 Bad Request (UUID) | Nieprawidłowy UUID | Sprawdź format flashcardId |
+| 400 Bad Request (Body) | Brak pól lub za krótkie | Sprawdź walidację question/answer |
+| 400 Bad Request (JSON) | Nieprawidłowy JSON | Sprawdź składnię JSON |
+| 404 Not Found | Fiszka nie istnieje/nie należy do użytkownika | Sprawdź ownership i is_deleted |
+| 500 Internal Server Error | Błąd bazy danych/triggera | Sprawdź logi serwisu i połączenie z Supabase |
+
+### Sprawdzenie stanu fiszki przed aktualizacją
+
+```bash
+# Pobierz fiszkę przed aktualizacją
+curl -X GET "http://localhost:3000/api/flashcards/{flashcardId}" \
+  -H "Authorization: Bearer {token}"
+
+# Wykonaj aktualizację
+curl -X PATCH "http://localhost:3000/api/flashcards/{flashcardId}" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Nowe pytanie"}'
+
+# Sprawdź czy updated_at się zmieniło
+curl -X GET "http://localhost:3000/api/flashcards/{flashcardId}" \
+  -H "Authorization: Bearer {token}"
+```

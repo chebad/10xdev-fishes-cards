@@ -2,6 +2,7 @@ import type { SupabaseClient } from "../../db/supabase.client";
 import type { Tables, TablesInsert } from "../../db/database.types";
 import type {
   CreateFlashcardCommand,
+  UpdateFlashcardCommand,
   GetFlashcardsQuery,
   FlashcardsListDto,
   FlashcardListItemDto,
@@ -249,6 +250,105 @@ export class FlashcardService {
         throw error;
       }
       throw new Error("An unexpected error occurred while fetching the flashcard.");
+    }
+  }
+
+  /**
+   * Updates an existing flashcard for a specific user.
+   * Only provided fields will be updated - the updated_at field is automatically managed by database trigger.
+   *
+   * @param userId - The ID of the user who should own the flashcard.
+   * @param flashcardId - The ID of the flashcard to update.
+   * @param data - The update data containing optional question and/or answer fields.
+   * @returns A promise that resolves to the updated flashcard data.
+   * @throws Error if the database operation fails, flashcard not found, or user doesn't have permission.
+   */
+  async updateFlashcard(
+    userId: string,
+    flashcardId: string,
+    data: UpdateFlashcardCommand
+  ): Promise<Tables<"flashcards">> {
+    try {
+      // Validate inputs
+      if (!userId || typeof userId !== "string" || userId.trim() === "") {
+        throw new Error("Invalid user ID provided");
+      }
+      if (!flashcardId || typeof flashcardId !== "string" || flashcardId.trim() === "") {
+        throw new Error("Invalid flashcard ID provided");
+      }
+      if (!data || typeof data !== "object") {
+        throw new Error("Invalid update data provided");
+      }
+
+      // Construct update object with only provided fields
+      const updateData: { question?: string; answer?: string } = {};
+      if (data.question !== undefined) {
+        updateData.question = data.question;
+      }
+      if (data.answer !== undefined) {
+        updateData.answer = data.answer;
+      }
+
+      // Ensure at least one field is being updated
+      if (Object.keys(updateData).length === 0) {
+        throw new Error("At least one field (question or answer) must be provided for update");
+      }
+
+      // Perform the update operation
+      // RLS policies automatically enforce user_id = auth.uid() AND is_deleted = FALSE
+      // The updated_at field will be automatically updated by the database trigger
+      const { data: updatedData, error } = await this.supabase
+        .from("flashcards")
+        .update(updateData)
+        .eq("id", flashcardId)
+        .eq("user_id", userId)
+        .eq("is_deleted", false)
+        .select()
+        .single();
+
+      if (error) {
+        // Handle specific Supabase errors
+        if (error.code === "PGRST116") {
+          // No rows returned (not found, access denied by RLS, or already deleted)
+          console.log(`Flashcard ${flashcardId} not found, access denied, or deleted for user ${userId}`);
+          throw new Error("Flashcard not found");
+        }
+
+        console.error("Error updating flashcard in Supabase:", error);
+        throw new Error(`Failed to update flashcard: ${error.message}`);
+      }
+
+      if (!updatedData) {
+        // This should not happen if there was no error, but handle it as a precaution
+        console.error("No data returned after flashcard update, despite no error.");
+        throw new Error("Flashcard not found");
+      }
+
+      console.log(`Successfully updated flashcard ${flashcardId} for user ${userId}`);
+      return updatedData as Tables<"flashcards">;
+    } catch (error) {
+      console.error("Error in updateFlashcard:", error);
+
+      // Handle specific Supabase errors
+      if (error && typeof error === "object" && "code" in error) {
+        const supabaseError = error as { code: string; message: string };
+        switch (supabaseError.code) {
+          case "PGRST116":
+            // No rows updated - flashcard not found or user doesn't have access
+            throw new Error("Flashcard not found");
+          case "PGRST301":
+            throw new Error("Database connection error");
+          case "23514": // CHECK constraint violation
+            throw new Error("Invalid data: check constraints violated");
+          default:
+            throw new Error(`Database error: ${supabaseError.message}`);
+        }
+      }
+
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error("An unexpected error occurred while updating the flashcard.");
     }
   }
 

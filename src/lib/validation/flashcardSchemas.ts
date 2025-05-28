@@ -31,3 +31,23 @@ export const GetFlashcardsQuerySchema = z.object({
   search: z.string().nullable().optional(),
   isAiGenerated: z.coerce.boolean().nullable().optional(),
 });
+
+/**
+ * Schema for validating path parameters for PATCH /api/flashcards/{flashcardId} endpoint
+ */
+export const updateFlashcardPathParamsSchema = z.object({
+  flashcardId: z.string().uuid({ message: "Invalid flashcard ID format." }),
+});
+
+/**
+ * Schema for validating request body for PATCH /api/flashcards/{flashcardId} endpoint
+ */
+export const updateFlashcardBodySchema = z
+  .object({
+    question: z.string().min(5, { message: "Question must be at least 5 characters long." }).optional(),
+    answer: z.string().min(3, { message: "Answer must be at least 3 characters long." }).optional(),
+  })
+  .refine((data) => data.question !== undefined || data.answer !== undefined, {
+    message: "At least one field (question or answer) must be provided for update.",
+    path: [], // Apply error to the whole object if refinement fails
+  });

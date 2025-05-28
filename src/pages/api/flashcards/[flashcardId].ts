@@ -2,7 +2,11 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 import { getFlashcardService } from "../../../lib/services/flashcardService";
 import type { FlashcardDto } from "../../../types";
-import { updateFlashcardPathParamsSchema, updateFlashcardBodySchema } from "../../../lib/validation/flashcardSchemas";
+import {
+  updateFlashcardPathParamsSchema,
+  updateFlashcardBodySchema,
+  deleteFlashcardPathParamsSchema,
+} from "../../../lib/validation/flashcardSchemas";
 import type { UpdateFlashcardCommand } from "../../../types";
 
 export const prerender = false;
@@ -62,6 +66,7 @@ export const GET: APIRoute = async ({ locals, params }) => {
 
   // 3. Walidacja formatu flashcardId
   const validationResult = FlashcardIdSchema.safeParse(flashcardId);
+
   if (!validationResult.success) {
     return new Response(
       JSON.stringify({
@@ -120,6 +125,7 @@ export const GET: APIRoute = async ({ locals, params }) => {
           headers: { "Content-Type": "application/json" },
         });
       }
+
       if (error.message.includes("Not found")) {
         return new Response(JSON.stringify({ error: "Flashcard not found." }), {
           status: 404,
@@ -201,6 +207,7 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
 
     // 3. Pobranie i walidacja ciała żądania
     let requestBody: unknown;
+
     try {
       requestBody = await request.json();
     } catch (error) {
@@ -268,15 +275,122 @@ export const PATCH: APIRoute = async ({ locals, params, request }) => {
           headers: { "Content-Type": "application/json" },
         });
       }
+
       if (error.message.includes("Database connection error")) {
         return new Response(JSON.stringify({ error: "Database connection error." }), {
           status: 500,
           headers: { "Content-Type": "application/json" },
         });
       }
+
       if (error.message.includes("Invalid data")) {
         return new Response(JSON.stringify({ error: "Invalid data provided." }), {
           status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Fallback error handling with proper logging
+    return new Response(JSON.stringify({ error: "Internal server error." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+};
+
+/**
+ * DELETE /api/flashcards/{flashcardId}
+ *
+ * Soft deletes a flashcard by its ID for the authenticated user.
+ * The user must be the owner of the flashcard and the flashcard must not be already deleted.
+ * The flashcard is marked as deleted (is_deleted = true, deleted_at = NOW()) but not physically removed.
+ *
+ * @param locals - Astro locals containing session and supabase client
+ * @param params - Route parameters containing flashcardId
+ *
+ * @returns Empty response with status code
+ *
+ * Response Codes:
+ * - 204: No Content - Flashcard soft deleted successfully
+ * - 400: Bad Request - Invalid flashcard ID format
+ * - 401: Unauthorized - User not authenticated
+ * - 403: Forbidden - User doesn't have permission to delete this flashcard
+ * - 404: Not Found - Flashcard not found or already deleted
+ * - 500: Internal Server Error - Unexpected server error
+ */
+export const DELETE: APIRoute = async ({ locals, params }) => {
+  // 1. Uwierzytelnianie i autoryzacja (z Astro.locals)
+  const { session, supabase } = locals;
+
+  if (!session?.user) {
+    return new Response(JSON.stringify({ error: "User not authenticated." }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const userId = session.user.id;
+
+  if (!supabase) {
+    console.error("Supabase client not found in locals. Check middleware setup.");
+    return new Response(JSON.stringify({ error: "Server configuration error." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    // 2. Walidacja flashcardId z parametrów ścieżki
+    const pathParamsValidation = deleteFlashcardPathParamsSchema.safeParse({
+      flashcardId: params.flashcardId,
+    });
+
+    if (!pathParamsValidation.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid flashcard ID.",
+          details: pathParamsValidation.error.flatten().fieldErrors,
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { flashcardId } = pathParamsValidation.data;
+
+    // 3. Wywołanie serwisu do miękkiego usunięcia fiszki
+    console.log("Soft deleting flashcard:", flashcardId, "for user:", userId); // Debug log
+
+    const flashcardService = getFlashcardService(supabase);
+    await flashcardService.softDeleteFlashcard(userId, flashcardId);
+
+    // 4. Zwrócenie odpowiedzi sukcesu (204 No Content)
+    return new Response(null, {
+      status: 204,
+    });
+  } catch (error: unknown) {
+    console.error("Error in DELETE /api/flashcards/[flashcardId]:", error);
+
+    // Handle specific service errors first
+    if (error instanceof Error) {
+      if (error.message.includes("Flashcard not found")) {
+        return new Response(null, {
+          status: 404,
+        });
+      }
+
+      if (error.message.includes("Access forbidden")) {
+        return new Response(null, {
+          status: 403,
+        });
+      }
+
+      if (error.message.includes("Database connection error")) {
+        return new Response(JSON.stringify({ error: "Database connection error." }), {
+          status: 500,
           headers: { "Content-Type": "application/json" },
         });
       }

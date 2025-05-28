@@ -41,6 +41,7 @@ export class FlashcardService {
     };
 
     const { data: sessionData, error: sessionError } = await this.supabase.auth.getSession();
+
     console.log("Session:", sessionData);
     console.log("Session error:", sessionError);
 
@@ -184,6 +185,7 @@ export class FlashcardService {
       if (error instanceof Error) {
         throw error;
       }
+
       throw new Error("An unexpected error occurred while fetching flashcards.");
     }
   }
@@ -202,6 +204,7 @@ export class FlashcardService {
       if (!flashcardId || typeof flashcardId !== "string" || flashcardId.trim() === "") {
         throw new Error("Invalid flashcard ID provided");
       }
+
       if (!userId || typeof userId !== "string" || userId.trim() === "") {
         throw new Error("Invalid user ID provided");
       }
@@ -249,6 +252,7 @@ export class FlashcardService {
       if (error instanceof Error) {
         throw error;
       }
+
       throw new Error("An unexpected error occurred while fetching the flashcard.");
     }
   }
@@ -273,18 +277,22 @@ export class FlashcardService {
       if (!userId || typeof userId !== "string" || userId.trim() === "") {
         throw new Error("Invalid user ID provided");
       }
+
       if (!flashcardId || typeof flashcardId !== "string" || flashcardId.trim() === "") {
         throw new Error("Invalid flashcard ID provided");
       }
+
       if (!data || typeof data !== "object") {
         throw new Error("Invalid update data provided");
       }
 
       // Construct update object with only provided fields
       const updateData: { question?: string; answer?: string } = {};
+
       if (data.question !== undefined) {
         updateData.question = data.question;
       }
+
       if (data.answer !== undefined) {
         updateData.answer = data.answer;
       }
@@ -348,6 +356,7 @@ export class FlashcardService {
       if (error instanceof Error) {
         throw error;
       }
+
       throw new Error("An unexpected error occurred while updating the flashcard.");
     }
   }
@@ -368,6 +377,106 @@ export class FlashcardService {
         return "question";
       default:
         return "created_at";
+    }
+  }
+
+  /**
+   * Soft deletes an existing flashcard for a specific user.
+   * Sets is_deleted = true and deleted_at = NOW() without physically removing the record.
+   *
+   * @param userId - The ID of the user who should own the flashcard.
+   * @param flashcardId - The ID of the flashcard to soft delete.
+   * @returns A promise that resolves successfully if the flashcard was soft deleted.
+   * @throws Error if the database operation fails, flashcard not found, or user doesn't have permission.
+   */
+  async softDeleteFlashcard(userId: string, flashcardId: string): Promise<void> {
+    try {
+      // Validate inputs
+      if (!userId || typeof userId !== "string" || userId.trim() === "") {
+        throw new Error("Invalid user ID provided");
+      }
+
+      if (!flashcardId || typeof flashcardId !== "string" || flashcardId.trim() === "") {
+        throw new Error("Invalid flashcard ID provided");
+      }
+
+      // First, check if the flashcard exists and belongs to the user
+      const { data: existingFlashcard, error: fetchError } = await this.supabase
+        .from("flashcards")
+        .select("user_id, is_deleted")
+        .eq("id", flashcardId)
+        .single();
+
+      if (fetchError) {
+        // Handle specific Supabase errors
+        if (fetchError.code === "PGRST116") {
+          // No rows returned (not found or access denied by RLS)
+          console.log(`Flashcard ${flashcardId} not found or access denied for user ${userId}`);
+          throw new Error("Flashcard not found");
+        }
+
+        console.error("Error fetching flashcard for soft delete:", fetchError);
+        throw new Error(`Failed to fetch flashcard: ${fetchError.message}`);
+      }
+
+      if (!existingFlashcard) {
+        console.log(`Flashcard ${flashcardId} not found for user ${userId}`);
+        throw new Error("Flashcard not found");
+      }
+
+      // Verify ownership (additional check, RLS should handle this too)
+      if (existingFlashcard.user_id !== userId) {
+        console.log(
+          `User ${userId} attempted to delete flashcard ${flashcardId} owned by ${existingFlashcard.user_id}`
+        );
+        throw new Error("Access forbidden");
+      }
+
+      // Check if already deleted (idempotent operation - return success)
+      if (existingFlashcard.is_deleted) {
+        console.log(`Flashcard ${flashcardId} is already soft deleted - operation is idempotent`);
+        return; // Success - already deleted
+      }
+
+      // Perform the soft delete operation
+      const { error: updateError } = await this.supabase
+        .from("flashcards")
+        .update({
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+        })
+        .eq("id", flashcardId)
+        .eq("user_id", userId)
+        .eq("is_deleted", false); // Only update if not already deleted
+
+      if (updateError) {
+        console.error("Error soft deleting flashcard in Supabase:", updateError);
+        throw new Error(`Failed to soft delete flashcard: ${updateError.message}`);
+      }
+
+      console.log(`Successfully soft deleted flashcard ${flashcardId} for user ${userId}`);
+    } catch (error) {
+      console.error("Error in softDeleteFlashcard:", error);
+
+      // Handle specific Supabase errors
+      if (error && typeof error === "object" && "code" in error) {
+        const supabaseError = error as { code: string; message: string };
+        switch (supabaseError.code) {
+          case "PGRST116":
+            // No rows found - flashcard not found or user doesn't have access
+            throw new Error("Flashcard not found");
+          case "PGRST301":
+            throw new Error("Database connection error");
+          default:
+            throw new Error(`Database error: ${supabaseError.message}`);
+        }
+      }
+
+      if (error instanceof Error) {
+        throw error;
+      }
+
+      throw new Error("An unexpected error occurred while soft deleting the flashcard.");
     }
   }
 }

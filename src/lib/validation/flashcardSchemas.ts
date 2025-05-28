@@ -51,3 +51,10 @@ export const updateFlashcardBodySchema = z
     message: "At least one field (question or answer) must be provided for update.",
     path: [], // Apply error to the whole object if refinement fails
   });
+
+/**
+ * Schema for validating path parameters for DELETE /api/flashcards/{flashcardId} endpoint
+ */
+export const deleteFlashcardPathParamsSchema = z.object({
+  flashcardId: z.string().uuid({ message: "Invalid flashcard ID format." }),
+});

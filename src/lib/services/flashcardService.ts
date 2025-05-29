@@ -390,6 +390,7 @@ export class FlashcardService {
    * @throws Error if the database operation fails, flashcard not found, or user doesn't have permission.
    */
   async softDeleteFlashcard(userId: string, flashcardId: string): Promise<void> {
+    console.log(`[DEBUG] softDeleteFlashcard called with userId: ${userId}, flashcardId: ${flashcardId}`);
     try {
       // Validate inputs
       if (!userId || typeof userId !== "string" || userId.trim() === "") {
@@ -400,58 +401,71 @@ export class FlashcardService {
         throw new Error("Invalid flashcard ID provided");
       }
 
-      // First, check if the flashcard exists and belongs to the user
-      const { data: existingFlashcard, error: fetchError } = await this.supabase
+      // Perform the soft delete operation directly
+      // RLS policies will automatically enforce user_id = auth.uid() AND is_deleted = FALSE for USING clause
+      // and auth.uid() = user_id for WITH CHECK clause
+      console.log(`[DEBUG] Before UPDATE operation - is_deleted: true, deleted_at: ${new Date().toISOString()}`);
+      console.log(`[DEBUG] Flashcard ${flashcardId}, user_id: ${userId}`);
+
+      const deleteDate: { is_deleted?: boolean; deleted_at?: string } = {
+        is_deleted: true,
+        deleted_at: new Date().toISOString(),
+      };
+      const { error: updateError, count } = await this.supabase
         .from("flashcards")
-        .select("user_id, is_deleted")
-        .eq("id", flashcardId)
-        .single();
-
-      if (fetchError) {
-        // Handle specific Supabase errors
-        if (fetchError.code === "PGRST116") {
-          // No rows returned (not found or access denied by RLS)
-          console.log(`Flashcard ${flashcardId} not found or access denied for user ${userId}`);
-          throw new Error("Flashcard not found");
-        }
-
-        console.error("Error fetching flashcard for soft delete:", fetchError);
-        throw new Error(`Failed to fetch flashcard: ${fetchError.message}`);
-      }
-
-      if (!existingFlashcard) {
-        console.log(`Flashcard ${flashcardId} not found for user ${userId}`);
-        throw new Error("Flashcard not found");
-      }
-
-      // Verify ownership (additional check, RLS should handle this too)
-      if (existingFlashcard.user_id !== userId) {
-        console.log(
-          `User ${userId} attempted to delete flashcard ${flashcardId} owned by ${existingFlashcard.user_id}`
-        );
-        throw new Error("Access forbidden");
-      }
-
-      // Check if already deleted (idempotent operation - return success)
-      if (existingFlashcard.is_deleted) {
-        console.log(`Flashcard ${flashcardId} is already soft deleted - operation is idempotent`);
-        return; // Success - already deleted
-      }
-
-      // Perform the soft delete operation
-      const { error: updateError } = await this.supabase
-        .from("flashcards")
-        .update({
-          is_deleted: true,
-          deleted_at: new Date().toISOString(),
-        })
+        .update(deleteDate)
         .eq("id", flashcardId)
         .eq("user_id", userId)
-        .eq("is_deleted", false); // Only update if not already deleted
+        .eq("is_deleted", false);
+
+      console.log(`[DEBUG] UPDATE result - count:`, count, `error:`, updateError);
 
       if (updateError) {
         console.error("Error soft deleting flashcard in Supabase:", updateError);
+
+        // Handle specific Supabase errors
+        if (updateError.code === "PGRST301") {
+          throw new Error("Database connection error");
+        }
+
         throw new Error(`Failed to soft delete flashcard: ${updateError.message}`);
+      }
+
+      // Check if any rows were updated
+      if (count === 0) {
+        console.log(`No rows updated when soft deleting flashcard ${flashcardId} for user ${userId}`);
+
+        // Check if the flashcard exists and belongs to the user
+        const { data: existingData, error: existingError } = await this.supabase
+          .from("flashcards")
+          .select("is_deleted, user_id")
+          .eq("id", flashcardId)
+          .single();
+
+        console.log(`[DEBUG] Check if flashcard exists: `, existingData, existingError);
+
+        if (existingError) {
+          if (existingError.code === "PGRST116") {
+            // No rows returned - flashcard not found
+            throw new Error("Flashcard not found");
+          }
+          throw new Error(`Failed to check flashcard status: ${existingError.message}`);
+        }
+
+        if (!existingData) {
+          throw new Error("Flashcard not found");
+        }
+
+        if (existingData.user_id !== userId) {
+          throw new Error("Access forbidden");
+        }
+
+        if (existingData.is_deleted) {
+          console.log(`Flashcard ${flashcardId} is already soft deleted - idempotent operation`);
+          return; // Success - already deleted (idempotent)
+        }
+
+        throw new Error("Failed to soft delete flashcard: no rows updated");
       }
 
       console.log(`Successfully soft deleted flashcard ${flashcardId} for user ${userId}`);

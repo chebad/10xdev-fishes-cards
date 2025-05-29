@@ -38,13 +38,7 @@ create policy flashcards_select_auth on flashcards
 -- policy for insert: allow users to insert flashcards for themselves
 create policy flashcards_insert_auth on flashcards
   for insert
-  with check (auth.uid() = user_id and is_deleted = false);
-
--- policy for update: allow users to update only their own non-deleted flashcards
-create policy flashcards_update_auth on flashcards
-  for update
-  using (auth.uid() = user_id and is_deleted = false)
-  with check (auth.uid() = user_id and is_deleted = false);
+  with check (auth.uid() = user_id);
 
 -- policy for delete: disallow direct delete to enforce soft deletion
 create policy flashcards_delete_deny on flashcards
@@ -58,6 +52,39 @@ create index idx_flashcards_user_id on flashcards(user_id);
 create index idx_flashcards_user_id_is_deleted on flashcards(user_id, is_deleted);
 create index idx_flashcards_created_at on flashcards(created_at);
 create index idx_flashcards_is_ai_generated on flashcards(is_ai_generated);
+
+-- ====================================
+-- Add index for updated_at sorting
+-- ====================================
+-- This index improves performance when sorting by updatedAt field
+CREATE INDEX IF NOT EXISTS idx_flashcards_updated_at ON flashcards(updated_at);
+
+-- ====================================
+-- Add composite index for user_id + updated_at
+-- ====================================
+-- This composite index optimizes queries that filter by user and sort by updated_at
+CREATE INDEX IF NOT EXISTS idx_flashcards_user_id_updated_at ON flashcards(user_id, updated_at);
+
+-- ====================================
+-- Add composite index for user_id + created_at
+-- ====================================
+-- This composite index optimizes queries that filter by user and sort by created_at
+CREATE INDEX IF NOT EXISTS idx_flashcards_user_id_created_at ON flashcards(user_id, created_at);
+
+-- ====================================
+-- Enable pg_trgm extension and add trigram index for text search
+-- ====================================
+-- Enable pg_trgm extension for efficient ILIKE searches
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Create trigram index for question field to optimize ILIKE searches
+CREATE INDEX IF NOT EXISTS idx_flashcards_question_trgm ON flashcards USING gin (question gin_trgm_ops);
+
+-- ====================================
+-- Add composite index for user_id + is_ai_generated
+-- ====================================
+-- This composite index optimizes queries that filter by user and AI generation status
+CREATE INDEX IF NOT EXISTS idx_flashcards_user_id_is_ai_generated ON flashcards(user_id, is_ai_generated);
 
 -- optionally, for text search on question using pg_trgm (requires pg_trgm extension)
 -- create extension if not exists pg_trgm;

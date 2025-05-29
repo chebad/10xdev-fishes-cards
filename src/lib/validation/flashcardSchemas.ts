@@ -58,3 +58,19 @@ export const updateFlashcardBodySchema = z
 export const deleteFlashcardPathParamsSchema = z.object({
   flashcardId: z.string().uuid({ message: "Invalid flashcard ID format." }),
 });
+
+/**
+ * Schema for validating request body for POST /api/flashcards/generate-ai endpoint
+ */
+export const GenerateAiFlashcardsSchema = z.object({
+  sourceText: z
+    .string({
+      required_error: "Source text is required.",
+    })
+    .min(1000, {
+      message: "Source text must be between 1000 and 10000 characters.",
+    })
+    .max(10000, {
+      message: "Source text must be between 1000 and 10000 characters.",
+    }),
+});

@@ -773,32 +773,12 @@ W przypadku problemów z endpointem, sprawdź:
 
 ### Częste problemy i rozwiązania
 
-| Problem | Możliwa przyczyna | Rozwiązanie |
-|---------|-------------------|-------------|
-| 401 Unauthorized | Brak/nieprawidłowy token | Sprawdź nagłówek Authorization |
-| 400 Bad Request (UUID) | Nieprawidłowy UUID | Sprawdź format flashcardId |
-| 400 Bad Request (Body) | Brak pól lub za krótkie | Sprawdź walidację question/answer |
-| 400 Bad Request (JSON) | Nieprawidłowy JSON | Sprawdź składnię JSON |
-| 404 Not Found | Fiszka nie istnieje/nie należy do użytkownika | Sprawdź ownership i is_deleted |
-| 500 Internal Server Error | Błąd bazy danych/triggera | Sprawdź logi serwisu i połączenie z Supabase |
-
-### Sprawdzenie stanu fiszki przed aktualizacją
-
-```bash
-# Pobierz fiszkę przed aktualizacją
-curl -X GET "http://localhost:3000/api/flashcards/{flashcardId}" \
-  -H "Authorization: Bearer {token}"
-
-# Wykonaj aktualizację
-curl -X PATCH "http://localhost:3000/api/flashcards/{flashcardId}" \
-  -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{"question": "Nowe pytanie"}'
-
-# Sprawdź czy updated_at się zmieniło
-curl -X GET "http://localhost:3000/api/flashcards/{flashcardId}" \
-  -H "Authorization: Bearer {token}"
-```
+| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                             |
+|---------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `401 Unauthorized`        | Brak/nieprawidłowy token JWT.                                                     | Sprawdź nagłówek `Authorization: Bearer {token}`. Upewnij się, że token jest aktualny i poprawny.                                         |
+| `400 Bad Request`         | Nieprawidłowy format `flashcardId` (nie jest UUID).                               | Upewnij się, że `flashcardId` w URL jest poprawnym UUID.                                                                                    |
+| `404 Not Found`           | Fiszka o podanym ID nie istnieje, należy do innego użytkownika, lub jest już usunięta. | Sprawdź poprawność `flashcardId`. Upewnij się, że fiszka istnieje i należy do zalogowanego użytkownika oraz nie została wcześniej usunięta. |
+| `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie.   | Sprawdź logi serwera (API i serwis) oraz logi Supabase. Zweryfikuj połączenie z bazą danych i poprawność polityk RLS.                     |
 
 ---
 
@@ -928,44 +908,215 @@ Endpoint `DELETE /api/flashcards/{flashcardId}` jest gotowy do użycia produkcyj
 
 - Czas odpowiedzi endpointu.
 - Stosunek żądań HTTP: 204 vs 4xx vs 5xx.
-- Liczba operacji miękkiego usuwania w jednostce czasu.
-- Liczba błędów 404 (może wskazywać na próby dostępu do nieistniejących zasobów lub problemy z UI).
+- Liczba błędów 503 (problemy z OpenAI API).
+- Średnia liczba sugestii generowanych na żądanie.
+- Wykorzystanie tokenów OpenAI.
 
 ## 🔒 Funkcje bezpieczeństwa
 
 ### Implementowane zabezpieczenia
 
-1. **JWT Authentication:** ✅ Wymagane dla wszystkich żądań; operacja DELETE jest dostępna tylko dla uwierzytelnionych użytkowników.
+1. **JWT Authentication:** ✅ Wymagane dla wszystkich żądań.
 2. **RLS Policies (Row Level Security):** ✅ Polityki Supabase zapewniają, że użytkownik może modyfikować (w tym miękko usuwać) tylko własne fiszki. Warunek `user_id = auth.uid()` jest kluczowy.
 3. **UUID Validation:** ✅ Parametr `flashcardId` jest walidowany jako UUID, co zapobiega prostym atakom typu path traversal czy injection przez ten parametr.
 4. **Input Sanitization (pośrednio):** ✅ Walidacja UUID i użycie parametryzowanych zapytań przez klienta Supabase chroni przed SQL injection.
-5. **Error Handling:** ✅ Endpoint zwraca generyczne komunikaty błędów (np. 404 zamiast szczegółów o błędzie RLS), aby nie ujawniać wewnętrznej logiki ani istnienia zasobów, do których użytkownik nie ma dostępu.
-6. **Ochrona przed wielokrotnym usuwaniem:** ✅ Logika serwisu sprawdza `is_deleted = false` przed wykonaniem UPDATE, co zapobiega niepotrzebnym operacjom na już usuniętych fiszkach.
-
-### Testy bezpieczeństwa (manualne)
-
-- ✅ Dostęp bez tokenu (oczekiwany: 401 Unauthorized).
-- ✅ Dostęp z nieprawidłowym/wygasłym tokenem (oczekiwany: 401 Unauthorized).
-- ✅ Próba usunięcia fiszki innego użytkownika (oczekiwany: 404 Not Found).
-- ✅ SQL injection poprzez `flashcardId` (zabezpieczone przez walidację UUID i ORM Supabase).
-- ✅ Próba usunięcia już usuniętej fiszki (oczekiwany: 404 Not Found lub podobny błąd wskazujący na niemożność wykonania operacji).
+5. **HTTPS:** ✅ Komunikacja z OpenAI API odbywa się przez HTTPS.
+6. **Obsługa Błędów:** ✅ Stosunkowo generyczne komunikaty błędów dla użytkownika, szczegółowe logi po stronie serwera.
 
 ## 📞 Kontakt w razie problemów
 
 W przypadku problemów z endpointem, sprawdź:
 
-1. **Logi middleware** (`src/middleware/index.ts`) - problemy z uwierzytelnianiem, inicjalizacją sesji.
-2. **Logi handlera API** (`src/pages/api/flashcards/[flashcardId].ts`) - błędy walidacji `flashcardId`, błędy zwracane przez serwis.
+1. **Logi middleware** (`src/middleware/index.ts`) - problemy z uwierzytelnianiem.
+2. **Logi handlera API** (`src/pages/api/flashcards/[flashcardId].ts`) - błędy walidacji, błędy zwracane przez serwis.
 3. **Logi serwisu** (`src/lib/services/flashcardService.ts`) - szczegóły operacji na bazie danych, błędy Supabase.
-4. **Dokumentację testów** (`.ai/delete-flashcard-test-scenarios.md`) - przykłady użycia i oczekiwane zachowania.
-5. **Polityki RLS** w panelu Supabase dla tabeli `flashcards` (szczególnie dla operacji UPDATE).
-6. **Stan fiszki w bazie danych** (wartości `user_id`, `is_deleted`, `deleted_at`).
+4. **Dokumentację testów** (`.ai/delete-flashcard-test-scenarios.md`) - przykłady użycia.
+5. **Panel OpenAI Platform** - status usługi, ewentualne błędy związane z kluczem API lub limitami.
+6. **Zmienną środowiskową `OPENAI_API_KEY`**.
 
 ### Częste problemy i rozwiązania
 
-| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                               |
+| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                             |
 |---------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `401 Unauthorized`        | Brak/nieprawidłowy token JWT.                                                     | Sprawdź nagłówek `Authorization: Bearer {token}`. Upewnij się, że token jest aktualny i poprawny.                                         |
+| `401 Unauthorized`        | Brak/nieprawidłowy token JWT.                                                     | Sprawdź nagłówek `Authorization: Bearer {token}`.                                                                                         |
 | `400 Bad Request`         | Nieprawidłowy format `flashcardId` (nie jest UUID).                               | Upewnij się, że `flashcardId` w URL jest poprawnym UUID.                                                                                    |
 | `404 Not Found`           | Fiszka o podanym ID nie istnieje, należy do innego użytkownika, lub jest już usunięta. | Sprawdź poprawność `flashcardId`. Upewnij się, że fiszka istnieje i należy do zalogowanego użytkownika oraz nie została wcześniej usunięta. |
 | `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie.   | Sprawdź logi serwera (API i serwis) oraz logi Supabase. Zweryfikuj połączenie z bazą danych i poprawność polityk RLS.                     |
+
+---
+
+# Status Implementacji API: POST /api/flashcards/generate-ai
+
+## Przegląd
+
+Endpoint `POST /api/flashcards/generate-ai` został pomyślnie zaimplementowany. Umożliwia on generowanie sugestii fiszek na podstawie dostarczonego tekstu źródłowego, wykorzystując OpenAI API (model GPT-3.5-turbo).
+
+## ✅ Zaimplementowane komponenty
+
+### 1. Typy DTO i Command Models
+
+- **Lokalizacja:** `src/types.ts`
+- **Status:** ✅ Kompletne
+- **Typy:**
+  - `GenerateAiFlashcardsCommand` - model żądania (`{ sourceText: string }`)
+  - `AiFlashcardSuggestionItem` - model pojedynczej sugestii fiszki (`{ suggestedQuestion: string, suggestedAnswer: string, aiModelUsed: string }`)
+  - `AiFlashcardSuggestionsDto` - model odpowiedzi (`{ suggestions: AiFlashcardSuggestionItem[], sourceTextEcho: string }`)
+
+### 2. Schemat walidacji Zod
+
+- **Lokalizacja:** `src/lib/validation/flashcardSchemas.ts`
+- **Status:** ✅ Kompletne
+- **Nazwa Schematu:** `GenerateAiFlashcardsSchema`
+- **Funkcjonalności:**
+  - Walidacja pola `sourceText`: wymagane, string, minimalna długość 1000 znaków, maksymalna długość 10000 znaków.
+
+### 3. Serwis logiki biznesowej (AI)
+
+- **Lokalizacja:** `src/lib/services/aiFlashcardGeneratorService.ts`
+- **Status:** ✅ Kompletne
+- **Funkcjonalności:**
+  - Metoda `generateFlashcards(sourceText: string, userId: string)`
+  - Integracja z OpenAI API (`https://api.openai.com/v1/chat/completions`)
+  - Użycie modelu `gpt-3.5-turbo`
+  - Konstrukcja inteligentnego promptu systemowego i użytkownika w języku polskim, aby generować 5-8 par pytań i odpowiedzi w formacie JSON.
+  - Obsługa zmiennej środowiskowej `OPENAI_API_KEY`.
+  - Ustawienie timeoutu na 30 sekund dla żądania do OpenAI.
+  - Parsowanie odpowiedzi JSON z OpenAI i mapowanie na `AiFlashcardSuggestionItem[]`.
+  - Szczegółowa obsługa błędów: błędy konfiguracji (brak klucza API), błędy API OpenAI (np. 401, 429, 500), timeouty, błędy parsowania JSON.
+  - Logowanie kluczowych etapów operacji i błędów z prefiksem `[AI]`.
+
+### 4. API Route Handler
+
+- **Lokalizacja:** `src/pages/api/flashcards/generate-ai.ts`
+- **Status:** ✅ Kompletne
+- **Funkcjonalności:**
+  - Handler dla metody `POST`.
+  - Uwierzytelnianie użytkownika za pomocą JWT tokenu (`Astro.locals.session`).
+  - Generowanie unikalnego `requestId` dla każdego żądania.
+  - Odczytanie i parsowanie ciała żądania JSON.
+  - Walidacja danych wejściowych (`sourceText`) za pomocą `GenerateAiFlashcardsSchema`.
+  - Wywołanie serwisu `aiFlashcardGeneratorService.generateFlashcards`.
+  - Zwracanie odpowiedzi `AiFlashcardSuggestionsDto` (status 200 OK).
+  - Kompleksowe mapowanie błędów na kody statusu HTTP:
+    - `400 Bad Request` dla błędów walidacji lub nieprawidłowego JSON.
+    - `401 Unauthorized` jeśli użytkownik nie jest uwierzytelniony.
+    - `500 Internal Server Error` dla błędów konfiguracji serwisu AI lub nieoczekiwanych błędów parsowania odpowiedzi AI.
+    - `503 Service Unavailable` dla błędów pochodzących z OpenAI API (timeout, błędy serwera AI, błędy autoryzacji klucza API).
+  - Szczegółowe logowanie żądań, walidacji, czasów wykonania i błędów z prefiksem `[API:requestId]`.
+
+### 5. Middleware uwierzytelniania
+
+- **Lokalizacja:** `src/middleware/index.ts`
+- **Status:** ✅ Kompletne (współdzielone z innymi endpointami)
+- **Funkcjonalności:** Zapewnia `session` (w tym `userId`) i klienta `supabase` w `context.locals`.
+
+## 📋 Zgodność z planem API
+
+### Request Body
+
+```json
+{
+  "sourceText": "string (min 1000, max 10000 chars)" // ✅ Zaimplementowane
+}
+```
+
+### Response Body (200 OK)
+
+```json
+{
+  "suggestions": [
+    {
+      "suggestedQuestion": "string",
+      "suggestedAnswer": "string",
+      "aiModelUsed": "string (np. gpt-3.5-turbo)"
+    }
+    // ... (oczekiwane 5-8 sugestii)
+  ],
+  "sourceTextEcho": "string (pierwsze 100 znaków tekstu źródłowego)" // ✅ Zaimplementowane
+}
+```
+
+### Kody statusu HTTP
+
+- `200 OK`: ✅ Zaimplementowane
+- `400 Bad Request`: ✅ Zaimplementowane (walidacja `sourceText`, nieprawidłowy JSON)
+- `401 Unauthorized`: ✅ Zaimplementowane
+- `500 Internal Server Error`: ✅ Zaimplementowane (błędy konfiguracji AI, błędy parsowania odpowiedzi AI)
+- `503 Service Unavailable`: ✅ Zaimplementowane (błędy OpenAI API, timeouty)
+
+## 🔧 Zmiany i ulepszenia względem pierwotnego planu
+
+- **Zmiana dostawcy AI:** Przejście z OpenRouter na bezpośrednią integrację z OpenAI Platform (`gpt-3.5-turbo`).
+- **Logowanie:** Wprowadzono szczegółowe logowanie z `requestId` w endpoint API oraz dedykowane logi dla serwisu AI, w tym pomiar czasu odpowiedzi od OpenAI.
+- **Obsługa błędów:** Rozbudowano mapowanie błędów z serwisu AI na odpowiednie kody HTTP w endpointcie, w tym rozróżnienie między błędami konfiguracyjnymi (500) a błędami usługi zewnętrznej (503).
+- **Prompt Engineering:** Dopracowano prompt systemowy i użytkownika dla OpenAI, aby zapewnić lepszą jakość generowanych fiszek i spójny format JSON.
+
+## 📋 Status testowania
+
+- **Testy manualne:** ✅ Przeprowadzone z cURL - wszystkie kluczowe scenariusze (sukces, walidacja, autoryzacja, błędy AI) działają poprawnie.
+- **Dokumentacja testów:** ✅ Utworzona (`.ai/generate-flashcards-ai-test-scenarios.md`)
+- **Testy automatyczne:** 📋 Do implementacji.
+
+## 📚 Utworzona dokumentacja
+
+1. **Plan implementacji:** `.ai/generate-flashcards-ai-implementation-plan.md` (zaktualizowany o OpenAI)
+2. **Dokumentacja testów:** `.ai/generate-flashcards-ai-test-scenarios.md`
+3. **Status implementacji:** Zaktualizowano ten dokument (`.ai/api-implementation-status.md`)
+
+## 🚀 Gotowość do produkcji
+
+Endpoint `POST /api/flashcards/generate-ai` jest gotowy do użycia produkcyjnego z następującymi zaleceniami:
+
+### Przed wdrożeniem produkcyjnym
+
+1. 📋 Upewnić się, że zmienna środowiskowa `OPENAI_API_KEY` jest bezpiecznie zarządzana i dostępna w środowisku produkcyjnym.
+2. 📋 Usunąć lub odpowiednio skonfigurować logi debugowania (`console.log`) z kodu produkcyjnego, zachowując logi błędów i kluczowych operacji.
+3. 📋 Wdrożyć testy automatyczne (jednostkowe dla serwisu AI, integracyjne dla endpointu).
+4. 📋 Skonfigurować monitoring i alerty dla błędów 5xx (szczególnie 503 wskazujących na problemy z OpenAI API).
+5. 📋 Rozważyć implementację rate limitingu po stronie API, aby chronić przed nadużyciami i kontrolować koszty OpenAI.
+
+### Zalecenia operacyjne
+
+1. **Monitoring kosztów OpenAI:** Regularnie monitorować zużycie tokenów i koszty generowane przez OpenAI API.
+2. **Monitoring wydajności OpenAI API:** Śledzić czasy odpowiedzi od OpenAI, aby wykrywać ewentualne spowolnienia.
+3. **Jakość sugestii:** Okresowo przeglądać jakość generowanych fiszek i w razie potrzeby dostosowywać prompt.
+4. **Polityka prywatności:** Upewnić się, że użytkownicy są świadomi, że ich dane (sourceText) są przesyłane do zewnętrznej usługi AI.
+
+### Metryki do monitorowania
+
+- Czas odpowiedzi endpointu (całkowity i czas odpowiedzi od OpenAI).
+- Stosunek żądań HTTP: 200 vs 4xx vs 5xx.
+- Liczba błędów 503 (problemy z OpenAI API).
+- Średnia liczba sugestii generowanych na żądanie.
+- Wykorzystanie tokenów OpenAI.
+
+## 🔒 Funkcje bezpieczeństwa
+
+### Implementowane zabezpieczenia
+
+1. **JWT Authentication:** ✅ Wymagane dla wszystkich żądań.
+2. **Walidacja Danych Wejściowych:** ✅ `sourceText` jest walidowany pod kątem długości.
+3. **Zarządzanie Kluczami API:** ✅ Klucz `OPENAI_API_KEY` jest przechowywany jako zmienna środowiskowa i nie jest eksponowany.
+4. **HTTPS:** ✅ Komunikacja z OpenAI API odbywa się przez HTTPS.
+5. **Obsługa Błędów:** ✅ Stosunkowo generyczne komunikaty błędów dla użytkownika, szczegółowe logi po stronie serwera.
+
+## 📞 Kontakt w razie problemów
+
+W przypadku problemów z endpointem, sprawdź:
+
+1. **Logi middleware** (`src/middleware/index.ts`) - problemy z uwierzytelnianiem.
+2. **Logi handlera API** (`src/pages/api/flashcards/generate-ai.ts`) - błędy walidacji, błędy zwracane przez serwis.
+3. **Logi serwisu** (`src/lib/services/aiFlashcardGeneratorService.ts`) - szczegóły interakcji z OpenAI API, błędy OpenAI.
+4. **Dokumentację testów** (`.ai/generate-flashcards-ai-test-scenarios.md`) - przykłady użycia.
+5. **Panel OpenAI Platform** - status usługi, ewentualne błędy związane z kluczem API lub limitami.
+6. **Zmienną środowiskową `OPENAI_API_KEY`**.
+
+### Częste problemy i rozwiązania
+
+| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                             |
+|---------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `401 Unauthorized`        | Brak/nieprawidłowy token JWT.                                                     | Sprawdź nagłówek `Authorization: Bearer {token}`.                                                                                         |
+| `400 Bad Request`         | Nieprawidłowa długość `sourceText` lub błąd w JSON.                               | Sprawdź ciało żądania i długość `sourceText` (1000-10000 znaków).                                                                          |
+| `500 Internal Server Error` (`AI service configuration error.`) | Brak skonfigurowanej zmiennej `OPENAI_API_KEY`. | Upewnij się, że zmienna środowiskowa `OPENAI_API_KEY` jest ustawiona poprawnie na serwerze.                                                  |
+| `503 Service Unavailable`   | Problem z OpenAI API (np. nieprawidłowy klucz, limity, chwilowa niedostępność, timeout). | Sprawdź klucz API, status usługi OpenAI. Spróbuj ponownie później. Zwiększ timeout jeśli to konieczne i możliwe.                               |
+| `500 Internal Server Error` (`An unexpected error occurred...`) | Nieoczekiwany format odpowiedzi z OpenAI lub błąd parsowania. | Sprawdź logi serwisu AI (`aiFlashcardGeneratorService.ts`) pod kątem problemów z odpowiedzią od OpenAI.                                   |

@@ -7,7 +7,7 @@
 **Metoda HTTP:** `POST`
 
 **Opis:**
-Ten punkt końcowy przyjmuje tekst źródłowy od uwierzytelnionego użytkownika i wykorzystuje zewnętrzny model sztucznej inteligencji (za pośrednictwem OpenRouter) do wygenerowania listy potencjalnych pytań i odpowiedzi do fiszek. Wygenerowane sugestie są zwracane użytkownikowi i nie są automatycznie zapisywane w bazie danych. Użytkownik decyduje, które sugestie chce przekształcić w rzeczywiste fiszki (np. poprzez oddzielny endpoint `POST /api/flashcards`).
+Ten punkt końcowy przyjmuje tekst źródłowy od uwierzytelnionego użytkownika i wykorzystuje OpenAI Platform (GPT-3.5-turbo lub GPT-4) do wygenerowania listy potencjalnych pytań i odpowiedzi do fiszek. Wygenerowane sugestie są zwracane użytkownikowi i nie są automatycznie zapisywane w bazie danych. Użytkownik decyduje, które sugestie chce przekształcić w rzeczywiste fiszki (np. poprzez oddzielny endpoint `POST /api/flashcards`).
 
 ## 2. Szczegóły Żądania
 
@@ -116,12 +116,12 @@ Do implementacji tego punktu końcowego wykorzystane zostaną następujące typy
 4. Dane wejściowe (`sourceText`) są walidowane przy użyciu schematu Zod (długość 1000-10000 znaków). Jeśli walidacja zawiedzie, zwracany jest błąd `400 Bad Request`.
 5. Handler endpointu wywołuje metodę serwisu `AiFlashcardGeneratorService` (np. `generateSuggestions(sourceText: string)`), przekazując zwalidowany `sourceText`.
 6. `AiFlashcardGeneratorService` (`src/lib/services/aiFlashcardGeneratorService.ts`):
-    a.  Pobiera klucz API dla OpenRouter ze zmiennych środowiskowych (`import.meta.env.OPENROUTER_API_KEY`).
-    b.  Konstruuje odpowiednie żądanie do API OpenRouter (lub innego skonfigurowanego modelu AI), zawierające `sourceText` i parametry modelu.
-    c.  Wysyła żądanie do OpenRouter.
-    d.  Odbiera odpowiedź od OpenRouter.
-    e.  Obsługuje potencjalne błędy komunikacji z OpenRouter (np. timeout, błędy API OpenRouter, przekroczone limity). Jeśli wystąpi błąd wskazujący na niedostępność usługi, serwis powinien zwrócić błąd, który endpoint przetłumaczy na `503 Service Unavailable`. Inne błędy mogą skutkować `500 Internal Server Error`.
-    f.  Przetwarza pomyślną odpowiedź z OpenRouter, mapując ją na strukturę `AiFlashcardSuggestionItem[]` (wypełniając `suggestedQuestion`, `suggestedAnswer`, `aiModelUsed`).
+    a.  Pobiera klucz API dla OpenAI ze zmiennych środowiskowych (`import.meta.env.OPENAI_API_KEY`).
+    b.  Konstruuje odpowiednie żądanie do OpenAI API, zawierające `sourceText` i parametry modelu.
+    c.  Wysyła żądanie do OpenAI.
+    d.  Odbiera odpowiedź od OpenAI.
+    e.  Obsługuje potencjalne błędy komunikacji z OpenAI (np. timeout, błędy API OpenAI, przekroczone limity). Jeśli wystąpi błąd wskazujący na niedostępność usługi, serwis powinien zwrócić błąd, który endpoint przetłumaczy na `503 Service Unavailable`. Inne błędy mogą skutkować `500 Internal Server Error`.
+    f.  Przetwarza pomyślną odpowiedź z OpenAI, mapując ją na strukturę `AiFlashcardSuggestionItem[]` (wypełniając `suggestedQuestion`, `suggestedAnswer`, `aiModelUsed`).
     g.  Zwraca listę sugestii lub zgłasza błąd do handlera endpointu.
 7. Handler endpointu otrzymuje listę sugestii (lub błąd) od serwisu.
 8. Jeśli operacja w serwisie zakończyła się sukcesem:
@@ -143,7 +143,7 @@ Do implementacji tego punktu końcowego wykorzystane zostaną następujące typy
   - `sourceText` musi być rygorystycznie walidowany (typ, wymagana obecność, minimalna i maksymalna długość) za pomocą Zod, aby zapobiec błędom przetwarzania i potencjalnym problemom z usługą AI (np. zbyt duże żądania generujące koszty).
   - Maksymalna długość chroni również przed atakami DoS poprzez wysyłanie nadmiernie dużych danych.
 - **Zarządzanie Kluczami API:**
-  - Klucz API do usługi OpenRouter (lub innej usługi AI) musi być przechowywany jako zmienna środowiskowa (np. `OPENROUTER_API_KEY` w pliku `.env`) i dostępny tylko po stronie serwera (`import.meta.env`).
+  - Klucz API do usługi OpenAI musi być przechowywany jako zmienna środowiskowa (np. `OPENAI_API_KEY` w pliku `.env`) i dostępny tylko po stronie serwera (`import.meta.env`).
   - Klucz API nie może być ujawniony w kodzie frontendowym ani w odpowiedziach API.
 - **Ochrona przed Nadużyciami (Rate Limiting):**
   - (Potencjalne przyszłe ulepszenie) Rozważyć zaimplementowanie mechanizmu ograniczania liczby żądań (rate limiting) na poziomie użytkownika lub IP, aby zapobiec nadużyciom i kontrolować koszty związane z API AI. W ramach MVP, nie jest to wymagane, ale należy o tym pamiętać.
@@ -155,7 +155,7 @@ Do implementacji tego punktu końcowego wykorzystane zostaną następujące typy
 ## 7. Rozważania dotyczące Wydajności
 
 - **Czas Odpowiedzi Zewnętrznego API:**
-  - Głównym czynnikiem wpływającym na wydajność będzie czas odpowiedzi od usługi AI (OpenRouter). Może on być zmienny w zależności od obciążenia usługi AI i złożoności generowania.
+  - Głównym czynnikiem wpływającym na wydajność będzie czas odpowiedzi od usługi AI (OpenAI). Może on być zmienny w zależności od obciążenia usługi AI i złożoności generowania.
   - Należy rozważyć ustawienie rozsądnego timeoutu dla żądań do usługi AI, aby uniknąć zbyt długiego oczekiwania przez użytkownika.
 - **Rozmiar Przesyłanych Danych:**
   - Ograniczenie długości `sourceText` (1000-10000 znaków) pomaga kontrolować rozmiar danych przesyłanych do AI i czas przetwarzania.
@@ -167,7 +167,7 @@ Do implementacji tego punktu końcowego wykorzystane zostaną następujące typy
 ## 8. Etapy Wdrożenia
 
 1. **Konfiguracja Środowiska:**
-    - Upewnić się, że zmienna środowiskowa `OPENROUTER_API_KEY` (lub odpowiednik dla wybranej usługi AI) jest zdefiniowana w pliku `.env` i dostępna dla aplikacji Astro (`import.meta.env.OPENROUTER_API_KEY`).
+    - Upewnić się, że zmienna środowiskowa `OPENAI_API_KEY` (lub odpowiednik dla wybranej usługi AI) jest zdefiniowana w pliku `.env` i dostępna dla aplikacji Astro (`import.meta.env.OPENAI_API_KEY`).
 
 2. **Definicja Typów i Schematu Walidacji:**
     - Sprawdzić istniejące typy `GenerateAiFlashcardsCommand`, `AiFlashcardSuggestionItem`, `AiFlashcardSuggestionsDto` w `src/types.ts`.
@@ -177,18 +177,13 @@ Do implementacji tego punktu końcowego wykorzystane zostaną następujące typy
     - Utworzyć nowy plik: `src/lib/services/aiFlashcardGeneratorService.ts`.
     - Zaimplementować funkcję, np. `generateFlashcardSuggestions(sourceText: string): Promise<AiFlashcardSuggestionItem[]>`.
     - Wewnątrz funkcji:
-        - Pobrać klucz API OpenRouter ze zmiennych środowiskowych.
-        - Skonstruować i wysłać żądanie `POST` do API OpenRouter (np. używając `fetch`):
-            - Adres URL: `https://openrouter.ai/api/v1/chat/completions` (lub inny odpowiedni dla wybranego modelu).
-            - Nagłówki: `Authorization: Bearer ${OPENROUTER_API_KEY}`, `Content-Type: application/json`.
-            - Ciało żądania: Odpowiednio sformatowane dla API OpenRouter, zawierające `sourceText` jako część promptu (np. w systemie lub komunikacie użytkownika, prosząc o wygenerowanie pytań i odpowiedzi).
-            - Określić model do użycia (np. `model: "anthropic/claude-3-opus"`).
-        - Obsłużyć odpowiedź:
-            - Sprawdzić status odpowiedzi. Jeśli błąd, rzucić odpowiedni wyjątek (np. `Error('AI service request failed')` lub bardziej specyficzny).
-            - Sparować JSON odpowiedzi.
-            - Wyekstrahować wygenerowane sugestie pytań i odpowiedzi oraz nazwę użytego modelu.
-            - Zmapować dane do tablicy obiektów `AiFlashcardSuggestionItem`.
-        - Implementować obsługę błędów (np. timeouty, błędy sieciowe, błędy API AI).
+        - Pobrać klucz API OpenAI ze zmiennych środowiskowych.
+        - Skonstruować i wysłać żądanie do OpenAI API, zawierające `sourceText` i parametry modelu.
+        - Wysyła żądanie do OpenAI.
+        - Odbiera odpowiedź od OpenAI.
+        - Obsługuje potencjalne błędy komunikacji z OpenAI (np. timeout, błędy API OpenAI, przekroczone limity). Jeśli wystąpi błąd wskazujący na niedostępność usługi, serwis powinien zwrócić błąd, który endpoint przetłumaczy na `503 Service Unavailable`. Inne błędy mogą skutkować `500 Internal Server Error`.
+        - Przetwarza pomyślną odpowiedź z OpenAI, mapując ją na strukturę `AiFlashcardSuggestionItem[]` (wypełniając `suggestedQuestion`, `suggestedAnswer`, `aiModelUsed`).
+        - Zwraca listę sugestii lub zgłasza błąd do handlera endpointu.
     - Eksportować funkcję serwisu.
 
 4. **Implementacja Punktu Końcowego API w Astro:**
@@ -218,7 +213,7 @@ Do implementacji tego punktu końcowego wykorzystane zostaną następujące typy
 
 6. **Testowanie:**
     - **Testy jednostkowe (opcjonalne dla MVP, ale zalecane):**
-        - Dla serwisu `AiFlashcardGeneratorService` (mockując `fetch` do OpenRouter).
+        - Dla serwisu `AiFlashcardGeneratorService` (mockując `fetch` do OpenAI).
         - Dla logiki walidacji w punkcie końcowym.
     - **Testy integracyjne/manualne:**
         - Sprawdzić poprawność działania dla prawidłowych danych wejściowych (`200 OK`).

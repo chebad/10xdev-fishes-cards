@@ -21,7 +21,7 @@ This repository contains the foundational codebase for the `10xdevs-fishes-cards
 - **Backend:**
   - Supabase (PostgreSQL database, SDKs, Authentication)
 - **AI Integration:**
-  - OpenRouter.ai (access to various LLMs like OpenAI, Anthropic, Google)
+  - OpenAI Platform (GPT-3.5-turbo, GPT-4)
 - **CI/CD & Hosting:**
   - GitHub Actions
   - DigitalOcean (via Docker image)
@@ -49,13 +49,13 @@ To get a local copy up and running, follow these simple steps.
     ```
 
 2. **Set up environment variables:**
-    Create a `.env` file in the root of the project. This file will contain necessary API keys and configuration for services like Supabase and OpenRouter.ai. You might need to refer to an `.env.example` file if available, or set up the following (actual variable names might differ):
+    Create a `.env` file in the root of the project. This file will contain necessary API keys and configuration for services like Supabase and OpenAI. You might need to refer to an `.env.example` file if available, or set up the following (actual variable names might differ):
 
     ```env
     # Example variables (replace with actual ones needed for the project)
     PUBLIC_SUPABASE_URL=your_supabase_url
     PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-    OPENROUTER_API_KEY=your_openrouter_api_key
+    OPENAI_API_KEY=your_openai_api_key_here
     ```
 
 3. **Run the development server:**
@@ -106,3 +106,33 @@ The project is currently in its early stages of development (Version `0.0.1`). K
 ## 8. License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
+
+## 9. Additional Information
+
+### OpenAI API
+
+#### Generowanie fiszek przez AI
+
+Aplikacja używa OpenAI API do automatycznego generowania fiszek na podstawie tekstu źródłowego:
+
+- **Endpoint:** `POST /api/flashcards/generate-ai`
+- **Model:** GPT-3.5-turbo (ekonomiczny) lub GPT-4 (zaawansowany)
+- **Wymagania:** Tekst źródłowy 1000-10000 znaków
+- **Wynik:** 5-8 sugestii fiszek w języku polskim
+
+#### Gdzie uzyskać klucze API:
+
+1. **OpenAI API Key:**
+   - Zarejestruj się na [OpenAI Platform](https://platform.openai.com/)
+   - Przejdź do [API Keys](https://platform.openai.com/api-keys)
+   - Utwórz nowy klucz API
+   - Skopiuj klucz i dodaj do zmiennej `OPENAI_API_KEY`
+
+2. **Supabase:**
+   - Utwórz nowy projekt na [Supabase](https://supabase.com/)
+   - W ustawieniach projektu znajdź URL i anon key
+   - Dodaj je do odpowiednich zmiennych środowiskowych
+
+### API Documentation
+
+Szczegółowa dokumentacja API dostępna w katalogu `.ai/`.

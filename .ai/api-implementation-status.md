@@ -1120,3 +1120,178 @@ W przypadku problemów z endpointem, sprawdź:
 | `500 Internal Server Error` (`AI service configuration error.`) | Brak skonfigurowanej zmiennej `OPENAI_API_KEY`. | Upewnij się, że zmienna środowiskowa `OPENAI_API_KEY` jest ustawiona poprawnie na serwerze.                                                  |
 | `503 Service Unavailable`   | Problem z OpenAI API (np. nieprawidłowy klucz, limity, chwilowa niedostępność, timeout). | Sprawdź klucz API, status usługi OpenAI. Spróbuj ponownie później. Zwiększ timeout jeśli to konieczne i możliwe.                               |
 | `500 Internal Server Error` (`An unexpected error occurred...`) | Nieoczekiwany format odpowiedzi z OpenAI lub błąd parsowania. | Sprawdź logi serwisu AI (`aiFlashcardGeneratorService.ts`) pod kątem problemów z odpowiedzią od OpenAI.                                   |
+
+---
+
+# Status Implementacji API: POST /api/contact-submissions
+
+## Przegląd
+
+Endpoint `POST /api/contact-submissions` został pomyślnie zaimplementowany. Umożliwia on użytkownikom (zarówno anonimowym, jak i uwierzytelnionym) przesyłanie zgłoszeń przez formularz kontaktowy. Zgłoszenia są zapisywane w bazie danych `contact_form_submissions`.
+
+## ✅ Zaimplementowane komponenty
+
+### 1. Typy DTO i Command Models
+
+- **Lokalizacja:** `src/types.ts`
+- **Status:** ✅ Kompletne
+- **Typy:**
+  - `CreateContactSubmissionCommand` - model żądania (`{ emailAddress: string, subject?: string, messageBody: string }`)
+  - `ContactSubmissionDto` - model odpowiedzi (zawiera `id`, `userId`, `emailAddress`, `subject`, `messageBody`, `submittedAt`)
+
+### 2. Schemat walidacji Zod
+
+- **Lokalizacja:** `src/lib/validation/contactSubmissionSchemas.ts`
+- **Status:** ✅ Kompletne
+- **Nazwa Schematu:** `CreateContactSubmissionSchema`
+- **Funkcjonalności:**
+  - Walidacja pola `emailAddress`: wymagane, poprawny format email, maksymalna długość 255 znaków.
+  - Walidacja pola `subject`: opcjonalne, maksymalna długość 255 znaków.
+  - Walidacja pola `messageBody`: wymagane, niepuste, maksymalna długość 5000 znaków, trimowanie białych znaków.
+
+### 3. Serwis logiki biznesowej
+
+- **Lokalizacja:** `src/lib/services/contactSubmissionsService.ts`
+- **Status:** ✅ Kompletne
+- **Metoda:** `createSubmission(command: CreateContactSubmissionCommand, userId: string | null)`
+- **Funkcjonalności:**
+  - Walidacja parametrów wejściowych (wymagane `emailAddress` i `messageBody`).
+  - Przygotowanie danych do zapisu w tabeli `contact_form_submissions`.
+  - Zapis `userId` dla uwierzytelnionych użytkowników lub `null` dla anonimowych.
+  - Automatyczne ustawienie `submitted_at` na aktualny czas.
+  - Szczegółowa obsługa błędów Supabase (np. `23505` - duplikat, `23514` - naruszenie constraintów, `42501` - brak uprawnień, naruszenie RLS).
+  - Mapowanie wyniku z bazy na `ContactSubmissionDto`.
+  - Logowanie kluczowych etapów operacji i błędów.
+
+### 4. API Route Handler
+
+- **Lokalizacja:** `src/pages/api/contact-submissions.ts`
+- **Status:** ✅ Kompletne
+- **Funkcjonalności:**
+  - Handler dla metody `POST`.
+  - Generowanie unikalnego `requestId` dla każdego żądania do celów logowania.
+  - Pobieranie `userId` z `Astro.locals.session` (dla uwierzytelnionych) lub ustawienie na `null` (dla anonimowych).
+  - Sprawdzenie dostępności klienta `supabase` z `Astro.locals`.
+  - Odczytanie i parsowanie ciała żądania JSON.
+  - Walidacja danych wejściowych za pomocą `CreateContactSubmissionSchema`.
+  - Wywołanie serwisu `contactSubmissionsService.createSubmission`.
+  - Zwracanie odpowiedzi `ContactSubmissionDto` ze statusem `201 Created` w przypadku sukcesu.
+  - Kompleksowe mapowanie błędów na kody statusu HTTP:
+    - `400 Bad Request` dla błędów walidacji lub nieprawidłowego JSON.
+    - `403 Forbidden` dla naruszeń polityk RLS.
+    - `500 Internal Server Error` dla błędów konfiguracji serwera, błędów połączenia z bazą danych lub nieoczekiwanych błędów serwisu.
+  - Szczegółowe logowanie żądań, walidacji, błędów i wyników operacji z `requestId`.
+
+### 5. Middleware uwierzytelniania
+
+- **Lokalizacja:** `src/middleware/index.ts`
+- **Status:** ✅ Kompletne (współdzielone z innymi endpointami)
+- **Funkcjonalności:** Zapewnia `session` (w tym `userId`) i klienta `supabase` w `context.locals`.
+
+## 📋 Zgodność z planem API
+
+### Request Body
+
+```json
+{
+    "emailAddress": "string (valid email, required)",
+    "subject": "string (optional)",
+    "messageBody": "string (required)"
+}
+```
+- **Status:** ✅ Zaimplementowane
+
+### Response Body (201 Created)
+
+```json
+{
+    "id": "uuid",
+    "userId": "uuid | null",
+    "emailAddress": "string",
+    "subject": "string | null",
+    "messageBody": "string",
+    "submittedAt": "timestamp"
+}
+```
+- **Status:** ✅ Zaimplementowane
+
+### Kody statusu HTTP
+
+- `201 Created`: ✅ Zaimplementowane
+- `400 Bad Request`: ✅ Zaimplementowane (walidacja Zod, nieprawidłowy JSON, naruszenia constraintów DB mapowane z serwisu)
+- `403 Forbidden`: ✅ Zaimplementowane (dla naruszeń RLS)
+- `500 Internal Server Error`: ✅ Zaimplementowane (błędy konfiguracji, błędy połączenia DB, nieoczekiwane błędy serwisu)
+
+## 🔧 Zmiany i ulepszenia względem pierwotnego planu
+
+- **Logowanie:** Wprowadzono szczegółowe logowanie z `requestId` w endpoint API oraz dedykowane logi dla serwisu, co znacząco ułatwia debugowanie.
+- **Obsługa błędów:** Rozbudowano mapowanie błędów z serwisu na odpowiednie kody HTTP w endpointcie, w tym specyficzne kody błędów Supabase i naruszenia RLS.
+- **Walidacja:** Dodano limity długości dla pól w schemacie Zod, zgodnie z definicjami tabeli w bazie danych (`.ai/db-plan.md`).
+
+## 📋 Status testowania
+
+- **Testy manualne:** ✅ Przeprowadzone z cURL - wszystkie kluczowe scenariusze (sukces dla anonimowego i zalogowanego, walidacja pól, błędy JSON, limity długości) działają poprawnie.
+- **Dokumentacja testów:** ✅ Utworzona (`.ai/contact-submissions-test-scenarios.md`)
+- **Testy automatyczne:** 📋 Do implementacji.
+
+## 📚 Utworzona dokumentacja
+
+1. **Plan implementacji:** `.ai/contact-submissions-implementation-plan.md` (plik został przemianowany z `view-implementation-plan.md`)
+2. **Dokumentacja testów:** `.ai/contact-submissions-test-scenarios.md`
+3. **Status implementacji:** Zaktualizowano ten dokument (`.ai/api-implementation-status.md`)
+
+## 🚀 Gotowość do produkcji
+
+Endpoint `POST /api/contact-submissions` jest gotowy do użycia produkcyjnego z następującymi zaleceniami:
+
+### Przed wdrożeniem produkcyjnym
+
+1. 📋 Usunąć lub odpowiednio skonfigurować logi debugowania (`console.log`) z kodu produkcyjnego, zachowując logi błędów i kluczowych operacji.
+2. 📋 Wdrożyć testy automatyczne (jednostkowe dla serwisu, integracyjne dla endpointu).
+3. 📋 Skonfigurować monitoring i alerty dla błędów 5xx oraz nietypowych wzorców użycia (np. duża liczba zgłoszeń w krótkim czasie - potencjalny spam).
+4. 📋 Rozważyć implementację dodatkowych mechanizmów antyspamowych (np. CAPTCHA, rate limiting) po stronie frontendu lub na poziomie API gateway, jeśli endpoint będzie publicznie dostępny i podatny na nadużycia.
+5. 📋 Zweryfikować poprawność działania polityk RLS dla tabeli `contact_form_submissions` na środowisku produkcyjnym.
+
+### Zalecenia operacyjne
+
+1. **Monitoring wydajności:** Monitorować czas odpowiedzi endpointu i wydajność zapytań INSERT do bazy danych.
+2. **Logowanie metryk:** Śledzić liczbę przesyłanych zgłoszeń, stosunek zgłoszeń od użytkowników anonimowych vs zalogowanych.
+3. **Przegląd zgłoszeń:** Zapewnić mechanizm lub proces do przeglądania i odpowiadania na zgłoszenia kontaktowe.
+4. **Regularne backupy bazy danych:** Standardowa procedura.
+
+### Metryki do monitorowania
+
+- Czas odpowiedzi endpointu.
+- Stosunek żądań HTTP: 201 vs 4xx vs 5xx.
+- Liczba zgłoszeń na godzinę/dzień.
+- Liczba błędów walidacji (może wskazywać na problemy z formularzem frontendowym lub próby nadużć).
+
+## 🔒 Funkcje bezpieczeństwa
+
+### Implementowane zabezpieczenia
+
+1. **JWT Authentication (opcjonalne):** ✅ Endpoint obsługuje zarówno użytkowników anonimowych, jak i uwierzytelnionych. `userId` jest bezpiecznie pobierane z sesji.
+2. **RLS Policies (Row Level Security):** ✅ Polityki Supabase dla tabeli `contact_form_submissions` (`Allow public inserts`, `Allow admin access`) są kluczowe dla kontroli dostępu.
+3. **Walidacja Danych Wejściowych (Zod):** ✅ Wszystkie pola (`emailAddress`, `subject`, `messageBody`) są dokładnie walidowane pod kątem typu, formatu i długości.
+4. **Input Sanitization (pośrednio):** ✅ Użycie parametryzowanych zapytań przez klienta Supabase chroni przed SQL injection. Walidacja Zod również przyczynia się do bezpieczeństwa.
+5. **HTTPS:** ✅ Komunikacja powinna odbywać się przez HTTPS (konfiguracja na poziomie hostingu/Astro).
+6. **Obsługa Błędów:** ✅ Stosunkowo generyczne komunikaty błędów dla użytkownika, szczegółowe logi po stronie serwera.
+
+## 📞 Kontakt w razie problemów
+
+W przypadku problemów z endpointem, sprawdź:
+
+1. **Logi middleware** (`src/middleware/index.ts`) - problemy z uwierzytelnianiem (jeśli dotyczy).
+2. **Logi handlera API** (`src/pages/api/contact-submissions.ts`) - błędy walidacji, błędy zwracane przez serwis, logi z `requestId`.
+3. **Logi serwisu** (`src/lib/services/contactSubmissionsService.ts`) - szczegóły operacji na bazie danych, błędy Supabase.
+4. **Dokumentację testów** (`.ai/contact-submissions-test-scenarios.md`) - przykłady użycia.
+5. **Polityki RLS** w Supabase dla tabeli `contact_form_submissions`.
+
+### Częste problemy i rozwiązania
+
+| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                                                              |
+|---------------------------|-----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `400 Bad Request` (Validation) | Błędy w danych wejściowych (np. brak emaila, zły format, za długa treść).         | Sprawdź ciało żądania i upewnij się, że wszystkie pola spełniają wymagania walidacji Zod. Szczegóły błędu powinny być w odpowiedzi JSON.                               |
+| `400 Bad Request` (JSON)  | Nieprawidłowy format JSON w ciele żądania.                                       | Sprawdź, czy JSON jest poprawnie sformatowany.                                                                                                                             |
+| `403 Forbidden`           | Naruszenie polityki RLS Supabase (np. próba wstawienia danych niezgodna z `CHECK` w polityce). | Sprawdź logi serwera (szczególnie z serwisu) i konfigurację polityk RLS w Supabase. Upewnij się, że `user_id` jest poprawnie przekazywane/ustawiane (NULL lub auth.uid()). |
+| `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie, brak klienta Supabase w `locals`. | Sprawdź logi serwera (API i serwis), logi Supabase. Zweryfikuj połączenie z bazą, poprawność middleware i konfigurację RLS.                                             |

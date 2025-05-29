@@ -522,6 +522,24 @@ W przypadku problemów z endpointem, sprawdź:
 | 404 Not Found | Fiszka nie istnieje/nie należy do użytkownika | Sprawdź ownership i is_deleted |
 | 500 Internal Server Error | Błąd bazy danych | Sprawdź logi serwisu i połączenie z Supabase |
 
+### Sprawdzenie stanu fiszki przed aktualizacją
+
+```bash
+# Pobierz fiszkę przed aktualizacją
+curl -X GET "http://localhost:3000/api/flashcards/{flashcardId}" \
+  -H "Authorization: Bearer {token}"
+
+# Wykonaj aktualizację
+curl -X PATCH "http://localhost:3000/api/flashcards/{flashcardId}" \
+  -H "Authorization: Bearer {token}" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Nowe pytanie"}'
+
+# Sprawdź czy updated_at się zmieniło
+curl -X GET "http://localhost:3000/api/flashcards/{flashcardId}" \
+  -H "Authorization: Bearer {token}"
+```
+
 ---
 
 # Status Implementacji API: PATCH /api/flashcards/{flashcardId}
@@ -781,3 +799,173 @@ curl -X PATCH "http://localhost:3000/api/flashcards/{flashcardId}" \
 curl -X GET "http://localhost:3000/api/flashcards/{flashcardId}" \
   -H "Authorization: Bearer {token}"
 ```
+
+---
+
+# Status Implementacji API: DELETE /api/flashcards/{flashcardId}
+
+## Przegląd
+
+Endpoint `DELETE /api/flashcards/{flashcardId}` został pomyślnie zaimplementowany. Realizuje on miękkie usuwanie fiszki poprzez ustawienie flagi `is_deleted` na `true` i zapisanie daty usunięcia w `deleted_at`. Endpoint nie usuwa fizycznie danych z bazy.
+
+## ✅ Zaimplementowane komponenty
+
+### 1. Typy DTO i Command Models
+
+- **Lokalizacja:** `src/types.ts` (pośrednio, przez użycie `flashcardId`)
+- **Status:** ✅ Kompletne
+- **Typy:** Brak dedykowanych typów DTO dla żądania/odpowiedzi. Operacja modyfikuje istniejący zasób na podstawie identyfikatora.
+
+### 2. Schemat walidacji Zod
+
+- **Lokalizacja:** `src/lib/validation/flashcardSchemas.ts`
+- **Status:** ✅ Kompletne
+- **Nazwa Schematu:** `deleteFlashcardPathParamsSchema`
+- **Funkcjonalności:**
+  - Walidacja UUID dla parametru ścieżki `flashcardId`
+
+### 3. Serwis logiki biznesowej
+
+- **Lokalizacja:** `src/lib/services/flashcardService.ts`
+- **Status:** ✅ Kompletne z ulepszeniami
+- **Metoda:** `softDeleteFlashcard(userId: string, flashcardId: string)`
+- **Funkcjonalności:**
+  - Walidacja parametrów wejściowych (`userId`, `flashcardId`).
+  - Wykonanie operacji UPDATE na tabeli `flashcards`, ustawiając `is_deleted = true` i `deleted_at = NOW()`.
+  - Zapytanie zawiera warunki: `id = flashcardId`, `user_id = userId`, oraz `is_deleted = false` (aby zapobiec wielokrotnemu "usuwaniu" tej samej fiszki i zapewnić, że modyfikujemy tylko aktywne fiszki).
+  - Wykorzystanie RLS (Row Level Security) w Supabase dla dodatkowego zabezpieczenia operacji na danych użytkownika.
+  - Sprawdzenie, czy operacja `UPDATE` faktycznie zmodyfikowała jakiś wiersz. Jeśli nie (np. fiszka nie została znaleziona, należała do innego użytkownika, lub była już usunięta), serwis rzuca odpowiedni błąd.
+  - Szczegółowa obsługa błędów Supabase (np. PGRST116 dla "no rows affected", co jest mapowane na błąd "Flashcard not found or already deleted").
+  - Logowanie informacji o przebiegu operacji i ewentualnych błędach.
+
+### 4. API Route Handler
+
+- **Lokalizacja:** `src/pages/api/flashcards/[flashcardId].ts` (handler `DEL`)
+- **Status:** ✅ Kompletne z ulepszeniami
+- **Funkcjonalności:**
+  - Uwierzytelnianie użytkownika za pomocą JWT tokenu pobieranego z `Astro.locals`.
+  - Walidacja parametru ścieżki `flashcardId` przy użyciu `deleteFlashcardPathParamsSchema`.
+  - Wywołanie metody `flashcardService.softDeleteFlashcard` z `userId` (z sesji) i `flashcardId`.
+  - Zwrócenie kodu statusu `204 No Content` w przypadku pomyślnego miękkiego usunięcia fiszki.
+  - Kompleksowa obsługa błędów:
+    - `400 Bad Request` dla nieprawidłowego formatu `flashcardId`.
+    - `401 Unauthorized` jeśli użytkownik nie jest uwierzytelniony.
+    - `404 Not Found` jeśli fiszka nie została znaleziona, należy do innego użytkownika, lub była już wcześniej usunięta (obsługiwane przez błąd rzucony z serwisu).
+    - `500 Internal Server Error` dla nieoczekiwanych błędów serwera lub bazy danych.
+  - Szczegółowe logowanie żądań, walidacji i wyników operacji.
+
+### 5. Middleware uwierzytelniania
+
+- **Lokalizacja:** `src/middleware/index.ts`
+- **Status:** ✅ Kompletne (współdzielone z innymi endpointami)
+- **Funkcjonalności:** Zapewnia `session` (w tym `userId`) i klienta `supabase` w `context.locals`, niezbędne do uwierzytelniania i autoryzacji operacji.
+
+## 📋 Zgodność z planem API
+
+### URL Pattern
+
+- `DELETE /api/flashcards/{flashcardId}`: ✅ Zaimplementowane
+- Dynamic routing w Astro: `[flashcardId].ts` (handler `DEL`): ✅ Zaimplementowane
+
+### Path Parameters
+
+- `flashcardId` (string, UUID format, required): ✅ Zaimplementowane z walidacją Zod
+
+### Request Body
+
+- Brak: ✅ Zaimplementowane (operacja DELETE nie wymaga ciała żądania)
+
+### Response Body (204 No Content)
+
+- Brak ciała odpowiedzi: ✅ Zaimplementowane
+
+### Kody statusu HTTP
+
+- `204 No Content`: ✅ Zaimplementowane
+- `400 Bad Request`: ✅ Zaimplementowane (głównie dla walidacji UUID `flashcardId`)
+- `401 Unauthorized`: ✅ Zaimplementowane
+- `403 Forbidden`: ✅ Zaimplementowane (efektywnie obsługiwane przez RLS i logikę serwisu, co skutkuje `404 Not Found`, aby nie ujawniać istnienia zasobu)
+- `404 Not Found`: ✅ Zaimplementowane (fiszka nie istnieje, należy do innego użytkownika, lub została już wcześniej usunięta)
+- `500 Internal Server Error`: ✅ Zaimplementowane
+
+## 🔧 Zmiany i ulepszenia względem pierwotnego planu
+
+- **Logika Serwisu:** Dodano w `flashcardService.softDeleteFlashcard` sprawdzanie, czy operacja UPDATE faktycznie zmodyfikowała wiersz. Jeśli `count` (liczba zmodyfikowanych wierszy) wynosi 0, rzucany jest błąd, który jest następnie mapowany na `404 Not Found` w handlerze API. To zapewnia, że klient otrzymuje informację zwrotną, jeśli próbuje usunąć nieistniejącą lub już usuniętą fiszkę.
+- **Obsługa Błędów w Handlerze:** Ulepszono obsługę błędów w handlerze `DEL`, aby poprawnie interpretować błędy rzucane przez serwis (np. `FlashcardNotFoundError` lub `FlashcardAlreadyDeletedError` z serwisu są mapowane na HTTP 404).
+- **Polityka RLS dla UPDATE:** Zaktualizowano politykę RLS dla operacji UPDATE na tabeli `flashcards`, aby umożliwić użytkownikom modyfikację (w tym miękkie usuwanie) własnych fiszek. Klauzula `USING` to `(auth.uid() = user_id)`, a `WITH CHECK` to `true` (lub bardziej szczegółowe, jeśli wymagane).
+
+## 📋 Status testowania
+
+- **Testy manualne:** ✅ Przeprowadzone z cURL - wszystkie kluczowe scenariusze (pomyślne usunięcie, próba usunięcia nieistniejącej/cudzej/już usuniętej fiszki, niepoprawny UUID, brak autoryzacji) działają poprawnie.
+- **Dokumentacja testów:** ✅ Utworzona (`.ai/delete-flashcard-test-scenarios.md`)
+- **Testy automatyczne:** 📋 Do implementacji.
+
+## 📚 Utworzona dokumentacja
+
+1. **Plan implementacji:** `.ai/delete-flashcard-implementation-plan.md`
+2. **Dokumentacja testów:** `.ai/delete-flashcard-test-scenarios.md` (ten dokument)
+3. **Status implementacji:** Zaktualizowano ten dokument (`.ai/api-implementation-status.md`)
+
+## 🚀 Gotowość do produkcji
+
+Endpoint `DELETE /api/flashcards/{flashcardId}` jest gotowy do użycia produkcyjnego z następującymi zaleceniami:
+
+### Przed wdrożeniem produkcyjnym
+
+1. 📋 Usunąć lub odpowiednio skonfigurować logi debugowania (`console.log`) z kodu produkcyjnego.
+2. 📋 Wdrożyć kompleksowe testy automatyczne (jednostkowe, integracyjne, E2E).
+3. 📋 Skonfigurować monitoring i alerty dla błędów 5xx oraz nietypowych wzorców użycia (np. masowe usuwanie).
+4. 📋 Przeprowadzić przegląd bezpieczeństwa, w tym weryfikację polityk RLS i rate limiting.
+
+### Zalecenia operacyjne
+
+1. **Monitoring wydajności:** Monitorować czas odpowiedzi endpointu i wydajność zapytań UPDATE do bazy danych.
+2. **Logowanie metryk:** Śledzić liczbę usuwanych fiszek, częstotliwość operacji DELETE.
+3. **Strategia przywracania danych:** Chociaż jest to miękkie usuwanie, należy mieć strategię na wypadek potrzeby przywrócenia "usuniętych" danych lub analizy historii.
+4. **Regularne backupy bazy danych:** Standardowa procedura.
+
+### Metryki do monitorowania
+
+- Czas odpowiedzi endpointu.
+- Stosunek żądań HTTP: 204 vs 4xx vs 5xx.
+- Liczba operacji miękkiego usuwania w jednostce czasu.
+- Liczba błędów 404 (może wskazywać na próby dostępu do nieistniejących zasobów lub problemy z UI).
+
+## 🔒 Funkcje bezpieczeństwa
+
+### Implementowane zabezpieczenia
+
+1. **JWT Authentication:** ✅ Wymagane dla wszystkich żądań; operacja DELETE jest dostępna tylko dla uwierzytelnionych użytkowników.
+2. **RLS Policies (Row Level Security):** ✅ Polityki Supabase zapewniają, że użytkownik może modyfikować (w tym miękko usuwać) tylko własne fiszki. Warunek `user_id = auth.uid()` jest kluczowy.
+3. **UUID Validation:** ✅ Parametr `flashcardId` jest walidowany jako UUID, co zapobiega prostym atakom typu path traversal czy injection przez ten parametr.
+4. **Input Sanitization (pośrednio):** ✅ Walidacja UUID i użycie parametryzowanych zapytań przez klienta Supabase chroni przed SQL injection.
+5. **Error Handling:** ✅ Endpoint zwraca generyczne komunikaty błędów (np. 404 zamiast szczegółów o błędzie RLS), aby nie ujawniać wewnętrznej logiki ani istnienia zasobów, do których użytkownik nie ma dostępu.
+6. **Ochrona przed wielokrotnym usuwaniem:** ✅ Logika serwisu sprawdza `is_deleted = false` przed wykonaniem UPDATE, co zapobiega niepotrzebnym operacjom na już usuniętych fiszkach.
+
+### Testy bezpieczeństwa (manualne)
+
+- ✅ Dostęp bez tokenu (oczekiwany: 401 Unauthorized).
+- ✅ Dostęp z nieprawidłowym/wygasłym tokenem (oczekiwany: 401 Unauthorized).
+- ✅ Próba usunięcia fiszki innego użytkownika (oczekiwany: 404 Not Found).
+- ✅ SQL injection poprzez `flashcardId` (zabezpieczone przez walidację UUID i ORM Supabase).
+- ✅ Próba usunięcia już usuniętej fiszki (oczekiwany: 404 Not Found lub podobny błąd wskazujący na niemożność wykonania operacji).
+
+## 📞 Kontakt w razie problemów
+
+W przypadku problemów z endpointem, sprawdź:
+
+1. **Logi middleware** (`src/middleware/index.ts`) - problemy z uwierzytelnianiem, inicjalizacją sesji.
+2. **Logi handlera API** (`src/pages/api/flashcards/[flashcardId].ts`) - błędy walidacji `flashcardId`, błędy zwracane przez serwis.
+3. **Logi serwisu** (`src/lib/services/flashcardService.ts`) - szczegóły operacji na bazie danych, błędy Supabase.
+4. **Dokumentację testów** (`.ai/delete-flashcard-test-scenarios.md`) - przykłady użycia i oczekiwane zachowania.
+5. **Polityki RLS** w panelu Supabase dla tabeli `flashcards` (szczególnie dla operacji UPDATE).
+6. **Stan fiszki w bazie danych** (wartości `user_id`, `is_deleted`, `deleted_at`).
+
+### Częste problemy i rozwiązania
+
+| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                               |
+|---------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `401 Unauthorized`        | Brak/nieprawidłowy token JWT.                                                     | Sprawdź nagłówek `Authorization: Bearer {token}`. Upewnij się, że token jest aktualny i poprawny.                                         |
+| `400 Bad Request`         | Nieprawidłowy format `flashcardId` (nie jest UUID).                               | Upewnij się, że `flashcardId` w URL jest poprawnym UUID.                                                                                    |
+| `404 Not Found`           | Fiszka o podanym ID nie istnieje, należy do innego użytkownika, lub jest już usunięta. | Sprawdź poprawność `flashcardId`. Upewnij się, że fiszka istnieje i należy do zalogowanego użytkownika oraz nie została wcześniej usunięta. |
+| `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie.   | Sprawdź logi serwera (API i serwis) oraz logi Supabase. Zweryfikuj połączenie z bazą danych i poprawność polityk RLS.                     |

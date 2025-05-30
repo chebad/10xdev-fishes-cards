@@ -1,8 +1,16 @@
 ---
-import Welcome from "../components/Welcome.astro";
-import Layout from "../layouts/Layout.astro";
+import MarketingLayout from "../layouts/MarketingLayout.astro";
+import MainPageContent from "../components/landing/MainPageContent.astro";
+// import { supabase } from '../db/supabase'; // Będzie dodane później wraz z integracją Supabase
+
+// Symulacja sprawdzania autentykacji - w przyszłości zastąpić rzeczywistą logiką Supabase
+const isAuthenticated = false; // Zastąp to rzeczywistym sprawdzeniem sesji
+
+if (isAuthenticated) {
+  return Astro.redirect("/app");
+}
 ---
 
-<Layout>
-  <Welcome />
-</Layout>
+<MarketingLayout title="Witaj w 10xdevs-fishes-cards!">
+  <MainPageContent />
+</MarketingLayout>

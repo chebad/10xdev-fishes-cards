@@ -1,0 +1,29 @@
+---
+import "../styles/global.css";
+import MarketingHeader from "../components/MarketingHeader.astro";
+
+interface Props {
+  title?: string;
+}
+
+const { title = "10xdevs-fishes-cards" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen bg-background font-sans antialiased">
+    <div class="relative flex min-h-screen flex-col">
+      <MarketingHeader />
+      <main class="flex-1">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+---
+import AppLogo from "./AppLogo.astro";
+---
+
+<header
+  class="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+  role="banner"
+>
+  <div class="container flex h-14 max-w-screen-2xl items-center">
+    <div class="mr-4 hidden md:flex">
+      <a
+        class="mr-6 flex items-center space-x-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        href="/"
+        aria-label="Strona główna 10xdevs-fishes-cards"
+      >
+        <AppLogo className="h-6 w-6" />
+        <span class="hidden font-bold sm:inline-block"> 10xdevs-fishes-cards </span>
+      </a>
+    </div>
+
+    <!-- Mobile menu button for smaller screens -->
+    <div class="flex md:hidden">
+      <a
+        class="flex items-center space-x-2 rounded-sm p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        href="/"
+        aria-label="Strona główna 10xdevs-fishes-cards"
+      >
+        <AppLogo className="h-5 w-5" />
+        <span class="text-sm font-bold"> 10xdevs-fishes-cards </span>
+      </a>
+    </div>
+
+    <div class="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+      <div class="w-full flex-1 md:w-auto md:flex-none">
+        <!-- Miejsce na dodatkowe elementy nawigacji w przyszłości -->
+        <!-- Przykład: search bar, user menu -->
+      </div>
+    </div>
+  </div>
+</header>

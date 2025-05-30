@@ -1,0 +1,48 @@
+---
+import AuthLayout from "../layouts/AuthLayout.astro";
+
+// Sprawdź czy użytkownik jest zalogowany
+if (!Astro.locals.session?.user) {
+  // Użytkownik nie jest zalogowany, przekieruj do logowania z parametrem redirect
+  return Astro.redirect(`/login?redirect=${encodeURIComponent(Astro.url.pathname)}`);
+}
+
+const user = Astro.locals.session.user;
+---
+
+<AuthLayout title="Dashboard - 10xdevs-fishes-cards">
+  <div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-lg shadow-sm border p-6 mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+        <p class="text-gray-600">Witaj w aplikacji do nauki z fiszkami!</p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm border p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Informacje o koncie</h2>
+        <div class="space-y-2">
+          <p class="text-sm text-gray-600">
+            <span class="font-medium">Email:</span>
+            {user.email}
+          </p>
+          <p class="text-sm text-gray-600">
+            <span class="font-medium">ID użytkownika:</span>
+            {user.id}
+          </p>
+          <p class="text-sm text-gray-600">
+            <span class="font-medium">Data utworzenia:</span>
+            {user.created_at ? new Date(user.created_at).toLocaleDateString("pl-PL") : "Nieznana"}
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-blue-900 mb-2">🎉 Logowanie działa!</h3>
+        <p class="text-blue-800">
+          Pomyślnie zalogowałeś się do aplikacji. Ta strona dashboard jest tymczasowa - w przyszłości będzie zawierać
+          funkcje zarządzania fiszkami.
+        </p>
+      </div>
+    </div>
+  </div>
+</AuthLayout>

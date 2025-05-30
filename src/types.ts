@@ -163,3 +163,21 @@ export interface PrivacyPolicyLinkProps {
   href: string;
   children?: React.ReactNode;
 }
+
+// --- Login Types ---
+
+/**
+ * Command model for user login form data.
+ * Used with react-hook-form and Zod validation.
+ */
+export interface LoginFormData {
+  email: string;
+  password: string;
+}
+
+/**
+ * Props interface for LoginForm component.
+ */
+export interface LoginFormProps {
+  onLoginSuccess?: () => void;
+}

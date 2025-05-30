@@ -1,65 +1,44 @@
 import { defineMiddleware } from "astro:middleware";
-// Tymczasowo wyłączone - będzie przywrócone wraz z integracją Supabase
-// import { createClient } from "@supabase/supabase-js";
-// import type { Database } from "../db/database.types";
-// import type { SupabaseClient } from "@supabase/supabase-js";
+import { createSupabaseServerClient } from "../db/supabase.server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../db/database.types";
 
 /**
  * Middleware for handling authentication and Supabase client initialization.
- * Tymczasowo wyłączone - będzie aktywowane po dodaniu integracji Supabase.
  */
 export const onRequest = defineMiddleware(async (context, next) => {
-  // Tymczasowo pomijamy logikę Supabase dla podstawowej implementacji strony głównej
-  // TODO: Przywrócić po instalacji @supabase/supabase-js i konfiguracji zmiennych środowiskowych
+  // Initialize Supabase client with cookie support for SSR
+  const supabase: SupabaseClient<Database> = createSupabaseServerClient(context.cookies, context.request);
 
-  /*
-  const supabaseUrl = import.meta.env.SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
-
-  // Initialize default Supabase client
-  let supabase: SupabaseClient<Database> = createClient<Database>(supabaseUrl, supabaseAnonKey);
-
-  // Handle user session based on JWT token
-  const authHeader = context.request.headers.get("Authorization");
+  // Handle user session based on cookies
   let session = null;
 
-  if (authHeader?.startsWith("Bearer ")) {
-    const token = authHeader.substring(7);
-    try {
-      // Create Supabase client with user token in headers
-      supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+  try {
+    // Get session from Supabase (checks cookies automatically)
+    const { data: sessionData, error } = await supabase.auth.getSession();
+
+    if (error) {
+      console.warn("Error getting session from Supabase:", error.message);
+    } else if (sessionData.session) {
+      session = {
+        user: {
+          id: sessionData.session.user.id,
+          email: sessionData.session.user.email,
+          aud: sessionData.session.user.aud,
+          role: sessionData.session.user.role,
+          created_at: sessionData.session.user.created_at,
+          updated_at: sessionData.session.user.updated_at,
+          user_metadata: sessionData.session.user.user_metadata,
+          app_metadata: sessionData.session.user.app_metadata,
         },
-      });
-
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser(token);
-
-      if (error) {
-        if (
-          error.message.includes("AuthApiError") &&
-          (error.message.includes("invalid JWT") || error.message.includes("expired"))
-        ) {
-          console.warn("Invalid or expired JWT token provided.");
-        } else {
-          console.error("Error fetching user from Supabase:", error.message);
-        }
-      } else if (user) {
-        session = { user };
-      }
-    } catch (e) {
-      console.error("Error processing JWT token:", e);
+      };
     }
+  } catch (e) {
+    console.error("Error processing session:", e);
   }
 
   context.locals.supabase = supabase;
   context.locals.session = session;
-  */
 
   return next();
 });

@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { HeaderUnauthenticated } from "../components/layout/HeaderUnauthenticated";
+import { HeaderAuthenticated } from "../components/layout/HeaderAuthenticated";
 import { Toaster } from "../components/ui/sonner";
 
 interface Props {
@@ -8,6 +9,10 @@ interface Props {
 }
 
 const { title = "10xdevs-fishes-cards" } = Astro.props;
+
+// Sprawdź czy użytkownik jest zalogowany
+const isAuthenticated = !!Astro.locals.session?.user;
+const userEmail = Astro.locals.session?.user?.email;
 ---
 
 <!doctype html>
@@ -21,7 +26,13 @@ const { title = "10xdevs-fishes-cards" } = Astro.props;
   </head>
   <body class="min-h-screen bg-background font-sans antialiased">
     <div class="relative flex min-h-screen flex-col">
-      <HeaderUnauthenticated client:load />
+      {
+        isAuthenticated ? (
+          <HeaderAuthenticated client:load userEmail={userEmail} />
+        ) : (
+          <HeaderUnauthenticated client:load />
+        )
+      }
       <main class="flex-1">
         <slot />
       </main>

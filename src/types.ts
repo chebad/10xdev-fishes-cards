@@ -133,3 +133,33 @@ export interface ContactSubmissionDto {
   messageBody: Tables<"contact_form_submissions">["message_body"];
   submittedAt: Tables<"contact_form_submissions">["submitted_at"];
 }
+
+// --- Registration Types ---
+
+/**
+ * Command model for user registration form data.
+ * Used with react-hook-form and Zod validation.
+ */
+export interface RegisterFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  privacyPolicyAccepted: boolean;
+}
+
+/**
+ * Props interface for RegistrationForm component.
+ */
+export interface RegistrationFormProps {
+  onSubmit: (data: RegisterFormData) => Promise<void>;
+  isLoading: boolean;
+  apiError: string | null;
+}
+
+/**
+ * Props interface for PrivacyPolicyLink component.
+ */
+export interface PrivacyPolicyLinkProps {
+  href: string;
+  children?: React.ReactNode;
+}

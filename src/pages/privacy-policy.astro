@@ -1,0 +1,71 @@
+---
+import AuthLayout from "../layouts/AuthLayout.astro";
+---
+
+<AuthLayout title="Polityka Prywatności - 10xdevs-fishes-cards">
+  <div class="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:py-12 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg border-0 p-6 sm:p-8">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Polityka Prywatności</h1>
+
+        <div class="prose prose-gray max-w-none">
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">1. Informacje ogólne</h2>
+          <p class="text-gray-700 mb-4 sm:mb-6 leading-relaxed">
+            Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych użytkowników
+            aplikacji 10xdevs-fishes-cards.
+          </p>
+
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">2. Administrator danych</h2>
+          <p class="text-gray-700 mb-4 sm:mb-6 leading-relaxed">
+            Administratorem danych osobowych jest [Nazwa firmy/organizacji].
+          </p>
+
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">3. Zakres zbieranych danych</h2>
+          <p class="text-gray-700 mb-3 sm:mb-4 leading-relaxed">
+            W ramach korzystania z aplikacji zbieramy następujące dane:
+          </p>
+          <ul class="list-disc list-inside text-gray-700 mb-4 sm:mb-6 space-y-1 leading-relaxed">
+            <li>Adres email (wymagany do rejestracji)</li>
+            <li>Hasło (w formie zahashowanej)</li>
+            <li>Dane dotyczące korzystania z aplikacji</li>
+          </ul>
+
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">4. Cel przetwarzania danych</h2>
+          <p class="text-gray-700 mb-3 sm:mb-4 leading-relaxed">Dane osobowe przetwarzane są w celu:</p>
+          <ul class="list-disc list-inside text-gray-700 mb-4 sm:mb-6 space-y-1 leading-relaxed">
+            <li>Świadczenia usług aplikacji</li>
+            <li>Zarządzania kontem użytkownika</li>
+            <li>Komunikacji z użytkownikiem</li>
+          </ul>
+
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">5. Prawa użytkownika</h2>
+          <p class="text-gray-700 mb-4 sm:mb-6 leading-relaxed">
+            Użytkownik ma prawo do dostępu, sprostowania, usunięcia oraz przenoszenia swoich danych osobowych.
+          </p>
+
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">6. Kontakt</h2>
+          <p class="text-gray-700 mb-4 sm:mb-6 leading-relaxed">
+            W sprawach dotyczących ochrony danych osobowych można skontaktować się pod adresem:
+            <a
+              href="mailto:privacy@example.com"
+              class="text-primary hover:text-primary/80 underline hover:no-underline transition-colors"
+              >privacy@example.com</a
+            >
+          </p>
+        </div>
+
+        <div class="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200">
+          <a
+            href="/register"
+            class="inline-flex items-center text-primary hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 rounded-md transition-colors duration-200"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Powrót do rejestracji
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</AuthLayout>

@@ -23,18 +23,7 @@ export function RegisterPageView() {
       });
 
       if (error) {
-        // Handle Supabase Auth errors
-        let errorMessage = error.message;
-
-        // Customize error messages for better UX
-        if (error.message.includes("User already registered")) {
-          errorMessage = "Użytkownik o tym adresie email już istnieje. Czy chcesz się zalogować?";
-        } else if (error.message.includes("Password should be")) {
-          errorMessage = "Hasło jest zbyt słabe. Spróbuj dłuższego lub bardziej złożonego hasła.";
-        } else if (error.message.includes("Invalid email")) {
-          errorMessage = "Niepoprawny format adresu email.";
-        }
-
+        const errorMessage = getErrorMessage(error.message);
         setApiError(errorMessage);
         toast.error("Błąd rejestracji", {
           description: errorMessage,
@@ -43,19 +32,15 @@ export function RegisterPageView() {
       }
 
       if (authData.user) {
-        // Registration successful
         toast.success("Rejestracja pomyślna!", {
           description: "Sprawdź swoją skrzynkę email, aby potwierdzić konto.",
         });
 
-        // Optional: Redirect to login page or email confirmation page
-        // For now, we'll just show the success message
         setTimeout(() => {
           window.location.href = "/login";
         }, 2000);
       }
     } catch (error) {
-      // Handle unexpected errors
       const errorMessage = "Wystąpił nieoczekiwany błąd podczas rejestracji. Spróbuj ponownie później.";
       setApiError(errorMessage);
       toast.error("Błąd rejestracji", {
@@ -74,4 +59,20 @@ export function RegisterPageView() {
       </div>
     </div>
   );
+}
+
+function getErrorMessage(message: string): string {
+  if (message.includes("User already registered")) {
+    return "Użytkownik o tym adresie email już istnieje. Czy chcesz się zalogować?";
+  }
+
+  if (message.includes("Password should be")) {
+    return "Hasło jest zbyt słabe. Spróbuj dłuższego lub bardziej złożonego hasła.";
+  }
+
+  if (message.includes("Invalid email")) {
+    return "Niepoprawny format adresu email.";
+  }
+
+  return message;
 }

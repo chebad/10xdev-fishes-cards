@@ -123,7 +123,7 @@ export class FlashcardService {
       }
 
       // Map database results to DTOs
-      const flashcardItems: FlashcardListItemDto[] = data.map((item: Tables<"flashcards">) => ({
+      const flashcardItems: FlashcardListItemDto[] = data.map((item) => ({
         id: item.id,
         userId: item.user_id,
         question: item.question,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,11 +13,19 @@ export default function FlashcardsControls({
 }: FlashcardsControlsProps) {
   const [searchValue, setSearchValue] = useState(filters.search || "");
   const [isExpanded, setIsExpanded] = useState(false);
+  const isInitialRender = useRef(true);
 
   // Debounce search input
   useEffect(() => {
+    // Pomiń pierwsze wywołanie przy inicjalizacji
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
       if (searchValue !== filters.search) {
+        console.log("[FLASHCARDS_CONTROLS] Triggering onFiltersChange with search:", searchValue); // Debug log
         onFiltersChange({ search: searchValue || undefined });
       }
     }, 300);

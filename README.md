@@ -55,7 +55,7 @@ To get a local copy up and running, follow these simple steps.
     # Example variables (replace with actual ones needed for the project)
     PUBLIC_SUPABASE_URL=your_supabase_url
     PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-    OPENAI_API_KEY=your_openai_api_key_here
+    OPENAI_API_KEY=your_openai_api_key
     ```
 
 3. **Run the development server:**
@@ -136,3 +136,57 @@ Aplikacja używa OpenAI API do automatycznego generowania fiszek na podstawie te
 ### API Documentation
 
 Szczegółowa dokumentacja API dostępna w katalogu `.ai/`.
+
+## 🔗 API Endpoints
+
+Aplikacja posiada w pełni funkcjonalne API endpoints dla zarządzania fiszkami:
+
+### Flashcards API
+
+- **`POST /api/flashcards/generate-ai`** - Generowanie fiszek przez AI
+  - Body: `{ sourceText: string }` (1000-10000 znaków)
+  - Response: `{ suggestions: AiFlashcardSuggestionItem[], sourceTextEcho: string }`
+
+- **`POST /api/flashcards`** - Tworzenie nowej fiszki
+  - Body: `{ question: string, answer: string, isAiGenerated?: boolean, sourceTextForAi?: string }`
+  - Response: `FlashcardDto`
+
+- **`GET /api/flashcards`** - Pobieranie listy fiszek
+  - Query: `page?, limit?, sortBy?, sortOrder?, search?, isAiGenerated?`
+  - Response: `{ data: FlashcardListItemDto[], pagination: PaginationDetails }`
+
+- **`PATCH /api/flashcards/[id]`** - Edycja fiszki
+  - Body: `{ question?: string, answer?: string }`
+  - Response: `FlashcardDto`
+
+- **`DELETE /api/flashcards/[id]`** - Usuwanie fiszki (soft delete)
+  - Response: `{ success: boolean }`
+
+### Autoryzacja
+
+Wszystkie endpoints wymagają autoryzacji przez Supabase session w cookies.
+
+## ⚙️ Konfiguracja
+
+### Zmienne środowiskowe
+
+Utwórz plik `.env` w głównym katalogu projektu:
+
+```env
+# Supabase Configuration
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# OpenAI API Configuration (opcjonalne - w dev mode używa mock service)
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### AI Service
+
+- **Z OPENAI_API_KEY**: Używa prawdziwego OpenAI API (GPT-3.5-turbo)
+- **Bez OPENAI_API_KEY**: Automatycznie przełącza na Mock AI Service w trybie development
+
+### Development vs Production
+
+- **Development**: Mock AI service generuje przykładowe fiszki
+- **Production**: Wymaga prawdziwego OPENAI_API_KEY

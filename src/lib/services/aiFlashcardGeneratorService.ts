@@ -1,6 +1,13 @@
 import type { AiFlashcardSuggestionItem } from "../../types";
 
 /**
+ * Interface for AI flashcard generation service
+ */
+interface IAiFlashcardGeneratorService {
+  generateFlashcardSuggestions(sourceText: string): Promise<AiFlashcardSuggestionItem[]>;
+}
+
+/**
  * OpenAI API response structure
  */
 interface OpenAIResponse {
@@ -23,7 +30,7 @@ interface AiFlashcardRaw {
 /**
  * Service for generating flashcard suggestions using AI models via OpenAI Platform.
  */
-export class AiFlashcardGeneratorService {
+export class AiFlashcardGeneratorService implements IAiFlashcardGeneratorService {
   private readonly openAiApiKey: string;
   private readonly openAiBaseUrl = "https://api.openai.com/v1";
   private readonly defaultModel = "gpt-3.5-turbo"; // Ekonomiczny model do testów
@@ -231,6 +238,61 @@ Odpowiedź (tylko JSON):`;
 /**
  * Factory function to create AiFlashcardGeneratorService instance.
  */
-export function getAiFlashcardGeneratorService(): AiFlashcardGeneratorService {
+export function getAiFlashcardGeneratorService(): IAiFlashcardGeneratorService {
+  // W środowisku deweloperskim bez OPENAI_API_KEY, użyj mock service
+  const apiKey = import.meta.env.OPENAI_API_KEY;
+  if (!apiKey && import.meta.env.MODE === "development") {
+    console.warn("[AI] Using Mock AI Service - OPENAI_API_KEY not provided");
+    return new MockAiFlashcardGeneratorService();
+  }
+
   return new AiFlashcardGeneratorService();
+}
+
+/**
+ * Mock AI service for development when OpenAI API key is not available
+ */
+class MockAiFlashcardGeneratorService implements IAiFlashcardGeneratorService {
+  async generateFlashcardSuggestions(sourceText: string): Promise<AiFlashcardSuggestionItem[]> {
+    if (!sourceText || sourceText.length < 1000 || sourceText.length > 10000) {
+      throw new Error("Source text must be between 1000 and 10000 characters");
+    }
+
+    console.log(`[AI:MOCK] Generating mock flashcards for ${sourceText.length} characters`);
+
+    // Symuluj opóźnienie API
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    const firstWords = sourceText.slice(0, 100);
+    const mockSuggestions: AiFlashcardSuggestionItem[] = [
+      {
+        suggestedQuestion: `Co jest głównym tematem tego tekstu, który zaczyna się od: "${firstWords.slice(0, 50)}..."?`,
+        suggestedAnswer: `Głównym tematem jest zawartość przedstawiona w podanym tekście źródłowym.`,
+        aiModelUsed: "mock-ai-v1.0",
+      },
+      {
+        suggestedQuestion: `Jakie kluczowe informacje zawiera podany materiał?`,
+        suggestedAnswer: `Materiał zawiera informacje edukacyjne wymagające pogłębionej analizy.`,
+        aiModelUsed: "mock-ai-v1.0",
+      },
+      {
+        suggestedQuestion: `Dlaczego ten temat jest istotny w kontekście nauki?`,
+        suggestedAnswer: `Ten temat jest istotny, ponieważ dostarcza cennej wiedzy w danej dziedzinie.`,
+        aiModelUsed: "mock-ai-v1.0",
+      },
+      {
+        suggestedQuestion: `Jakie są praktyczne zastosowania tej wiedzy?`,
+        suggestedAnswer: `Wiedza ta może być wykorzystana w praktyce do lepszego zrozumienia tematu.`,
+        aiModelUsed: "mock-ai-v1.0",
+      },
+      {
+        suggestedQuestion: `Co należy zapamiętać z tego materiału?`,
+        suggestedAnswer: `Należy zapamiętać kluczowe pojęcia i koncepcje przedstawione w tekście.`,
+        aiModelUsed: "mock-ai-v1.0",
+      },
+    ];
+
+    console.log(`[AI:MOCK] Generated ${mockSuggestions.length} mock flashcard suggestions`);
+    return mockSuggestions;
+  }
 }

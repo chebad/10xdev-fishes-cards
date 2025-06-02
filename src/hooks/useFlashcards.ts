@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type {
   FlashcardsState,
   GetFlashcardsQuery,
@@ -19,6 +19,13 @@ const initialState: FlashcardsState = {
 
 export const useFlashcards = () => {
   const [state, setState] = useState<FlashcardsState>(initialState);
+  const filtersRef = useRef<GetFlashcardsQuery>({});
+  const initializedRef = useRef(false);
+
+  // Aktualizuj ref przy każdej zmianie filtrów
+  useEffect(() => {
+    filtersRef.current = state.filters;
+  }, [state.filters]);
 
   const buildQueryString = useCallback((query: GetFlashcardsQuery): string => {
     const params = new URLSearchParams();
@@ -47,6 +54,8 @@ export const useFlashcards = () => {
       try {
         const queryString = buildQueryString(query);
         const url = `/api/flashcards${queryString ? `?${queryString}` : ""}`;
+
+        console.log(`[FLASHCARDS] Fetching: ${url}`);
 
         const response = await fetch(url, {
           method: "GET",
@@ -99,8 +108,8 @@ export const useFlashcards = () => {
 
         const flashcard: FlashcardDto = await response.json();
 
-        // Odśwież listę fiszek po utworzeniu
-        await fetchFlashcards(state.filters);
+        // Odśwież listę fiszek po utworzeniu używając aktualnych filtrów
+        await fetchFlashcards(filtersRef.current);
 
         return flashcard;
       } catch (error) {
@@ -108,7 +117,7 @@ export const useFlashcards = () => {
         throw error;
       }
     },
-    [fetchFlashcards, state.filters]
+    [fetchFlashcards]
   );
 
   const updateFlashcard = useCallback(
@@ -177,10 +186,10 @@ export const useFlashcards = () => {
 
   const updateFilters = useCallback(
     (newFilters: Partial<GetFlashcardsQuery>) => {
-      const updatedFilters = { ...state.filters, ...newFilters };
+      const updatedFilters = { ...filtersRef.current, ...newFilters };
       fetchFlashcards(updatedFilters);
     },
-    [state.filters, fetchFlashcards]
+    [fetchFlashcards]
   );
 
   const changePage = useCallback(
@@ -196,8 +205,51 @@ export const useFlashcards = () => {
 
   // Załaduj fiszki przy pierwszym renderze
   useEffect(() => {
-    fetchFlashcards();
-  }, []); // Celowo pusta dependency array - chcemy załadować tylko raz
+    // Używamy wersji inline żeby nie było dependency na fetchFlashcards
+    const loadInitialFlashcards = async () => {
+      setState((prev) => ({
+        ...prev,
+        isLoading: true,
+        error: undefined,
+      }));
+
+      try {
+        const response = await fetch("/api/flashcards", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Błąd podczas pobierania fiszek");
+        }
+
+        const data: FlashcardsListDto = await response.json();
+
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          flashcards: data.data,
+          pagination: data.pagination,
+          lastFetchedAt: new Date(),
+          error: undefined,
+        }));
+      } catch (error) {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd",
+        }));
+      }
+    };
+
+    if (!initializedRef.current) {
+      loadInitialFlashcards();
+      initializedRef.current = true;
+    }
+  }, []); // Pusta dependency array - ładujemy tylko raz
 
   return {
     state,

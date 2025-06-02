@@ -1,0 +1,57 @@
+---
+export interface Props {
+  title?: string;
+}
+
+const { title = "Dashboard - FishCards" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="pl" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <style>
+      @import "/src/styles/global.css";
+    </style>
+  </head>
+  <body class="bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 min-h-screen antialiased">
+    <div class="min-h-screen flex flex-col">
+      <!-- Nagłówek dla zalogowanych użytkowników -->
+      <header
+        class="sticky top-0 z-50 border-b border-white/20 backdrop-blur-xl supports-[backdrop-filter]:bg-white/75"
+      >
+        <slot name="header" />
+      </header>
+
+      <!-- Główna zawartość -->
+      <main class="flex-1 w-full">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 max-w-7xl">
+          <slot />
+        </div>
+      </main>
+
+      <!-- Stopka (opcjonalnie) -->
+      <footer class="border-t border-gray-200 bg-white/50 backdrop-blur-sm">
+        <div class="container mx-auto px-4 py-4">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-gray-600">© 2024 FishCards. Ucz się efektywnie z pomocą AI.</div>
+            <div class="flex items-center space-x-4 text-sm text-gray-500">
+              <span class="flex items-center gap-1">
+                <span>⚡</span>
+                Powered by Astro & React
+              </span>
+              <span class="flex items-center gap-1">
+                <span>🤖</span>
+                AI Integration
+              </span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

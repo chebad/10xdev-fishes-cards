@@ -14,27 +14,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
   let session = null;
 
   try {
-    // Get session from Supabase (checks cookies automatically)
-    const { data: sessionData, error } = await supabase.auth.getSession();
+    // Get user from Supabase (more secure than getSession)
+    const { data: userData, error } = await supabase.auth.getUser();
 
     if (error) {
-      console.warn("Error getting session from Supabase:", error.message);
-    } else if (sessionData.session) {
+      console.warn("Error getting user from Supabase:", error.message);
+    } else if (userData.user) {
       session = {
         user: {
-          id: sessionData.session.user.id,
-          email: sessionData.session.user.email,
-          aud: sessionData.session.user.aud,
-          role: sessionData.session.user.role,
-          created_at: sessionData.session.user.created_at,
-          updated_at: sessionData.session.user.updated_at,
-          user_metadata: sessionData.session.user.user_metadata,
-          app_metadata: sessionData.session.user.app_metadata,
+          id: userData.user.id,
+          email: userData.user.email,
+          aud: userData.user.aud,
+          role: userData.user.role,
+          created_at: userData.user.created_at,
+          updated_at: userData.user.updated_at,
+          user_metadata: userData.user.user_metadata,
+          app_metadata: userData.user.app_metadata,
         },
       };
     }
   } catch (e) {
-    console.error("Error processing session:", e);
+    console.error("Error processing user session:", e);
   }
 
   context.locals.supabase = supabase;

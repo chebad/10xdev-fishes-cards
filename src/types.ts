@@ -181,3 +181,114 @@ export interface LoginFormData {
 export interface LoginFormProps {
   onLoginSuccess?: () => void;
 }
+
+// --- Dashboard Types ---
+
+/**
+ * Type definition for dashboard tab types.
+ */
+export type DashboardTabType = "ai-generator" | "my-flashcards";
+
+/**
+ * Interface for dashboard tab configuration.
+ */
+export interface DashboardTab {
+  id: DashboardTabType;
+  label: string;
+  count?: number;
+}
+
+/**
+ * State interface for AI generation functionality.
+ */
+export interface AiGenerationState {
+  isGenerating: boolean;
+  suggestions: AiFlashcardSuggestionItem[];
+  sourceText: string;
+  error?: string;
+  lastGeneratedAt?: Date;
+}
+
+/**
+ * State interface for flashcards management.
+ */
+export interface FlashcardsState {
+  flashcards: FlashcardListItemDto[];
+  isLoading: boolean;
+  pagination: PaginationDetails;
+  filters: GetFlashcardsQuery;
+  error?: string;
+  lastFetchedAt?: Date;
+}
+
+/**
+ * Overall dashboard state interface.
+ */
+export interface DashboardState {
+  activeTab: DashboardTabType;
+  aiGeneration: AiGenerationState;
+  flashcards: FlashcardsState;
+}
+
+// --- Component Props Types ---
+
+/**
+ * Props for AI Generator Form component.
+ */
+export interface AiGeneratorFormProps {
+  onGenerate: (command: GenerateAiFlashcardsCommand) => Promise<void>;
+  isGenerating: boolean;
+  error?: string;
+}
+
+/**
+ * Props for AI Suggestions List component.
+ */
+export interface AiSuggestionsListProps {
+  suggestions: AiFlashcardSuggestionItem[];
+  onAccept: (suggestion: AiFlashcardSuggestionItem) => Promise<FlashcardDto | null>;
+  onReject: (suggestion: AiFlashcardSuggestionItem) => void;
+}
+
+/**
+ * Props for Flashcards Controls component.
+ */
+export interface FlashcardsControlsProps {
+  filters: GetFlashcardsQuery;
+  onFiltersChange: (filters: Partial<GetFlashcardsQuery>) => void;
+  onCreateNew: () => void;
+  totalCount?: number;
+}
+
+/**
+ * Props for Flashcards List component.
+ */
+export interface FlashcardsListProps {
+  flashcards: FlashcardListItemDto[];
+  pagination: PaginationDetails;
+  isLoading: boolean;
+  onEdit: (flashcard: FlashcardListItemDto) => void;
+  onDelete: (flashcardId: string) => Promise<void>;
+  onPageChange: (page: number) => void;
+}
+
+/**
+ * Props for individual Flashcard Item component.
+ */
+export interface FlashcardItemProps {
+  flashcard: FlashcardListItemDto;
+  onEdit: (flashcard: FlashcardListItemDto) => void;
+  onDelete: (flashcardId: string) => Promise<void>;
+  isDeleting?: boolean;
+}
+
+/**
+ * Props for Flashcard Modal components (create/edit).
+ */
+export interface FlashcardModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: CreateFlashcardCommand | UpdateFlashcardCommand) => Promise<void>;
+  isSubmitting: boolean;
+  flashcard?: FlashcardDto; // dla edycji
+}

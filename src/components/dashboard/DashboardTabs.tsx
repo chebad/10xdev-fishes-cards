@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-type DashboardTabType = "ai-generator" | "my-flashcards";
+import AiGeneratorTab from "./AiGeneratorTab";
+import MyFlashcardsTab from "./MyFlashcardsTab";
+import type { DashboardTabType } from "@/types";
 
 export default function DashboardTabs() {
   const [activeTab, setActiveTab] = useState<DashboardTabType>("ai-generator");
@@ -9,7 +10,6 @@ export default function DashboardTabs() {
 
   useEffect(() => {
     setMounted(true);
-    console.log("DashboardTabs loaded successfully");
   }, []);
 
   if (!mounted) {
@@ -41,25 +41,11 @@ export default function DashboardTabs() {
         </TabsList>
 
         <TabsContent value="ai-generator" className="mt-0">
-          <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">🤖 Generator Fiszek AI</h2>
-            <p className="text-gray-600 mb-6">Wklej tekst, a AI automatycznie wygeneruje dla Ciebie fiszki do nauki.</p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <p className="text-blue-800 font-medium">💡 Ta funkcja będzie dostępna po implementacji API</p>
-            </div>
-          </div>
+          <AiGeneratorTab />
         </TabsContent>
 
         <TabsContent value="my-flashcards" className="mt-0">
-          <div className="bg-white rounded-lg shadow-sm border p-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">📚 Moja Kolekcja Fiszek</h2>
-            <p className="text-gray-600 mb-6">
-              Tutaj znajdziesz wszystkie swoje fiszki - zarówno wygenerowane przez AI, jak i utworzone ręcznie.
-            </p>
-            <div className="bg-purple-50 border border-purple-200 rounded-lg p-6">
-              <p className="text-purple-800 font-medium">🎯 Ta funkcja będzie dostępna po implementacji bazy danych</p>
-            </div>
-          </div>
+          <MyFlashcardsTab />
         </TabsContent>
       </Tabs>
 

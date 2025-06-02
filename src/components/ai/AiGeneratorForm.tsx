@@ -41,9 +41,8 @@ export default function AiGeneratorForm({ onGenerate, isGenerating, error }: AiG
 
       try {
         await onGenerate({ sourceText });
-      } catch (err) {
+      } catch {
         // Błąd będzie obsłużony przez rodzica
-        console.error("Błąd podczas generowania:", err);
       }
     },
     [sourceText, onGenerate]

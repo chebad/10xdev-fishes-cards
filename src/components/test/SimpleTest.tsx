@@ -6,7 +6,6 @@ export default function SimpleTest() {
 
   useEffect(() => {
     setMounted(true);
-    console.log("SimpleTest component mounted successfully!");
   }, []);
 
   if (!mounted) {

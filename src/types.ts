@@ -190,15 +190,6 @@ export interface LoginFormProps {
 export type DashboardTabType = "ai-generator" | "my-flashcards";
 
 /**
- * Interface for dashboard tab configuration.
- */
-export interface DashboardTab {
-  id: DashboardTabType;
-  label: string;
-  count?: number;
-}
-
-/**
  * State interface for AI generation functionality.
  */
 export interface AiGenerationState {
@@ -219,15 +210,6 @@ export interface FlashcardsState {
   filters: GetFlashcardsQuery;
   error?: string;
   lastFetchedAt?: Date;
-}
-
-/**
- * Overall dashboard state interface.
- */
-export interface DashboardState {
-  activeTab: DashboardTabType;
-  aiGeneration: AiGenerationState;
-  flashcards: FlashcardsState;
 }
 
 // --- Component Props Types ---

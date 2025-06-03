@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { flashcardsApiService } from "@/lib/services/flashcardsApiService";
 import type {
   FlashcardsState,
   GetFlashcardsQuery,
@@ -27,21 +28,6 @@ export const useFlashcards = () => {
     filtersRef.current = state.filters;
   }, [state.filters]);
 
-  const buildQueryString = useCallback((query: GetFlashcardsQuery): string => {
-    const params = new URLSearchParams();
-
-    if (query.page) params.append("page", query.page.toString());
-    if (query.limit) params.append("limit", query.limit.toString());
-    if (query.sortBy) params.append("sortBy", query.sortBy);
-    if (query.sortOrder) params.append("sortOrder", query.sortOrder);
-    if (query.search) params.append("search", query.search);
-    if (query.isAiGenerated !== undefined && query.isAiGenerated !== null) {
-      params.append("isAiGenerated", query.isAiGenerated.toString());
-    }
-
-    return params.toString();
-  }, []);
-
   const fetchFlashcards = useCallback(
     async (query: GetFlashcardsQuery = {}) => {
       setState((prev) => ({
@@ -52,24 +38,9 @@ export const useFlashcards = () => {
       }));
 
       try {
-        const queryString = buildQueryString(query);
-        const url = `/api/flashcards${queryString ? `?${queryString}` : ""}`;
+        console.log(`[FLASHCARDS] Fetching with query:`, query);
 
-        console.log(`[FLASHCARDS] Fetching: ${url}`);
-
-        const response = await fetch(url, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Błąd podczas pobierania fiszek");
-        }
-
-        const data: FlashcardsListDto = await response.json();
+        const data: FlashcardsListDto = await flashcardsApiService.fetchFlashcards(query);
 
         setState((prev) => ({
           ...prev,
@@ -87,26 +58,13 @@ export const useFlashcards = () => {
         }));
       }
     },
-    [buildQueryString]
+    []
   );
 
   const createFlashcard = useCallback(
     async (command: CreateFlashcardCommand): Promise<FlashcardDto | null> => {
       try {
-        const response = await fetch("/api/flashcards", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(command),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Błąd podczas tworzenia fiszki");
-        }
-
-        const flashcard: FlashcardDto = await response.json();
+        const flashcard: FlashcardDto = await flashcardsApiService.createFlashcard(command);
 
         // Odśwież listę fiszek po utworzeniu używając aktualnych filtrów
         await fetchFlashcards(filtersRef.current);
@@ -123,20 +81,7 @@ export const useFlashcards = () => {
   const updateFlashcard = useCallback(
     async (id: string, command: UpdateFlashcardCommand): Promise<FlashcardDto | null> => {
       try {
-        const response = await fetch(`/api/flashcards/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(command),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Błąd podczas aktualizacji fiszki");
-        }
-
-        const flashcard: FlashcardDto = await response.json();
+        const flashcard: FlashcardDto = await flashcardsApiService.updateFlashcard(id, command);
 
         // Zaktualizuj fiszkę w lokalnym stanie
         setState((prev) => ({
@@ -157,17 +102,7 @@ export const useFlashcards = () => {
 
   const deleteFlashcard = useCallback(async (id: string): Promise<void> => {
     try {
-      const response = await fetch(`/api/flashcards/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Błąd podczas usuwania fiszki");
-      }
+      await flashcardsApiService.deleteFlashcard(id);
 
       // Usuń fiszkę z lokalnego stanu
       setState((prev) => ({
@@ -214,19 +149,7 @@ export const useFlashcards = () => {
       }));
 
       try {
-        const response = await fetch("/api/flashcards", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Błąd podczas pobierania fiszek");
-        }
-
-        const data: FlashcardsListDto = await response.json();
+        const data: FlashcardsListDto = await flashcardsApiService.fetchFlashcards();
 
         setState((prev) => ({
           ...prev,

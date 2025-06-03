@@ -1,98 +1,39 @@
-import { useState } from "react";
-import { useFlashcards } from "@/hooks/useFlashcards";
-import FlashcardsControls from "../flashcards/FlashcardsControls";
-import FlashcardsList from "../flashcards/FlashcardsList";
-import FlashcardCreateModal from "../modals/FlashcardCreateModal";
-import FlashcardEditModal from "../modals/FlashcardEditModal";
-import type { FlashcardListItemDto, CreateFlashcardCommand, UpdateFlashcardCommand } from "@/types";
+import React from "react";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import MyFlashcardsView from "../flashcards/MyFlashcardsView";
+import type { GetFlashcardsQuery } from "@/types";
 
+/**
+ * Tab komponent dla sekcji "Moje Fiszki" w dashboard
+ * Wrapper dla MyFlashcardsView z domyślnymi ustawieniami dla dashboard
+ */
 export default function MyFlashcardsTab() {
-  const { state, updateFilters, changePage, deleteFlashcard, createFlashcard, updateFlashcard } = useFlashcards();
-  const [editingFlashcard, setEditingFlashcard] = useState<FlashcardListItemDto | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleCreateNew = () => {
-    setIsCreateModalOpen(true);
-  };
-
-  const handleEdit = (flashcard: FlashcardListItemDto) => {
-    setEditingFlashcard(flashcard);
-  };
-
-  const handleCloseCreateModal = () => {
-    setIsCreateModalOpen(false);
-  };
-
-  const handleCloseEditModal = () => {
-    setEditingFlashcard(null);
-  };
-
-  const handleCreateSubmit = async (data: CreateFlashcardCommand) => {
-    setIsSubmitting(true);
-    try {
-      await createFlashcard(data);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleEditSubmit = async (id: string, data: UpdateFlashcardCommand) => {
-    setIsSubmitting(true);
-    try {
-      await updateFlashcard(id, data);
-    } finally {
-      setIsSubmitting(false);
-    }
+  // Domyślne filtry dla dashboard - najnowsze fiszki z większym limitem
+  const initialFilters: Partial<GetFlashcardsQuery> = {
+    sortBy: "createdAt",
+    sortOrder: "desc",
+    limit: 12, // Większy limit dla dashboard
+    page: 1,
   };
 
   return (
-    <div className="space-y-6">
-      <FlashcardsControls
-        filters={state.filters}
-        onFiltersChange={updateFilters}
-        onCreateNew={handleCreateNew}
-        totalCount={state.pagination.totalItems}
-      />
-
-      {state.error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Błąd</h3>
-              <div className="mt-2 text-sm text-red-700">{state.error}</div>
-            </div>
-          </div>
+    <ErrorBoundary>
+      <div className="space-y-6">
+        {/* Opcjonalny nagłówek lub wprowadzenie dla dashboard */}
+        <div className="text-center bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+            <span>📚</span>
+            Zarządzaj swoimi fiszkami
+          </h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Przeglądaj, edytuj i organizuj swoje fiszki edukacyjne. 
+            Używaj filtrów i wyszukiwania żeby szybko znaleźć to czego szukasz.
+          </p>
         </div>
-      )}
 
-      <FlashcardsList
-        flashcards={state.flashcards}
-        pagination={state.pagination}
-        isLoading={state.isLoading}
-        onEdit={handleEdit}
-        onDelete={deleteFlashcard}
-        onPageChange={changePage}
-      />
-
-      {/* Modal tworzenia fiszki */}
-      <FlashcardCreateModal
-        isOpen={isCreateModalOpen}
-        onClose={handleCloseCreateModal}
-        onSubmit={handleCreateSubmit}
-        isSubmitting={isSubmitting}
-      />
-
-      {/* Modal edycji fiszki */}
-      {editingFlashcard && (
-        <FlashcardEditModal
-          isOpen={true}
-          onClose={handleCloseEditModal}
-          onSubmit={handleEditSubmit}
-          isSubmitting={isSubmitting}
-          flashcard={editingFlashcard}
-        />
-      )}
-    </div>
+        {/* Główny widok fiszek */}
+        <MyFlashcardsView initialFilters={initialFilters} />
+      </div>
+    </ErrorBoundary>
   );
 }

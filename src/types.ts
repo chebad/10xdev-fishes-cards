@@ -275,6 +275,17 @@ export interface FlashcardModalProps {
   flashcard?: FlashcardDto; // dla edycji
 }
 
+/**
+ * Props for Flashcard Edit Modal component (specific interface).
+ */
+export interface FlashcardEditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (id: string, data: UpdateFlashcardCommand) => Promise<void>;
+  isSubmitting: boolean;
+  flashcard?: FlashcardDto | FlashcardListItemDto;
+}
+
 // --- Additional AI Generator Types ---
 
 /**
@@ -315,4 +326,73 @@ export interface ValidationState {
   isValid: boolean;
   error?: string;
   warnings?: string[];
+}
+
+// --- New ViewModel Types for My Flashcards View ---
+
+/**
+ * Stan głównego widoku My Flashcards
+ */
+export interface MyFlashcardsViewState {
+  flashcards: FlashcardListItemDto[];
+  pagination: PaginationDetails;
+  filters: GetFlashcardsQuery;
+  isLoading: boolean;
+  error: string | null;
+  lastFetchedAt?: Date;
+}
+
+/**
+ * Stan modali w widoku My Flashcards
+ */
+export interface ModalState {
+  createModal: {
+    isOpen: boolean;
+    isSubmitting: boolean;
+  };
+  editModal: {
+    isOpen: boolean;
+    isSubmitting: boolean;
+    flashcard?: FlashcardDto;
+  };
+  deleteModal: {
+    isOpen: boolean;
+    isDeleting: boolean;
+    flashcard?: FlashcardListItemDto;
+  };
+}
+
+/**
+ * Błędy API
+ */
+export interface ApiError {
+  message: string;
+  details?: Record<string, string[]>;
+  status?: number;
+}
+
+/**
+ * Błędy walidacji formularza
+ */
+export interface ValidationErrors {
+  question?: string;
+  answer?: string;
+}
+
+/**
+ * Propsy głównego komponentu My Flashcards View
+ */
+export interface MyFlashcardsViewProps {
+  initialFilters?: Partial<GetFlashcardsQuery>;
+}
+
+/**
+ * Props for Delete Confirm Modal component.
+ */
+export interface DeleteConfirmModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+  flashcard?: FlashcardListItemDto;
+  isDeleting: boolean;
 }

@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
+import EmptyState from "@/components/ui/EmptyState";
 import FlashcardItem from "./FlashcardItem";
 import type { FlashcardsListProps } from "@/types";
 
@@ -12,37 +14,17 @@ export default function FlashcardsList({
   onPageChange,
 }: FlashcardsListProps) {
   if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="p-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Ładowanie fiszek...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <LoadingSkeleton variant="list" count={3} />;
   }
 
   if (flashcards.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-8">
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl text-gray-400">📚</span>
-            </div>
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Brak fiszek</h3>
-              <p className="text-gray-600">
-                Nie znaleziono fiszek spełniających kryteria wyszukiwania.
-                <br />
-                Spróbuj zmienić filtry lub utwórz nową fiszkę.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon="📚"
+        title="Brak fiszek"
+        description="Nie znaleziono fiszek spełniających kryteria wyszukiwania. Spróbuj zmienić filtry lub utwórz nową fiszkę."
+        className="bg-white rounded-lg border shadow-sm"
+      />
     );
   }
 
@@ -94,24 +76,26 @@ export default function FlashcardsList({
       {pagination.totalPages > 1 && (
         <Card>
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               {/* Informacje o paginacji */}
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 order-2 sm:order-1">
                 Strona {pagination.currentPage} z {pagination.totalPages}
                 {" • "}
                 Wyświetlono {flashcards.length} z {pagination.totalItems} fiszek
               </div>
 
               {/* Przyciski paginacji */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 order-1 sm:order-2">
                 {/* Poprzednia strona */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onPageChange(pagination.currentPage - 1)}
                   disabled={pagination.currentPage <= 1}
+                  className="px-3"
                 >
-                  ← Poprzednia
+                  <span className="hidden sm:inline">← Poprzednia</span>
+                  <span className="sm:hidden">←</span>
                 </Button>
 
                 {/* Numery stron */}
@@ -139,14 +123,23 @@ export default function FlashcardsList({
                   })}
                 </div>
 
+                {/* Mobilny selektor strony */}
+                <div className="md:hidden flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">
+                    {pagination.currentPage}/{pagination.totalPages}
+                  </span>
+                </div>
+
                 {/* Następna strona */}
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => onPageChange(pagination.currentPage + 1)}
                   disabled={pagination.currentPage >= pagination.totalPages}
+                  className="px-3"
                 >
-                  Następna →
+                  <span className="hidden sm:inline">Następna →</span>
+                  <span className="sm:hidden">→</span>
                 </Button>
               </div>
             </div>

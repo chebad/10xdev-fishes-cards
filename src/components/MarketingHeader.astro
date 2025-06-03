@@ -1,5 +1,12 @@
 ---
 import AppLogo from "./AppLogo.astro";
+
+// Sprawdź czy użytkownik jest zalogowany
+const isAuthenticated = !!Astro.locals.session?.user;
+const logoHref = isAuthenticated ? "/app" : "/";
+const logoAriaLabel = isAuthenticated 
+  ? "Przejdź do aplikacji 10xdevs-fishes-cards" 
+  : "Strona główna 10xdevs-fishes-cards";
 ---
 
 <header
@@ -10,8 +17,8 @@ import AppLogo from "./AppLogo.astro";
     <div class="mr-4 hidden md:flex">
       <a
         class="mr-6 flex items-center space-x-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        href="/"
-        aria-label="Strona główna 10xdevs-fishes-cards"
+        href={logoHref}
+        aria-label={logoAriaLabel}
       >
         <AppLogo className="h-6 w-6" />
         <span class="hidden font-bold sm:inline-block"> 10xdevs-fishes-cards </span>
@@ -22,8 +29,8 @@ import AppLogo from "./AppLogo.astro";
     <div class="flex md:hidden">
       <a
         class="flex items-center space-x-2 rounded-sm p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-        href="/"
-        aria-label="Strona główna 10xdevs-fishes-cards"
+        href={logoHref}
+        aria-label={logoAriaLabel}
       >
         <AppLogo className="h-5 w-5" />
         <span class="text-sm font-bold"> 10xdevs-fishes-cards </span>

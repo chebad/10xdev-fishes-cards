@@ -396,3 +396,33 @@ export interface DeleteConfirmModalProps {
   flashcard?: FlashcardListItemDto;
   isDeleting: boolean;
 }
+
+// --- FAQ Types ---
+
+/**
+ * Reprezentuje pojedyncze pytanie i odpowiedź w sekcji FAQ
+ */
+export interface FAQItem {
+  id: string;
+  question: string;
+  answer: string;
+  category?: string;
+}
+
+/**
+ * Props dla komponentu FAQAccordion
+ */
+export interface FAQAccordionProps {
+  items: FAQItem[];
+  allowMultiple?: boolean;
+  className?: string;
+}
+
+/**
+ * Opcjonalny typ dla grupowania FAQ w kategorie
+ */
+export interface FAQCategory {
+  id: string;
+  title: string;
+  items: FAQItem[];
+}

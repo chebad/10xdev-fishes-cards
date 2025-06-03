@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toaster } from "@/components/ui/sonner";
 import AiGeneratorTab from "./AiGeneratorTab";
 import MyFlashcardsTab from "./MyFlashcardsTab";
 import type { DashboardTabType } from "@/types";
@@ -22,56 +23,37 @@ export default function DashboardTabs() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Nagłówek */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-lg text-gray-600">Witaj w aplikacji do nauki z fiszkami!</p>
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTabType)}>
-        <TabsList className="grid w-full grid-cols-2 mb-8 h-12">
-          <TabsTrigger value="ai-generator" className="text-base font-medium">
-            🤖 Generator AI
-          </TabsTrigger>
-          <TabsTrigger value="my-flashcards" className="text-base font-medium">
-            📚 Moje Fiszki
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="ai-generator" className="mt-0">
-          <AiGeneratorTab />
-        </TabsContent>
-
-        <TabsContent value="my-flashcards" className="mt-0">
-          <MyFlashcardsTab />
-        </TabsContent>
-      </Tabs>
-
-      {/* Informacje o koncie */}
-      <div className="bg-gray-50 rounded-lg p-6 mt-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">ℹ️ Informacje o koncie</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="font-medium text-gray-700">Status:</span>
-            <span className="ml-2 text-green-600">✅ Zalogowany</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Wersja:</span>
-            <span className="ml-2 text-gray-600">Beta 1.0</span>
-          </div>
+    <>
+      <div className="space-y-8">
+        {/* Nagłówek */}
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+          <p className="text-lg text-gray-600">Witaj w aplikacji do nauki z fiszkami!</p>
         </div>
+
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTabType)}>
+          <TabsList className="grid w-full grid-cols-2 mb-8 h-12">
+            <TabsTrigger value="ai-generator" className="text-base font-medium">
+              🤖 Generator AI
+            </TabsTrigger>
+            <TabsTrigger value="my-flashcards" className="text-base font-medium">
+              📚 Moje Fiszki
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="ai-generator" className="mt-0">
+            <AiGeneratorTab />
+          </TabsContent>
+
+          <TabsContent value="my-flashcards" className="mt-0">
+            <MyFlashcardsTab />
+          </TabsContent>
+        </Tabs>
       </div>
 
-      {/* Logowanie działania */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="text-blue-900 font-medium mb-2">🎉 Logowanie działa!</h4>
-        <p className="text-blue-800 text-sm">
-          Pomyślnie zalogowałeś się do aplikacji. Ta strona dashboard jest tymczasowa - w przyszłości będzie zawierać
-          funkcje zarządzania fiszkami.
-        </p>
-      </div>
-    </div>
+      {/* Toast Notifications */}
+      <Toaster />
+    </>
   );
 }

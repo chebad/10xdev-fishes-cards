@@ -25,11 +25,5 @@ if (!user || !userEmail) {
 
     <DashboardTabs client:only="react" />
 
-    <!-- Debug info -->
-    <div class="mt-8 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-      <p>Zalogowany jako: {userEmail}</p>
-      <p>Timestamp: {new Date().toLocaleString("pl-PL")}</p>
-      <p>User ID: {user.id}</p>
-    </div>
   </div>
 </DashboardLayout>

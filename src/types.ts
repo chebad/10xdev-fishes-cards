@@ -274,3 +274,45 @@ export interface FlashcardModalProps {
   isSubmitting: boolean;
   flashcard?: FlashcardDto; // dla edycji
 }
+
+// --- Additional AI Generator Types ---
+
+/**
+ * Props for individual AI Suggestion Card component.
+ */
+export interface AiSuggestionCardProps {
+  suggestion: AiFlashcardSuggestionItem;
+  onAccept: (suggestion: AiFlashcardSuggestionItem) => Promise<FlashcardDto | null>;
+  onReject: (suggestion: AiFlashcardSuggestionItem) => void;
+  isProcessing?: boolean;
+}
+
+/**
+ * State interface for editable suggestion functionality.
+ */
+export interface EditableSuggestionState {
+  question: string;
+  answer: string;
+  isEditing: boolean;
+  hasChanges: boolean;
+  originalSuggestion: AiFlashcardSuggestionItem;
+}
+
+/**
+ * Props for character counter component.
+ */
+export interface CharacterCounterProps {
+  current: number;
+  min: number;
+  max: number;
+  showProgress?: boolean;
+}
+
+/**
+ * Interface for validation state.
+ */
+export interface ValidationState {
+  isValid: boolean;
+  error?: string;
+  warnings?: string[];
+}

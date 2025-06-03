@@ -426,3 +426,69 @@ export interface FAQCategory {
   title: string;
   items: FAQItem[];
 }
+
+// --- Contact Form Types ---
+
+/**
+ * Stan formularza kontaktowego
+ */
+export interface ContactFormState {
+  isSubmitting: boolean;
+  isSuccess: boolean;
+  errors: ContactFormErrors | null;
+  submitAttempted: boolean;
+}
+
+/**
+ * Dane formularza kontaktowego dla komponentów React
+ */
+export interface ContactFormData {
+  email: string;
+  subject: string;
+  messageBody: string;
+}
+
+/**
+ * Błędy walidacji formularza kontaktowego
+ */
+export interface ContactFormErrors {
+  email?: string;
+  subject?: string;
+  messageBody?: string;
+  general?: string;
+}
+
+/**
+ * Props dla komponentu ContactForm
+ */
+export interface ContactFormProps {
+  onSubmit: (data: ContactFormData) => Promise<void>;
+  initialData?: Partial<ContactFormData>;
+}
+
+/**
+ * Props dla pól formularza kontaktowego
+ */
+export interface ContactFormFieldProps {
+  name: keyof ContactFormData;
+  label: string;
+  type: 'email' | 'text' | 'textarea';
+  value: string;
+  onChange: (value: string) => void;
+  onBlur: () => void;
+  error?: string;
+  required?: boolean;
+  placeholder?: string;
+  maxLength?: number;
+}
+
+/**
+ * Konfiguracja walidacji pola
+ */
+export interface FieldValidationConfig {
+  required: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  customValidator?: (value: string) => string | null;
+}

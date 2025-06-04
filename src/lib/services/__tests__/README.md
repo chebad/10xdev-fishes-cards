@@ -4,9 +4,10 @@
 
 ```
 __tests__/
-├── flashcardService.createFlashcard.test.ts  # Testy dla metody createFlashcard
-├── vitest.setup.ts                           # Konfiguracja globalna testów
-└── README.md                                 # Ta dokumentacja
+├── flashcardService.createFlashcard.test.ts   # Testy dla metody createFlashcard
+├── flashcardService.getUserFlashcards.test.ts # Testy dla metody getUserFlashcards
+├── vitest.setup.ts                            # Konfiguracja globalna testów
+└── README.md                                  # Ta dokumentacja
 ```
 
 ## 🎯 Zakres Testów dla `createFlashcard()`
@@ -42,6 +43,69 @@ __tests__/
 ### 🎭 **Mock Verification (Weryfikacja Mocków)**
 - 🎭 Kolejność wywołań metod Supabase
 - 🎭 Warunki, gdy niektóre metody nie powinny być wywołane
+
+## 🎯 Zakres Testów dla `getUserFlashcards()`
+
+### ✅ **Walidacja Parametrów (4 testy)**
+- ✅ Rzuca błąd dla pustego userId
+- ✅ Rzuca błąd dla userId z białymi znakami
+- ✅ Rzuca błąd dla null/undefined userId
+- ✅ Akceptuje poprawny userId
+
+### 🔍 **Filtrowanie Wyszukiwania (5 testów)**
+- 🔍 Brak filtra dla null/pustego search
+- 🔍 Brak filtra dla białych znaków
+- 🔍 Escapowanie znaków specjalnych (%, _, \)
+- 🔍 Przycinanie białych znaków
+
+### 🤖 **Filtrowanie AI-Generated (4 testy)**
+- 🤖 Brak filtra dla undefined/null
+- 🤖 Filtrowanie fiszek AI (true/false)
+
+### 📈 **Sortowanie (5 testów)**
+- 📈 Domyślne sortowanie (created_at desc)
+- 📈 Sortowanie po różnych kolumnach
+- 📈 Fallback dla nieprawidłowego sortBy
+
+### 📄 **Paginacja (4 testy)**
+- 📄 Domyślne wartości (strona 1, limit 10)
+- 📄 Obliczanie offsetów dla różnych stron
+- 📄 Obsługa null values
+
+### 🔄 **Mapowanie Danych (1 test)**
+- 🔄 Transformacja database → DTO format
+
+### 📊 **Szczegóły Paginacji (4 testy)**
+- 📊 Obliczanie totalPages, currentPage
+- 📊 Obsługa pustych wyników
+- 📊 Obsługa null count
+
+### ⚠️ **Przypadki Brzegowe (3 testy)**
+- ⚠️ Strony poza zakresem
+- ⚠️ Ostrzeżenia w logach
+- ⚠️ Walidacja zakresu stron
+
+### 🚨 **Obsługa Błędów Supabase (5 testów)**
+- 🚨 Błędy PGRST116, PGRST301
+- 🚨 Nieznane błędy Supabase
+- 🚨 Logowanie błędów
+- 🚨 Obsługa null data
+
+### 💥 **Błędy Generyczne (3 testy)**
+- 💥 JavaScript Error objects
+- 💥 Nieoczekiwane błędy
+- 💥 Logowanie w catch block
+
+### 🎯 **Scenariusze Integracyjne (3 testy)**
+- 🎯 Złożone filtrowanie + sortowanie + paginacja
+- 🎯 Brak wyników dla filtrów
+- 🎯 Maksymalne limity stron
+
+### 🔗 **Walidacja API Supabase (2 testy)**
+- 🔗 Konstrukcja łańcucha zapytań
+- 🔗 Minimalne vs pełne query
+
+**RAZEM**: 43 testy jednostkowe dla getUserFlashcards
 
 ## 🛠️ **Konfiguracja Testów**
 
@@ -79,6 +143,9 @@ npm run test src/lib/services
 # Tylko testy createFlashcard
 npm run test flashcardService.createFlashcard.test.ts
 
+# Tylko testy getUserFlashcards
+npm run test flashcardService.getUserFlashcards.test.ts
+
 # Watch mode podczas development
 npm run test:watch src/lib/services
 
@@ -108,7 +175,7 @@ it('should create flashcard successfully', async () => {
 
 ## 🔍 **Pokrycie Testowe**
 
-### **Przypadki testowe:**
+### **Przypadki testowe dla createFlashcard():**
 - ✅ **Happy paths**: 3 scenariusze
 - ❌ **Error cases**: 3 scenariusze  
 - 🎯 **Business rules**: 3 scenariusze
@@ -119,10 +186,23 @@ it('should create flashcard successfully', async () => {
 
 **RAZEM**: 17 testów jednostkowych
 
+### **Przypadki testowe dla getUserFlashcards():**
+- ✅ **Walidacja**: 4 scenariusze
+- 🔍 **Filtrowanie**: 9 scenariuszy (search + AI)
+- 📈 **Sortowanie**: 5 scenariuszy
+- 📄 **Paginacja**: 8 scenariuszy
+- 🔄 **Mapowanie**: 1 scenariusz
+- ⚠️ **Przypadki brzegowe**: 3 scenariusze
+- 🚨 **Obsługa błędów**: 8 scenariuszy
+- 🎯 **Integracja**: 3 scenariusze
+- 🔗 **API validation**: 2 scenariusze
+
+**RAZEM**: 43 testy jednostkowe
+
 ### **Metryki pokrycia**:
-- **Lines**: 100% (wszystkie linie kodu metody)
+- **Lines**: 100% (wszystkie linie kodu metod)
 - **Branches**: 100% (wszystkie ścieżki if/else)
-- **Functions**: 100% (cała metoda createFlashcard)
+- **Functions**: 100% (wszystkie testowane metody)
 - **Statements**: 100% (wszystkie instrukcje)
 
 ## 🎯 **Najlepsze Praktyki**
@@ -165,6 +245,17 @@ it('should set ai_accepted_at only for AI-generated flashcards', async () => {
 })
 ```
 
+### **5. Factory Patterns dla Data**
+```typescript
+// ✅ Reuzywalne factory functions dla mock data
+const createMockFlashcardData = (overrides = {}) => ({
+  id: 'default-id',
+  question: 'Default question',
+  // ... default values
+  ...overrides, // Pozwala na override specific fields
+})
+```
+
 ## 🔗 **Powiązane Pliki**
 
 - `../flashcardService.ts` - Implementacja serwisu
@@ -175,9 +266,9 @@ it('should set ai_accepted_at only for AI-generated flashcards', async () => {
 ## 📈 **Następne Kroki**
 
 1. **Dodaj testy dla pozostałych metod**:
-   - `getUserFlashcards()` - logika paginacji i filtrowania
    - `updateFlashcard()` - walidacja autoryzacji
    - `softDeleteFlashcard()` - logika soft delete
+   - `getFlashcardById()` - pobieranie pojedynczej fiszki
 
 2. **Dodaj testy integracyjne**:
    - Testy E2E z prawdziwą bazą danych
@@ -185,4 +276,8 @@ it('should set ai_accepted_at only for AI-generated flashcards', async () => {
 
 3. **Performance testing**:
    - Testy dla dużych ilości danych
-   - Memory leaks w long-running operations 
+   - Memory leaks w long-running operations
+
+4. **Cross-service testing**:
+   - Interakcje między FlashcardService i AI service
+   - Testy workflow dla całego procesu tworzenia fiszek 

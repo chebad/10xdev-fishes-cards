@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { FlashcardService } from "../flashcardService";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { GetFlashcardsQuery, FlashcardListItemDto } from "../../../types";
 

@@ -83,7 +83,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                   Logowanie...
                 </>
               ) : (
-                "Zaloguj"
+                "Zaloguj się"
               )}
             </Button>
           </form>

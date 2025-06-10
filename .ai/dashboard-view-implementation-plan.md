@@ -164,7 +164,7 @@ Oprócz typów już zdefiniowanych w `src/types.ts`, potrzebne będą następuj�
 
 ```typescript
 // Dodatkowe typy dla Dashboard
-export type DashboardTabType = 'ai-generator' | 'my-flashcards';
+export type DashboardTabType = "ai-generator" | "my-flashcards";
 
 export interface DashboardTab {
   id: DashboardTabType;
@@ -249,7 +249,7 @@ Widok dashboard wymaga zarządzania złożonym stanem obejmującym generowanie A
 ```typescript
 // src/hooks/useDashboard.ts
 export const useDashboard = () => {
-  const [activeTab, setActiveTab] = useState<DashboardTabType>('ai-generator');
+  const [activeTab, setActiveTab] = useState<DashboardTabType>("ai-generator");
   // Zarządzanie głównym stanem dashboard
 };
 
@@ -258,17 +258,17 @@ export const useAiGeneration = () => {
   const [state, setState] = useState<AiGenerationState>({
     isGenerating: false,
     suggestions: [],
-    sourceText: '',
+    sourceText: "",
   });
-  
+
   const generateSuggestions = async (command: GenerateAiFlashcardsCommand) => {
     // Wywołanie API POST /api/flashcards/generate-ai
   };
-  
+
   const acceptSuggestion = async (suggestion: AiFlashcardSuggestionItem) => {
     // Wywołanie API POST /api/flashcards
   };
-  
+
   return { state, generateSuggestions, acceptSuggestion };
 };
 
@@ -280,23 +280,23 @@ export const useFlashcards = () => {
     pagination: { currentPage: 1, totalPages: 1, totalItems: 0, limit: 10 },
     filters: {},
   });
-  
+
   const fetchFlashcards = async (query?: GetFlashcardsQuery) => {
     // Wywołanie API GET /api/flashcards
   };
-  
+
   const createFlashcard = async (command: CreateFlashcardCommand) => {
     // Wywołanie API POST /api/flashcards
   };
-  
+
   const updateFlashcard = async (id: string, command: UpdateFlashcardCommand) => {
     // Wywołanie API PATCH /api/flashcards/{id}
   };
-  
+
   const deleteFlashcard = async (id: string) => {
     // Wywołanie API DELETE /api/flashcards/{id}
   };
-  
+
   return { state, fetchFlashcards, createFlashcard, updateFlashcard, deleteFlashcard };
 };
 ```
@@ -459,67 +459,79 @@ Wszystkie wywołania API muszą zawierać nagłówek autoryzacji z JWT tokenem z
 ## 11. Kroki implementacji
 
 1. **Przygotowanie środowiska i zależności**
+
    - Upewnij się, że Shadcn/ui jest skonfigurowane z komponentami: `Tabs`, `Button`, `Input`, `Textarea`, `Dialog`, `Select`
    - Dodaj komponenty UI: `npx shadcn-ui@latest add tabs dialog input textarea select button`
    - Skonfiguruj klienta Supabase dla autoryzacji
 
 2. **Implementacja layoutu i routing**
+
    - Stwórz `src/layouts/DashboardLayout.astro` z podstawową strukturą
    - Stwórz `src/pages/app.astro` z logiką autoryzacji i przekierowania
    - Zaimplementuj middleware sprawdzające autoryzację (opcjonalnie)
 
 3. **Implementacja nagłówka dla zalogowanych użytkowników**
+
    - Stwórz `src/components/navigation/AuthenticatedHeader.tsx`
    - Dodaj logo, informacje o użytkowniku, przycisk wylogowania
    - Zintegruj z Supabase Auth dla wylogowania
 
 4. **Implementacja systemu zakładek**
+
    - Stwórz `src/components/dashboard/DashboardTabs.tsx` z komponentami Shadcn/ui
    - Zaimplementuj przełączanie między zakładkami
    - Stwórz szkielety `AiGeneratorTab` i `MyFlashcardsTab`
 
 5. **Implementacja custom hooks**
+
    - Stwórz `src/hooks/useDashboard.ts` dla zarządzania stanem głównym
    - Stwórz `src/hooks/useAiGeneration.ts` z integracją API
    - Stwórz `src/hooks/useFlashcards.ts` z pełnym CRUD
    - Dodaj obsługę błędów i stanów ładowania
 
 6. **Implementacja zakładki Generator AI**
+
    - Stwórz `src/components/ai/AiGeneratorForm.tsx` z walidacją
    - Stwórz `src/components/ai/AiSuggestionsList.tsx` i `AiSuggestionItem.tsx`
    - Zintegruj z `useAiGeneration` hook
    - Dodaj stany ładowania i obsługę błędów
 
 7. **Implementacja zakładki Moje Fiszki**
+
    - Stwórz `src/components/flashcards/FlashcardsControls.tsx` z wyszukiwaniem i filtrami
    - Stwórz `src/components/flashcards/FlashcardsList.tsx` z paginacją
    - Stwórz `src/components/flashcards/FlashcardItem.tsx` z akcjami CRUD
    - Zintegruj z `useFlashcards` hook
 
 8. **Implementacja modali CRUD**
+
    - Stwórz `src/components/flashcards/FlashcardCreateModal.tsx`
    - Stwórz `src/components/flashcards/FlashcardEditModal.tsx`
    - Dodaj walidację formularzy zgodną z API
    - Zintegruj z hook'ami i aktualizacją stanu
 
 9. **Stylizacja i responsywność**
+
    - Zastosuj Tailwind CSS dla pełnej responsywności
    - Zoptymalizuj dla urządzeń mobilnych (zakładki, tabele, modále)
    - Dodaj animacje i transition dla lepszego UX
 
 10. **Dostępność i A11y**
+
     - Upewnij się, że zakładki są dostępne z klawiatury
     - Dodaj proper focus management w modalach
     - Sprawdź współdziałanie z czytnikami ekranu
     - Dodaj odpowiednie aria-labels i role
 
 11. **Obsługa błędów i edge cases**
+
     - Zaimplementuj toast notifications dla operacji
     - Dodaj confirmation dialogs dla destructive actions
     - Obsłuż stany pustej listy i błędów ładowania
     - Przetestuj z różnymi stanami sieciowymi
 
 12. **Optymalizacja wydajności**
+
     - Dodaj debounce dla wyszukiwania (300ms)
     - Zoptymalizuj re-renderowanie list z React.memo
     - Rozważ lazy loading dla dużych list fiszek

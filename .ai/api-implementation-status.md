@@ -62,7 +62,7 @@ Endpoint `POST /api/flashcards` został pomyślnie zaimplementowany zgodnie z pl
 ```json
 {
   "question": "string (min 5 chars)", // ✅ Zaimplementowane
-  "answer": "string (min 3 chars)",   // ✅ Zaimplementowane
+  "answer": "string (min 3 chars)", // ✅ Zaimplementowane
   "isAiGenerated": "boolean (optional, default: false)", // ✅ Zaimplementowane
   "sourceTextForAi": "string (optional, required if isAiGenerated is true)" // ✅ Zaimplementowane
 }
@@ -72,16 +72,16 @@ Endpoint `POST /api/flashcards` został pomyślnie zaimplementowany zgodnie z pl
 
 ```json
 {
-  "id": "uuid",           // ✅ Zaimplementowane
-  "userId": "uuid",       // ✅ Zaimplementowane
-  "question": "string",   // ✅ Zaimplementowane
-  "answer": "string",     // ✅ Zaimplementowane
+  "id": "uuid", // ✅ Zaimplementowane
+  "userId": "uuid", // ✅ Zaimplementowane
+  "question": "string", // ✅ Zaimplementowane
+  "answer": "string", // ✅ Zaimplementowane
   "sourceTextForAi": "string | null", // ✅ Zaimplementowane
-  "isAiGenerated": "boolean",         // ✅ Zaimplementowane
+  "isAiGenerated": "boolean", // ✅ Zaimplementowane
   "aiAcceptedAt": "timestamp | null", // ✅ Zaimplementowane
-  "createdAt": "timestamp",           // ✅ Zaimplementowane
-  "updatedAt": "timestamp",           // ✅ Zaimplementowane
-  "isDeleted": "boolean"              // ✅ Zaimplementowane
+  "createdAt": "timestamp", // ✅ Zaimplementowane
+  "updatedAt": "timestamp", // ✅ Zaimplementowane
+  "isDeleted": "boolean" // ✅ Zaimplementowane
 }
 ```
 
@@ -243,24 +243,24 @@ Endpoint `GET /api/flashcards` został pomyślnie zaimplementowany zgodnie z pla
 
 ```json
 {
-    "data": [
-        {
-            "id": "uuid",
-            "userId": "uuid",
-            "question": "string",
-            "answer": "string",
-            "isAiGenerated": "boolean",
-            "aiAcceptedAt": "timestamp | null",
-            "createdAt": "timestamp",
-            "updatedAt": "timestamp"
-        }
-    ],
-    "pagination": {
-        "currentPage": 1,
-        "totalPages": 5,
-        "totalItems": 50,
-        "limit": 10
+  "data": [
+    {
+      "id": "uuid",
+      "userId": "uuid",
+      "question": "string",
+      "answer": "string",
+      "isAiGenerated": "boolean",
+      "aiAcceptedAt": "timestamp | null",
+      "createdAt": "timestamp",
+      "updatedAt": "timestamp"
     }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 5,
+    "totalItems": 50,
+    "limit": 10
+  }
 }
 ```
 
@@ -391,7 +391,7 @@ Endpoint `GET /api/flashcards/{flashcardId}` został pomyślnie zaimplementowany
 ```json
 {
   "id": "uuid",
-  "userId": "uuid", 
+  "userId": "uuid",
   "question": "string",
   "answer": "string",
   "sourceTextForAi": "string | null",
@@ -515,12 +515,12 @@ W przypadku problemów z endpointem, sprawdź:
 
 ### Częste problemy i rozwiązania
 
-| Problem | Możliwa przyczyna | Rozwiązanie |
-|---------|-------------------|-------------|
-| 401 Unauthorized | Brak/nieprawidłowy token | Sprawdź nagłówek Authorization |
-| 400 Bad Request | Nieprawidłowy UUID | Sprawdź format flashcardId |
-| 404 Not Found | Fiszka nie istnieje/nie należy do użytkownika | Sprawdź ownership i is_deleted |
-| 500 Internal Server Error | Błąd bazy danych | Sprawdź logi serwisu i połączenie z Supabase |
+| Problem                   | Możliwa przyczyna                             | Rozwiązanie                                  |
+| ------------------------- | --------------------------------------------- | -------------------------------------------- |
+| 401 Unauthorized          | Brak/nieprawidłowy token                      | Sprawdź nagłówek Authorization               |
+| 400 Bad Request           | Nieprawidłowy UUID                            | Sprawdź format flashcardId                   |
+| 404 Not Found             | Fiszka nie istnieje/nie należy do użytkownika | Sprawdź ownership i is_deleted               |
+| 500 Internal Server Error | Błąd bazy danych                              | Sprawdź logi serwisu i połączenie z Supabase |
 
 ### Sprawdzenie stanu fiszki przed aktualizacją
 
@@ -773,12 +773,12 @@ W przypadku problemów z endpointem, sprawdź:
 
 ### Częste problemy i rozwiązania
 
-| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                             |
-|---------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `401 Unauthorized`        | Brak/nieprawidłowy token JWT.                                                     | Sprawdź nagłówek `Authorization: Bearer {token}`. Upewnij się, że token jest aktualny i poprawny.                                         |
-| `400 Bad Request`         | Nieprawidłowy format `flashcardId` (nie jest UUID).                               | Upewnij się, że `flashcardId` w URL jest poprawnym UUID.                                                                                    |
-| `404 Not Found`           | Fiszka o podanym ID nie istnieje, należy do innego użytkownika, lub jest już usunięta. | Sprawdź poprawność `flashcardId`. Upewnij się, że fiszka istnieje i należy do zalogowanego użytkownika oraz nie została wcześniej usunięta. |
-| `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie.   | Sprawdź logi serwera (API i serwis) oraz logi Supabase. Zweryfikuj połączenie z bazą danych i poprawność polityk RLS.                     |
+| Problem                     | Możliwa przyczyna                                                                      | Rozwiązanie                                                                                                                                 |
+| --------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `401 Unauthorized`          | Brak/nieprawidłowy token JWT.                                                          | Sprawdź nagłówek `Authorization: Bearer {token}`. Upewnij się, że token jest aktualny i poprawny.                                           |
+| `400 Bad Request`           | Nieprawidłowy format `flashcardId` (nie jest UUID).                                    | Upewnij się, że `flashcardId` w URL jest poprawnym UUID.                                                                                    |
+| `404 Not Found`             | Fiszka o podanym ID nie istnieje, należy do innego użytkownika, lub jest już usunięta. | Sprawdź poprawność `flashcardId`. Upewnij się, że fiszka istnieje i należy do zalogowanego użytkownika oraz nie została wcześniej usunięta. |
+| `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie.       | Sprawdź logi serwera (API i serwis) oraz logi Supabase. Zweryfikuj połączenie z bazą danych i poprawność polityk RLS.                       |
 
 ---
 
@@ -936,12 +936,12 @@ W przypadku problemów z endpointem, sprawdź:
 
 ### Częste problemy i rozwiązania
 
-| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                             |
-|---------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `401 Unauthorized`        | Brak/nieprawidłowy token JWT.                                                     | Sprawdź nagłówek `Authorization: Bearer {token}`.                                                                                         |
-| `400 Bad Request`         | Nieprawidłowy format `flashcardId` (nie jest UUID).                               | Upewnij się, że `flashcardId` w URL jest poprawnym UUID.                                                                                    |
-| `404 Not Found`           | Fiszka o podanym ID nie istnieje, należy do innego użytkownika, lub jest już usunięta. | Sprawdź poprawność `flashcardId`. Upewnij się, że fiszka istnieje i należy do zalogowanego użytkownika oraz nie została wcześniej usunięta. |
-| `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie.   | Sprawdź logi serwera (API i serwis) oraz logi Supabase. Zweryfikuj połączenie z bazą danych i poprawność polityk RLS.                     |
+| Problem                     | Możliwa przyczyna                                                                      | Rozwiązanie                                                                                                                                 |
+| --------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `401 Unauthorized`          | Brak/nieprawidłowy token JWT.                                                          | Sprawdź nagłówek `Authorization: Bearer {token}`.                                                                                           |
+| `400 Bad Request`           | Nieprawidłowy format `flashcardId` (nie jest UUID).                                    | Upewnij się, że `flashcardId` w URL jest poprawnym UUID.                                                                                    |
+| `404 Not Found`             | Fiszka o podanym ID nie istnieje, należy do innego użytkownika, lub jest już usunięta. | Sprawdź poprawność `flashcardId`. Upewnij się, że fiszka istnieje i należy do zalogowanego użytkownika oraz nie została wcześniej usunięta. |
+| `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie.       | Sprawdź logi serwera (API i serwis) oraz logi Supabase. Zweryfikuj połączenie z bazą danych i poprawność polityk RLS.                       |
 
 ---
 
@@ -1113,13 +1113,13 @@ W przypadku problemów z endpointem, sprawdź:
 
 ### Częste problemy i rozwiązania
 
-| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                             |
-|---------------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `401 Unauthorized`        | Brak/nieprawidłowy token JWT.                                                     | Sprawdź nagłówek `Authorization: Bearer {token}`.                                                                                         |
-| `400 Bad Request`         | Nieprawidłowa długość `sourceText` lub błąd w JSON.                               | Sprawdź ciało żądania i długość `sourceText` (1000-10000 znaków).                                                                          |
-| `500 Internal Server Error` (`AI service configuration error.`) | Brak skonfigurowanej zmiennej `OPENAI_API_KEY`. | Upewnij się, że zmienna środowiskowa `OPENAI_API_KEY` jest ustawiona poprawnie na serwerze.                                                  |
-| `503 Service Unavailable`   | Problem z OpenAI API (np. nieprawidłowy klucz, limity, chwilowa niedostępność, timeout). | Sprawdź klucz API, status usługi OpenAI. Spróbuj ponownie później. Zwiększ timeout jeśli to konieczne i możliwe.                               |
-| `500 Internal Server Error` (`An unexpected error occurred...`) | Nieoczekiwany format odpowiedzi z OpenAI lub błąd parsowania. | Sprawdź logi serwisu AI (`aiFlashcardGeneratorService.ts`) pod kątem problemów z odpowiedzią od OpenAI.                                   |
+| Problem                                                         | Możliwa przyczyna                                                                        | Rozwiązanie                                                                                                      |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `401 Unauthorized`                                              | Brak/nieprawidłowy token JWT.                                                            | Sprawdź nagłówek `Authorization: Bearer {token}`.                                                                |
+| `400 Bad Request`                                               | Nieprawidłowa długość `sourceText` lub błąd w JSON.                                      | Sprawdź ciało żądania i długość `sourceText` (1000-10000 znaków).                                                |
+| `500 Internal Server Error` (`AI service configuration error.`) | Brak skonfigurowanej zmiennej `OPENAI_API_KEY`.                                          | Upewnij się, że zmienna środowiskowa `OPENAI_API_KEY` jest ustawiona poprawnie na serwerze.                      |
+| `503 Service Unavailable`                                       | Problem z OpenAI API (np. nieprawidłowy klucz, limity, chwilowa niedostępność, timeout). | Sprawdź klucz API, status usługi OpenAI. Spróbuj ponownie później. Zwiększ timeout jeśli to konieczne i możliwe. |
+| `500 Internal Server Error` (`An unexpected error occurred...`) | Nieoczekiwany format odpowiedzi z OpenAI lub błąd parsowania.                            | Sprawdź logi serwisu AI (`aiFlashcardGeneratorService.ts`) pod kątem problemów z odpowiedzią od OpenAI.          |
 
 ---
 
@@ -1194,25 +1194,27 @@ Endpoint `POST /api/contact-submissions` został pomyślnie zaimplementowany. Um
 
 ```json
 {
-    "emailAddress": "string (valid email, required)",
-    "subject": "string (optional)",
-    "messageBody": "string (required)"
+  "emailAddress": "string (valid email, required)",
+  "subject": "string (optional)",
+  "messageBody": "string (required)"
 }
 ```
+
 - **Status:** ✅ Zaimplementowane
 
 ### Response Body (201 Created)
 
 ```json
 {
-    "id": "uuid",
-    "userId": "uuid | null",
-    "emailAddress": "string",
-    "subject": "string | null",
-    "messageBody": "string",
-    "submittedAt": "timestamp"
+  "id": "uuid",
+  "userId": "uuid | null",
+  "emailAddress": "string",
+  "subject": "string | null",
+  "messageBody": "string",
+  "submittedAt": "timestamp"
 }
 ```
+
 - **Status:** ✅ Zaimplementowane
 
 ### Kody statusu HTTP
@@ -1289,9 +1291,9 @@ W przypadku problemów z endpointem, sprawdź:
 
 ### Częste problemy i rozwiązania
 
-| Problem                   | Możliwa przyczyna                                                                 | Rozwiązanie                                                                                                                                                              |
-|---------------------------|-----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `400 Bad Request` (Validation) | Błędy w danych wejściowych (np. brak emaila, zły format, za długa treść).         | Sprawdź ciało żądania i upewnij się, że wszystkie pola spełniają wymagania walidacji Zod. Szczegóły błędu powinny być w odpowiedzi JSON.                               |
-| `400 Bad Request` (JSON)  | Nieprawidłowy format JSON w ciele żądania.                                       | Sprawdź, czy JSON jest poprawnie sformatowany.                                                                                                                             |
-| `403 Forbidden`           | Naruszenie polityki RLS Supabase (np. próba wstawienia danych niezgodna z `CHECK` w polityce). | Sprawdź logi serwera (szczególnie z serwisu) i konfigurację polityk RLS w Supabase. Upewnij się, że `user_id` jest poprawnie przekazywane/ustawiane (NULL lub auth.uid()). |
-| `500 Internal Server Error` | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie, brak klienta Supabase w `locals`. | Sprawdź logi serwera (API i serwis), logi Supabase. Zweryfikuj połączenie z bazą, poprawność middleware i konfigurację RLS.                                             |
+| Problem                        | Możliwa przyczyna                                                                                                  | Rozwiązanie                                                                                                                                                                |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `400 Bad Request` (Validation) | Błędy w danych wejściowych (np. brak emaila, zły format, za długa treść).                                          | Sprawdź ciało żądania i upewnij się, że wszystkie pola spełniają wymagania walidacji Zod. Szczegóły błędu powinny być w odpowiedzi JSON.                                   |
+| `400 Bad Request` (JSON)       | Nieprawidłowy format JSON w ciele żądania.                                                                         | Sprawdź, czy JSON jest poprawnie sformatowany.                                                                                                                             |
+| `403 Forbidden`                | Naruszenie polityki RLS Supabase (np. próba wstawienia danych niezgodna z `CHECK` w polityce).                     | Sprawdź logi serwera (szczególnie z serwisu) i konfigurację polityk RLS w Supabase. Upewnij się, że `user_id` jest poprawnie przekazywane/ustawiane (NULL lub auth.uid()). |
+| `500 Internal Server Error`    | Błąd bazy danych, problem z połączeniem Supabase, nieoczekiwany błąd w serwisie, brak klienta Supabase w `locals`. | Sprawdź logi serwera (API i serwis), logi Supabase. Zweryfikuj połączenie z bazą, poprawność middleware i konfigurację RLS.                                                |

@@ -3,6 +3,7 @@
 ## Przegląd
 
 Projekt wykorzystuje dwa główne frameworki do testowania:
+
 - **Vitest** - testy jednostkowe komponentów React
 - **Playwright** - testy end-to-end (E2E)
 
@@ -11,6 +12,7 @@ Projekt wykorzystuje dwa główne frameworki do testowania:
 ### Konfiguracja
 
 Vitest jest skonfigurowany w pliku `vitest.config.ts` z następującymi ustawieniami:
+
 - Środowisko: jsdom
 - Setupy: automatyczne importy z `@testing-library/jest-dom`
 - Coverage thresholds: 80% dla wszystkich metryk
@@ -46,16 +48,16 @@ src/
 ### Przykład testu jednostkowego
 
 ```tsx
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '../../test/test-utils'
-import userEvent from '@testing-library/user-event'
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "../../test/test-utils";
+import userEvent from "@testing-library/user-event";
 
-describe('Button Component', () => {
-  it('renders with correct text', () => {
-    render(<Button>Click me</Button>)
-    expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument()
-  })
-})
+describe("Button Component", () => {
+  it("renders with correct text", () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByRole("button", { name: "Click me" })).toBeInTheDocument();
+  });
+});
 ```
 
 ## Testy E2E (Playwright)
@@ -63,6 +65,7 @@ describe('Button Component', () => {
 ### Konfiguracja
 
 Playwright jest skonfigurowany w pliku `playwright.config.ts` z:
+
 - Przeglądarką: Chromium
 - Automatyczne uruchamianie dev servera
 - Screenshots i nagrania video przy błędach
@@ -100,15 +103,15 @@ e2e/
 ### Przykład testu E2E
 
 ```typescript
-import { test, expect } from '@playwright/test'
-import { HomePage } from './pages/home.page'
+import { test, expect } from "@playwright/test";
+import { HomePage } from "./pages/home.page";
 
-test('should load home page successfully', async ({ page }) => {
-  const homePage = new HomePage(page)
-  
-  await homePage.navigateToHome()
-  expect(await homePage.isHomePageLoaded()).toBe(true)
-})
+test("should load home page successfully", async ({ page }) => {
+  const homePage = new HomePage(page);
+
+  await homePage.navigateToHome();
+  expect(await homePage.isHomePageLoaded()).toBe(true);
+});
 ```
 
 ## Uruchamianie wszystkich testów
@@ -124,16 +127,18 @@ npm run test:all
 
 1. **Testuj zachowanie, nie implementację**
 2. **Używaj Testing Library queries** w odpowiedniej kolejności:
+
    - `getByRole` (preferowany)
    - `getByLabelText`
    - `getByText`
    - `getByTestId` (ostateczność)
 
 3. **Mockuj zależności zewnętrzne**:
+
 ```tsx
-vi.mock('@/lib/supabase', () => ({
-  supabase: mockSupabaseClient
-}))
+vi.mock("@/lib/supabase", () => ({
+  supabase: mockSupabaseClient,
+}));
 ```
 
 ### Testy E2E
@@ -141,12 +146,13 @@ vi.mock('@/lib/supabase', () => ({
 1. **Używaj Page Object Model** dla łatwiejszego utrzymania
 2. **Grupuj testy logicznie** w describe blocks
 3. **Używaj asercji Playwright** zamiast czekania:
+
 ```typescript
 // Dobrze
-await expect(page.locator('.loading')).toBeHidden()
+await expect(page.locator(".loading")).toBeHidden();
 
 // Źle
-await page.waitForTimeout(1000)
+await page.waitForTimeout(1000);
 ```
 
 4. **Korzystaj z auto-waiting** Playwright - nie dodawaj zbędnych oczekiwań
@@ -154,10 +160,12 @@ await page.waitForTimeout(1000)
 ## Debugowanie
 
 ### Vitest
+
 - Użyj `npm run test:ui` dla interaktywnego debugowania
 - Dodaj `console.log` lub `screen.debug()` w testach
 
 ### Playwright
+
 - Użyj `npm run test:e2e:debug` dla step-by-step debugowania
 - Włącz trace viewer w konfiguracji
 - Screenshots są automatycznie robione przy błędach
@@ -165,9 +173,10 @@ await page.waitForTimeout(1000)
 ## Coverage
 
 Ustawione threshold dla coverage:
+
 - Branches: 80%
-- Functions: 80% 
+- Functions: 80%
 - Lines: 80%
 - Statements: 80%
 
-Raporty coverage są generowane w formacie HTML i dostępne w `coverage/` po uruchomieniu testów. 
+Raporty coverage są generowane w formacie HTML i dostępne w `coverage/` po uruchomieniu testów.

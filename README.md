@@ -34,9 +34,9 @@ To get a local copy up and running, follow these simple steps.
 
 - Node.js version `22.14.0` (as specified in `.nvmrc`). It's recommended to use a Node version manager like `nvm`.
 
-    ```bash
-    nvm use
-    ```
+  ```bash
+  nvm use
+  ```
 
 - npm, yarn, or pnpm as a package manager. The examples below use `npm`.
 
@@ -44,27 +44,27 @@ To get a local copy up and running, follow these simple steps.
 
 1. **Install NPM packages:**
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
 2. **Set up environment variables:**
-    Create a `.env` file in the root of the project. This file will contain necessary API keys and configuration for services like Supabase and OpenAI. You might need to refer to an `.env.example` file if available, or set up the following (actual variable names might differ):
+   Create a `.env` file in the root of the project. This file will contain necessary API keys and configuration for services like Supabase and OpenAI. You might need to refer to an `.env.example` file if available, or set up the following (actual variable names might differ):
 
-    ```env
-    # Example variables (replace with actual ones needed for the project)
-    PUBLIC_SUPABASE_URL=your_supabase_url
-    PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-    OPENAI_API_KEY=your_openai_api_key
-    ```
+   ```env
+   # Example variables (replace with actual ones needed for the project)
+   PUBLIC_SUPABASE_URL=your_supabase_url
+   PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   OPENAI_API_KEY=your_openai_api_key
+   ```
 
 3. **Run the development server:**
 
-    ```bash
-    npm run dev
-    ```
+   ```bash
+   npm run dev
+   ```
 
-    Open [http://localhost:3000](http://localhost:3000) (or the port specified in your Astro config/console output) to view it in the browser.
+   Open [http://localhost:3000](http://localhost:3000) (or the port specified in your Astro config/console output) to view it in the browser.
 
 ## 5. Available Scripts
 
@@ -123,6 +123,7 @@ Aplikacja używa OpenAI API do automatycznego generowania fiszek na podstawie te
 #### Gdzie uzyskać klucze API:
 
 1. **OpenAI API Key:**
+
    - Zarejestruj się na [OpenAI Platform](https://platform.openai.com/)
    - Przejdź do [API Keys](https://platform.openai.com/api-keys)
    - Utwórz nowy klucz API
@@ -144,18 +145,22 @@ Aplikacja posiada w pełni funkcjonalne API endpoints dla zarządzania fiszkami:
 ### Flashcards API
 
 - **`POST /api/flashcards/generate-ai`** - Generowanie fiszek przez AI
+
   - Body: `{ sourceText: string }` (1000-10000 znaków)
   - Response: `{ suggestions: AiFlashcardSuggestionItem[], sourceTextEcho: string }`
 
 - **`POST /api/flashcards`** - Tworzenie nowej fiszki
+
   - Body: `{ question: string, answer: string, isAiGenerated?: boolean, sourceTextForAi?: string }`
   - Response: `FlashcardDto`
 
 - **`GET /api/flashcards`** - Pobieranie listy fiszek
+
   - Query: `page?, limit?, sortBy?, sortOrder?, search?, isAiGenerated?`
   - Response: `{ data: FlashcardListItemDto[], pagination: PaginationDetails }`
 
 - **`PATCH /api/flashcards/[id]`** - Edycja fiszki
+
   - Body: `{ question?: string, answer?: string }`
   - Response: `FlashcardDto`
 

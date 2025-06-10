@@ -13,14 +13,14 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
   - `Content-Type: application/json`
 - **Ciało żądania (Request Body):** Struktura JSON opisana przez `CreateFlashcardCommand`.
 
-    ```json
-    {
-        "question": "string (min 5 chars)",
-        "answer": "string (min 3 chars)",
-        "isAiGenerated": "boolean (optional, default: false)",
-        "sourceTextForAi": "string (optional, required if isAiGenerated is true)"
-    }
-    ```
+  ```json
+  {
+    "question": "string (min 5 chars)",
+    "answer": "string (min 3 chars)",
+    "isAiGenerated": "boolean (optional, default: false)",
+    "sourceTextForAi": "string (optional, required if isAiGenerated is true)"
+  }
+  ```
 
 - **Parametry:**
   - **Wymagane w ciele żądania:**
@@ -34,71 +34,77 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
 
 - **Command Model (Żądanie):** `CreateFlashcardCommand` (z `src/types.ts`)
 
-    ```typescript
-    export interface CreateFlashcardCommand {
-      question: TablesInsert<"flashcards">["question"];
-      answer: TablesInsert<"flashcards">["answer"];
-      isAiGenerated?: TablesInsert<"flashcards">["is_ai_generated"];
-      sourceTextForAi?: TablesInsert<"flashcards">["source_text_for_ai"];
-    }
-    ```
+  ```typescript
+  export interface CreateFlashcardCommand {
+    question: TablesInsert<"flashcards">["question"];
+    answer: TablesInsert<"flashcards">["answer"];
+    isAiGenerated?: TablesInsert<"flashcards">["is_ai_generated"];
+    sourceTextForAi?: TablesInsert<"flashcards">["source_text_for_ai"];
+  }
+  ```
 
 - **DTO (Odpowiedź):** `FlashcardDto` (z `src/types.ts`)
 
-    ```typescript
-    export interface FlashcardDto {
-      id: Tables<"flashcards">["id"];
-      userId: Tables<"flashcards">["user_id"];
-      question: Tables<"flashcards">["question"];
-      answer: Tables<"flashcards">["answer"];
-      sourceTextForAi: Tables<"flashcards">["source_text_for_ai"];
-      isAiGenerated: Tables<"flashcards">["is_ai_generated"];
-      aiAcceptedAt: Tables<"flashcards">["ai_accepted_at"];
-      createdAt: Tables<"flashcards">["created_at"];
-      updatedAt: Tables<"flashcards">["updated_at"];
-      isDeleted: Tables<"flashcards">["is_deleted"]; // Powinno być false
-    }
-    ```
+  ```typescript
+  export interface FlashcardDto {
+    id: Tables<"flashcards">["id"];
+    userId: Tables<"flashcards">["user_id"];
+    question: Tables<"flashcards">["question"];
+    answer: Tables<"flashcards">["answer"];
+    sourceTextForAi: Tables<"flashcards">["source_text_for_ai"];
+    isAiGenerated: Tables<"flashcards">["is_ai_generated"];
+    aiAcceptedAt: Tables<"flashcards">["ai_accepted_at"];
+    createdAt: Tables<"flashcards">["created_at"];
+    updatedAt: Tables<"flashcards">["updated_at"];
+    isDeleted: Tables<"flashcards">["is_deleted"]; // Powinno być false
+  }
+  ```
 
 - **Schemat Walidacji Zod:** `CreateFlashcardSchema` (do zdefiniowania, np. w `src/lib/validation/flashcardSchemas.ts`)
 
-    ```typescript
-    import { z } from 'zod';
+  ```typescript
+  import { z } from "zod";
 
-    export const CreateFlashcardSchema = z.object({
+  export const CreateFlashcardSchema = z
+    .object({
       question: z.string().min(5, { message: "Question must be at least 5 characters long." }),
       answer: z.string().min(3, { message: "Answer must be at least 3 characters long." }),
       isAiGenerated: z.boolean().optional().default(false),
       sourceTextForAi: z.string().optional(),
-    }).refine(data => {
-      if (data.isAiGenerated && (typeof data.sourceTextForAi !== 'string' || data.sourceTextForAi.trim() === '')) {
-        return false;
+    })
+    .refine(
+      (data) => {
+        if (data.isAiGenerated && (typeof data.sourceTextForAi !== "string" || data.sourceTextForAi.trim() === "")) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message: "sourceTextForAi is required if isAiGenerated is true.",
+        path: ["sourceTextForAi"],
       }
-      return true;
-    }, {
-      message: "sourceTextForAi is required if isAiGenerated is true.",
-      path: ["sourceTextForAi"],
-    });
-    ```
+    );
+  ```
 
 ## 4. Szczegóły odpowiedzi
 
 - **Sukces (201 Created):**
+
   - Nagłówki: `Content-Type: application/json`
   - Ciało odpowiedzi: Obiekt JSON zgodny z `FlashcardDto`.
 
     ```json
     {
-        "id": "uuid",
-        "userId": "uuid",
-        "question": "string",
-        "answer": "string",
-        "sourceTextForAi": "string | null",
-        "isAiGenerated": "boolean",
-        "aiAcceptedAt": "timestamp | null",
-        "createdAt": "timestamp",
-        "updatedAt": "timestamp",
-        "isDeleted": "boolean"
+      "id": "uuid",
+      "userId": "uuid",
+      "question": "string",
+      "answer": "string",
+      "sourceTextForAi": "string | null",
+      "isAiGenerated": "boolean",
+      "aiAcceptedAt": "timestamp | null",
+      "createdAt": "timestamp",
+      "updatedAt": "timestamp",
+      "isDeleted": "boolean"
     }
     ```
 
@@ -111,25 +117,25 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
 
 1. Klient wysyła żądanie `POST` na `/api/flashcards` z tokenem JWT i ciałem żądania (JSON).
 2. Middleware Astro (`src/middleware/index.ts`) przechwytuje żądanie:
-    a.  Weryfikuje token JWT.
-    b.  Jeśli token jest nieprawidłowy lub go brakuje, zwraca `401 Unauthorized`.
-    c.  Jeśli token jest prawidłowy, udostępnia sesję użytkownika i klienta Supabase poprzez `Astro.locals`.
+   a. Weryfikuje token JWT.
+   b. Jeśli token jest nieprawidłowy lub go brakuje, zwraca `401 Unauthorized`.
+   c. Jeśli token jest prawidłowy, udostępnia sesję użytkownika i klienta Supabase poprzez `Astro.locals`.
 3. Handler Astro API Route (`src/pages/api/flashcards/index.ts` dla metody `POST`):
-    a.  Sprawdza, czy użytkownik jest uwierzytelniony (na podstawie `Astro.locals`). Jeśli nie, zwraca `401`.
-    b.  Pobiera `userId` z `Astro.locals.session.user.id`.
-    c.  Odczytuje i parsuje ciało żądania. W przypadku błędu parsowania JSON, zwraca `400 Bad Request`.
-    d.  Waliduje dane wejściowe używając schematu Zod (`CreateFlashcardSchema`). W przypadku błędów walidacji, zwraca `400 Bad Request` ze szczegółami błędów.
-    e.  Wywołuje metodę `createFlashcard` z serwisu `flashcardService` (`src/lib/services/flashcardService.ts`), przekazując zwalidowane dane, `userId` oraz klienta Supabase (`Astro.locals.supabase`).
+   a. Sprawdza, czy użytkownik jest uwierzytelniony (na podstawie `Astro.locals`). Jeśli nie, zwraca `401`.
+   b. Pobiera `userId` z `Astro.locals.session.user.id`.
+   c. Odczytuje i parsuje ciało żądania. W przypadku błędu parsowania JSON, zwraca `400 Bad Request`.
+   d. Waliduje dane wejściowe używając schematu Zod (`CreateFlashcardSchema`). W przypadku błędów walidacji, zwraca `400 Bad Request` ze szczegółami błędów.
+   e. Wywołuje metodę `createFlashcard` z serwisu `flashcardService` (`src/lib/services/flashcardService.ts`), przekazując zwalidowane dane, `userId` oraz klienta Supabase (`Astro.locals.supabase`).
 4. Serwis `flashcardService`:
-    a.  Mapuje `CreateFlashcardCommand` na obiekt `TablesInsert<'flashcards'>` dla Supabase.
-    b.  Jeśli `isAiGenerated` jest `true`, ustawia `ai_accepted_at` na bieżącą datę/czas. W przeciwnym razie `ai_accepted_at` jest `null`.
-    c.  Wykonuje operację `insert` do tabeli `flashcards` używając klienta Supabase. RLS w bazie danych zapewni, że `user_id` jest zgodne z `auth.uid()`.
-    d.  Zwraca utworzony obiekt fiszki (pełny wiersz z bazy danych).
+   a. Mapuje `CreateFlashcardCommand` na obiekt `TablesInsert<'flashcards'>` dla Supabase.
+   b. Jeśli `isAiGenerated` jest `true`, ustawia `ai_accepted_at` na bieżącą datę/czas. W przeciwnym razie `ai_accepted_at` jest `null`.
+   c. Wykonuje operację `insert` do tabeli `flashcards` używając klienta Supabase. RLS w bazie danych zapewni, że `user_id` jest zgodne z `auth.uid()`.
+   d. Zwraca utworzony obiekt fiszki (pełny wiersz z bazy danych).
 5. Handler Astro API Route:
-    a.  Otrzymuje utworzoną fiszkę z serwisu.
-    b.  Mapuje zwrócony obiekt z bazy danych na `FlashcardDto` (jeśli konieczne są drobne transformacje lub zapewnienie zgodności pól).
-    c.  Zwraca odpowiedź `201 Created` z `FlashcardDto` w ciele.
-    d.  W przypadku błędów z serwisu (np. błąd bazy danych), loguje błąd i zwraca `500 Internal Server Error`.
+   a. Otrzymuje utworzoną fiszkę z serwisu.
+   b. Mapuje zwrócony obiekt z bazy danych na `FlashcardDto` (jeśli konieczne są drobne transformacje lub zapewnienie zgodności pól).
+   c. Zwraca odpowiedź `201 Created` z `FlashcardDto` w ciele.
+   d. W przypadku błędów z serwisu (np. błąd bazy danych), loguje błąd i zwraca `500 Internal Server Error`.
 
 ## 6. Względy bezpieczeństwa
 
@@ -166,36 +172,36 @@ Ten punkt końcowy umożliwia uwierzytelnionym użytkownikom tworzenie nowych fi
 ## 9. Etapy wdrożenia
 
 1. **Przygotowanie typów i schematów walidacji:**
-    a.  Upewnić się, że typy `CreateFlashcardCommand` i `FlashcardDto` w `src/types.ts` są aktualne i zgodne z planem API.
-    b.  Zdefiniować schemat walidacji Zod `CreateFlashcardSchema` (np. w nowym pliku `src/lib/validation/flashcardSchemas.ts` lub podobnym).
+   a. Upewnić się, że typy `CreateFlashcardCommand` i `FlashcardDto` w `src/types.ts` są aktualne i zgodne z planem API.
+   b. Zdefiniować schemat walidacji Zod `CreateFlashcardSchema` (np. w nowym pliku `src/lib/validation/flashcardSchemas.ts` lub podobnym).
 2. **Implementacja logiki w serwisie:**
-    a.  Utworzyć lub zaktualizować plik `src/lib/services/flashcardService.ts`.
-    b.  Zaimplementować metodę `async createFlashcard(command: CreateFlashcardCommand, userId: string, supabase: SupabaseClient): Promise<Tables<'flashcards'>>`.
-    c.  Metoda powinna zawierać logikę mapowania danych z `command` na strukturę tabeli `flashcards`, ustawienie `user_id`, warunkowe ustawienie `ai_accepted_at`, oraz interakcję z Supabase w celu wstawienia rekordu.
-    d.  Dodać obsługę błędów z Supabase i rzucanie wyjątków w przypadku niepowodzenia.
+   a. Utworzyć lub zaktualizować plik `src/lib/services/flashcardService.ts`.
+   b. Zaimplementować metodę `async createFlashcard(command: CreateFlashcardCommand, userId: string, supabase: SupabaseClient): Promise<Tables<'flashcards'>>`.
+   c. Metoda powinna zawierać logikę mapowania danych z `command` na strukturę tabeli `flashcards`, ustawienie `user_id`, warunkowe ustawienie `ai_accepted_at`, oraz interakcję z Supabase w celu wstawienia rekordu.
+   d. Dodać obsługę błędów z Supabase i rzucanie wyjątków w przypadku niepowodzenia.
 3. **Implementacja Astro API Route Handler:**
-    a.  Utworzyć lub zaktualizować plik `src/pages/api/flashcards/index.ts`.
-    b.  Dodać funkcję `export const POST: APIRoute = async ({ request, locals }) => { ... };`.
-    c.  Ustawić `export const prerender = false;`.
-    d.  Implementować logikę:
-        i.  Pobranie sesji użytkownika i klienta Supabase z `locals`. Sprawdzenie uwierzytelnienia.
-        ii. Odczytanie i sparsowanie ciała żądania JSON.
-        iii. Walidacja danych wejściowych przy użyciu `CreateFlashcardSchema`.
-        iv. Wywołanie metody `flashcardService.createFlashcard`.
-        v.  Mapowanie wyniku z serwisu na `FlashcardDto`.
-        vi. Zwrócenie odpowiedzi `201 Created` z DTO lub odpowiedniego kodu błędu.
-        vii. Implementacja logowania błędów serwera.
+   a. Utworzyć lub zaktualizować plik `src/pages/api/flashcards/index.ts`.
+   b. Dodać funkcję `export const POST: APIRoute = async ({ request, locals }) => { ... };`.
+   c. Ustawić `export const prerender = false;`.
+   d. Implementować logikę:
+   i. Pobranie sesji użytkownika i klienta Supabase z `locals`. Sprawdzenie uwierzytelnienia.
+   ii. Odczytanie i sparsowanie ciała żądania JSON.
+   iii. Walidacja danych wejściowych przy użyciu `CreateFlashcardSchema`.
+   iv. Wywołanie metody `flashcardService.createFlashcard`.
+   v. Mapowanie wyniku z serwisu na `FlashcardDto`.
+   vi. Zwrócenie odpowiedzi `201 Created` z DTO lub odpowiedniego kodu błędu.
+   vii. Implementacja logowania błędów serwera.
 4. **Konfiguracja Middleware (jeśli konieczne):**
-    a.  Upewnić się, że middleware w `src/middleware/index.ts` poprawnie obsługuje uwierzytelnianie JWT i udostępnia `session` oraz `supabase` w `Astro.locals`.
+   a. Upewnić się, że middleware w `src/middleware/index.ts` poprawnie obsługuje uwierzytelnianie JWT i udostępnia `session` oraz `supabase` w `Astro.locals`.
 5. **Testowanie:**
-    a.  Testy jednostkowe dla serwisu (jeśli praktykowane).
-    b.  Testy integracyjne/manualne dla endpointu API:
-        i.  Przypadek pomyślny (ręczne tworzenie fiszki).
-        ii. Przypadek pomyślny (tworzenie fiszki AI-generated z `sourceTextForAi`).
-        iii. Błędy walidacji (brakujące pola, za krótkie teksty, brak `sourceTextForAi` gdy `isAiGenerated=true`).
-        iv. Brak uwierzytelnienia (brak tokenu, nieprawidłowy token).
-        v.  Nieprawidłowy format JSON.
+   a. Testy jednostkowe dla serwisu (jeśli praktykowane).
+   b. Testy integracyjne/manualne dla endpointu API:
+   i. Przypadek pomyślny (ręczne tworzenie fiszki).
+   ii. Przypadek pomyślny (tworzenie fiszki AI-generated z `sourceTextForAi`).
+   iii. Błędy walidacji (brakujące pola, za krótkie teksty, brak `sourceTextForAi` gdy `isAiGenerated=true`).
+   iv. Brak uwierzytelnienia (brak tokenu, nieprawidłowy token).
+   v. Nieprawidłowy format JSON.
 6. **Dokumentacja:**
-    a.  Zaktualizować dokumentację API (np. Swagger/OpenAPI, jeśli używane), aby odzwierciedlała zaimplementowany endpoint. Plan API w `@api-plan.md` służy jako podstawa.
+   a. Zaktualizować dokumentację API (np. Swagger/OpenAPI, jeśli używane), aby odzwierciedlała zaimplementowany endpoint. Plan API w `@api-plan.md` służy jako podstawa.
 7. **Code Review:**
-    a.  Przeprowadzić przegląd kodu w celu zapewnienia jakości, zgodności z wytycznymi i bezpieczeństwa.
+   a. Przeprowadzić przegląd kodu w celu zapewnienia jakości, zgodności z wytycznymi i bezpieczeństwa.

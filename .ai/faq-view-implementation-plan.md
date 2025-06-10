@@ -25,6 +25,7 @@ FAQPage (src/pages/faq.astro)
 ## 4. Szczegóły komponentów
 
 ### FAQPage (faq.astro)
+
 - **Opis komponentu**: Główna strona FAQ zbudowana jako Astro component, obsługująca statyczną treść z interaktywnymi elementami
 - **Główne elementy**: Layout z headerem, sekcja tytułowa, komponent akordeonowy z pytaniami i odpowiedziami
 - **Obsługiwane interakcje**: Nawigacja przez header, rozwijanie/zwijanie pytań w akordeonie
@@ -33,6 +34,7 @@ FAQPage (src/pages/faq.astro)
 - **Propsy**: Brak - komponent Astro na poziomie strony
 
 ### FAQContent
+
 - **Opis komponentu**: Kontener na całą treść FAQ, zawierający tytuł strony i sekcję akordeonową
 - **Główne elementy**: Element section, nagłówek H1, komponent FAQAccordion
 - **Obsługiwane interakcje**: Brak bezpośrednich interakcji
@@ -41,6 +43,7 @@ FAQPage (src/pages/faq.astro)
 - **Propsy**: faqItems: FAQItem[]
 
 ### FAQAccordion (React component)
+
 - **Opis komponentu**: Komponent React wykorzystujący Shadcn/ui Accordion do prezentacji pytań i odpowiedzi
 - **Główne elementy**: Accordion z Shadcn/ui, AccordionItem dla każdego pytania
 - **Obsługiwane interakcje**: Kliknięcie w pytanie otwiera/zamyka odpowiedź, możliwość otwarcia wielu sekcji jednocześnie
@@ -112,25 +115,30 @@ Widok FAQ nie wymaga integracji z API, ponieważ jest stroną statyczną. Wszyst
 ## 11. Kroki implementacji
 
 1. **Utworzenie struktury danych FAQ**
+
    - Zdefiniowanie typów FAQItem i FAQAccordionProps w src/types.ts
    - Utworzenie pliku konfiguracyjnego z danymi FAQ
 
 2. **Implementacja komponentu FAQAccordion**
+
    - Utworzenie src/components/FAQAccordion.tsx
    - Implementacja z użyciem Shadcn/ui Accordion
    - Dodanie stylów Tailwind i responsywności
 
 3. **Utworzenie strony FAQ**
+
    - Implementacja src/pages/faq.astro
    - Integracja z istniejącym layoutem
    - Dodanie struktury SEO (meta tags, tytuł)
 
 4. **Stylowanie i responsywność**
+
    - Implementacja responsywnego designu z Tailwind
    - Zapewnienie spójności z resztą aplikacji
    - Optymalizacja dla różnych rozmiarów ekranów
 
 5. **Testowanie dostępności**
+
    - Sprawdzenie nawigacji klawiaturą
    - Walidacja hierarchii nagłówków
    - Testowanie z czytnikami ekranu
@@ -138,4 +146,4 @@ Widok FAQ nie wymaga integracji z API, ponieważ jest stroną statyczną. Wszyst
 6. **Optymalizacja i finalizacja**
    - Sprawdzenie wydajności
    - Walidacja HTML i semantyki
-   - Dodanie do głównej nawigacji (jeśli wymagane) 
+   - Dodanie do głównej nawigacji (jeśli wymagane)

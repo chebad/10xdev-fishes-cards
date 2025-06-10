@@ -18,8 +18,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Instalacja zależności
         run: npm ci
@@ -40,8 +40,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Instalacja zależności
         run: npm ci
@@ -69,8 +69,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
-          cache: 'npm'
+          node-version-file: ".nvmrc"
+          cache: "npm"
 
       - name: Instalacja zależności
         run: npm ci
@@ -113,11 +113,11 @@ jobs:
         with:
           script: |
             const { owner, repo, number } = context.issue;
-            
+
             const lintResult = '${{ needs.lint.result }}';
             const unitTestsResult = '${{ needs.unit-tests.result }}';
             const e2eTestsResult = '${{ needs.e2e-tests.result }}';
-            
+
             const getEmoji = (result) => {
               switch(result) {
                 case 'success': return '✅';
@@ -127,43 +127,43 @@ jobs:
                 default: return '❓';
               }
             };
-            
+
             const allPassed = lintResult === 'success' && 
                              unitTestsResult === 'success' && 
                              e2eTestsResult === 'success';
-            
+
             const comment = `
             ## 🔍 Status Pull Requesta
-            
+
             ${allPassed ? '🎉 **Wszystkie sprawdzenia przeszły pomyślnie!**' : '⚠️ **Niektóre sprawdzenia nie powiodły się**'}
-            
+
             | Sprawdzenie | Status | Wynik |
             |-------------|---------|--------|
             | Linting | ${getEmoji(lintResult)} | ${lintResult} |
             | Unit Tests | ${getEmoji(unitTestsResult)} | ${unitTestsResult} |
             | E2E Tests | ${getEmoji(e2eTestsResult)} | ${e2eTestsResult} |
-            
+
             ${allPassed ? 
               '✨ Pull Request jest gotowy do przeglądu i merge!' : 
               '🔧 Proszę naprawić błędy przed kontynuowaniem.'
             }
-            
+
             ---
             *Ten komentarz został wygenerowany automatycznie przez GitHub Actions*
             `;
-            
+
             // Sprawdź czy istnieją już komentarze od bota
             const comments = await github.rest.issues.listComments({
               owner,
               repo,
               issue_number: number,
             });
-            
+
             const botComment = comments.data.find(comment => 
               comment.user.type === 'Bot' && 
               comment.body.includes('🔍 Status Pull Requesta')
             );
-            
+
             if (botComment) {
               // Zaktualizuj istniejący komentarz
               await github.rest.issues.updateComment({
@@ -180,4 +180,4 @@ jobs:
                 issue_number: number,
                 body: comment
               });
-            } 
+            }

@@ -12,7 +12,7 @@
   - Database Table: `contact_form_submissions`
   - Description: Represents submissions from the contact form.
 
-*Note: User management (registration, login) is handled by Supabase Auth and its SDKs, thus not detailed as custom API endpoints here.*
+_Note: User management (registration, login) is handled by Supabase Auth and its SDKs, thus not detailed as custom API endpoints here._
 
 ## 2. Endpoints
 
@@ -25,40 +25,41 @@
 - **Description:** Creates a new flashcard. This can be a manually created flashcard or an AI-generated flashcard that the user has reviewed and decided to save.
 - **Request Body (JSON):**
 
-    ```json
-    {
-        "question": "string (min 5 chars)",
-        "answer": "string (min 3 chars)",
-        "isAiGenerated": "boolean (optional, default: false)",
-        "sourceTextForAi": "string (optional, required if isAiGenerated is true)",
-        "aiModelUsed": "string (optional, e.g., 'GPT-4', if isAiGenerated is true)"
-    }
-    ```
+  ```json
+  {
+    "question": "string (min 5 chars)",
+    "answer": "string (min 3 chars)",
+    "isAiGenerated": "boolean (optional, default: false)",
+    "sourceTextForAi": "string (optional, required if isAiGenerated is true)",
+    "aiModelUsed": "string (optional, e.g., 'GPT-4', if isAiGenerated is true)"
+  }
+  ```
 
 - **Response Body (JSON) - Success (201 Created):**
 
-    ```json
-    {
-        "id": "uuid",
-        "userId": "uuid",
-        "question": "string",
-        "answer": "string",
-        "sourceTextForAi": "string | null",
-        "isAiGenerated": "boolean",
-        "aiAcceptedAt": "timestamp | null", // Set by server if isAiGenerated is true
-        "createdAt": "timestamp",
-        "updatedAt": "timestamp",
-        "isDeleted": "boolean" 
-    }
-    ```
+  ```json
+  {
+    "id": "uuid",
+    "userId": "uuid",
+    "question": "string",
+    "answer": "string",
+    "sourceTextForAi": "string | null",
+    "isAiGenerated": "boolean",
+    "aiAcceptedAt": "timestamp | null", // Set by server if isAiGenerated is true
+    "createdAt": "timestamp",
+    "updatedAt": "timestamp",
+    "isDeleted": "boolean"
+  }
+  ```
 
 - **Success Codes:**
   - `201 Created`: Flashcard created successfully.
 - **Error Codes:**
+
   - `400 Bad Request`: Invalid input (e.g., missing fields, validation errors like question/answer length).
 
     ```json
-        { "error": "Validation failed", "details": { "question": "Question must be at least 5 characters long." } }
+    { "error": "Validation failed", "details": { "question": "Question must be at least 5 characters long." } }
     ```
 
   - `401 Unauthorized`: User not authenticated.
@@ -78,29 +79,29 @@
   - `isAiGenerated` (optional, boolean): Filter by AI-generated status.
 - **Response Body (JSON) - Success (200 OK):**
 
-    ```json
-    {
-        "data": [
-            {
-                "id": "uuid",
-                "userId": "uuid",
-                "question": "string",
-                "answer": "string",
-                "isAiGenerated": "boolean",
-                "aiAcceptedAt": "timestamp | null",
-                "createdAt": "timestamp",
-                "updatedAt": "timestamp"
-            }
-            // ... more flashcards
-        ],
-        "pagination": {
-            "currentPage": 1,
-            "totalPages": 5,
-            "totalItems": 50,
-            "limit": 10
-        }
+  ```json
+  {
+    "data": [
+      {
+        "id": "uuid",
+        "userId": "uuid",
+        "question": "string",
+        "answer": "string",
+        "isAiGenerated": "boolean",
+        "aiAcceptedAt": "timestamp | null",
+        "createdAt": "timestamp",
+        "updatedAt": "timestamp"
+      }
+      // ... more flashcards
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalItems": 50,
+      "limit": 10
     }
-    ```
+  }
+  ```
 
 - **Success Codes:**
   - `200 OK`: Flashcards retrieved successfully.
@@ -117,20 +118,20 @@
   - `flashcardId` (uuid, required): The ID of the flashcard.
 - **Response Body (JSON) - Success (200 OK):**
 
-    ```json
-    {
-        "id": "uuid",
-        "userId": "uuid",
-        "question": "string",
-        "answer": "string",
-        "sourceTextForAi": "string | null",
-        "isAiGenerated": "boolean",
-        "aiAcceptedAt": "timestamp | null",
-        "createdAt": "timestamp",
-        "updatedAt": "timestamp",
-        "isDeleted": "boolean" // will be false
-    }
-    ```
+  ```json
+  {
+    "id": "uuid",
+    "userId": "uuid",
+    "question": "string",
+    "answer": "string",
+    "sourceTextForAi": "string | null",
+    "isAiGenerated": "boolean",
+    "aiAcceptedAt": "timestamp | null",
+    "createdAt": "timestamp",
+    "updatedAt": "timestamp",
+    "isDeleted": "boolean" // will be false
+  }
+  ```
 
 - **Success Codes:**
   - `200 OK`: Flashcard retrieved successfully.
@@ -149,29 +150,29 @@
   - `flashcardId` (uuid, required): The ID of the flashcard to update.
 - **Request Body (JSON):** (Fields are optional; only provided fields will be updated)
 
-    ```json
-    {
-        "question": "string (min 5 chars, optional)",
-        "answer": "string (min 3 chars, optional)"
-    }
-    ```
+  ```json
+  {
+    "question": "string (min 5 chars, optional)",
+    "answer": "string (min 3 chars, optional)"
+  }
+  ```
 
 - **Response Body (JSON) - Success (200 OK):**
 
-    ```json
-    {
-        "id": "uuid",
-        "userId": "uuid",
-        "question": "string",
-        "answer": "string",
-        "sourceTextForAi": "string | null",
-        "isAiGenerated": "boolean",
-        "aiAcceptedAt": "timestamp | null",
-        "createdAt": "timestamp",
-        "updatedAt": "timestamp", // Should be updated
-        "isDeleted": "boolean"
-    }
-    ```
+  ```json
+  {
+    "id": "uuid",
+    "userId": "uuid",
+    "question": "string",
+    "answer": "string",
+    "sourceTextForAi": "string | null",
+    "isAiGenerated": "boolean",
+    "aiAcceptedAt": "timestamp | null",
+    "createdAt": "timestamp",
+    "updatedAt": "timestamp", // Should be updated
+    "isDeleted": "boolean"
+  }
+  ```
 
 - **Success Codes:**
   - `200 OK`: Flashcard updated successfully.
@@ -208,34 +209,38 @@
 - **Description:** Takes a source text and uses an AI model (e.g., via OpenRouter) to generate a list of potential flashcard questions and answers. These are suggestions and are not saved to the database until the user explicitly creates them (e.g., using `POST /api/flashcards`).
 - **Request Body (JSON):**
 
-    ```json
-    {
-        "sourceText": "string (min 1000 chars, max 10000 chars)"
-    }
-    ```
+  ```json
+  {
+    "sourceText": "string (min 1000 chars, max 10000 chars)"
+  }
+  ```
 
 - **Response Body (JSON) - Success (200 OK):**
 
-    ```json
-    {
-        "suggestions": [
-            {
-                "suggestedQuestion": "string",
-                "suggestedAnswer": "string",
-                "aiModelUsed": "string (e.g., 'GPT-4')" 
-            }
-        ],
-        "sourceTextEcho": "string" // The original source text, for reference
-    }
-    ```
+  ```json
+  {
+    "suggestions": [
+      {
+        "suggestedQuestion": "string",
+        "suggestedAnswer": "string",
+        "aiModelUsed": "string (e.g., 'GPT-4')"
+      }
+    ],
+    "sourceTextEcho": "string" // The original source text, for reference
+  }
+  ```
 
 - **Success Codes:**
   - `200 OK`: Flashcard suggestions generated successfully.
 - **Error Codes:**
+
   - `400 Bad Request`: Invalid input (e.g., `sourceText` length validation).
 
     ```json
-        { "error": "Validation failed", "details": { "sourceText": "Source text must be between 1000 and 10000 characters." } }
+    {
+      "error": "Validation failed",
+      "details": { "sourceText": "Source text must be between 1000 and 10000 characters." }
+    }
     ```
 
   - `401 Unauthorized`: User not authenticated.
@@ -251,34 +256,35 @@
 - **Description:** Allows any user (authenticated or anonymous) to submit a message via the contact form. If the user is authenticated, their `user_id` is associated with the submission.
 - **Request Body (JSON):**
 
-    ```json
-    {
-        "emailAddress": "string (valid email, required)",
-        "subject": "string (optional)",
-        "messageBody": "string (required)"
-    }
-    ```
+  ```json
+  {
+    "emailAddress": "string (valid email, required)",
+    "subject": "string (optional)",
+    "messageBody": "string (required)"
+  }
+  ```
 
 - **Response Body (JSON) - Success (201 Created):**
 
-    ```json
-    {
-        "id": "uuid",
-        "userId": "uuid | null", // Populated if user is authenticated
-        "emailAddress": "string",
-        "subject": "string | null",
-        "messageBody": "string",
-        "submittedAt": "timestamp"
-    }
-    ```
+  ```json
+  {
+    "id": "uuid",
+    "userId": "uuid | null", // Populated if user is authenticated
+    "emailAddress": "string",
+    "subject": "string | null",
+    "messageBody": "string",
+    "submittedAt": "timestamp"
+  }
+  ```
 
 - **Success Codes:**
   - `201 Created`: Submission created successfully.
 - **Error Codes:**
+
   - `400 Bad Request`: Invalid input (e.g., missing fields, invalid email format).
 
     ```json
-        { "error": "Validation failed", "details": { "emailAddress": "Invalid email format." } }
+    { "error": "Validation failed", "details": { "emailAddress": "Invalid email format." } }
     ```
 
   - `500 Internal Server Error`: Unexpected server error.
@@ -286,6 +292,7 @@
 ## 3. Authentication and Authorization
 
 - **Authentication:**
+
   - Handled by Supabase Auth. Clients will obtain a JWT upon successful login/signup.
   - This JWT must be included in the `Authorization` header for all protected API requests: `Authorization: Bearer <YOUR_SUPABASE_JWT>`.
   - Endpoints like `POST /api/contact-submissions` can be accessed anonymously, but if a valid JWT is provided, the `user_id` will be associated. The `POST /api/flashcards/generate-ai` and all `/api/flashcards` (except potentially GET for public flashcards in the future, which is not in scope now) require authentication.

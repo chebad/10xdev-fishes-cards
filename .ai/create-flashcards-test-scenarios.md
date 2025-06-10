@@ -178,9 +178,7 @@ curl -X POST "http://localhost:3000/api/flashcards" \
 {
   "error": "Validation failed",
   "details": {
-    "question": [
-      "Question must be at least 5 characters long."
-    ]
+    "question": ["Question must be at least 5 characters long."]
   }
 }
 ```

@@ -24,6 +24,7 @@ Celem tego punktu końcowego jest umożliwienie uwierzytelnionym użytkownikom "
   - Kod Statusu: `204 No Content`
   - Ciało Odpowiedzi: Puste.
 - **Odpowiedzi Błędów:**
+
   - `400 Bad Request`: Jeśli `flashcardId` ma nieprawidłowy format.
 
         ```json
@@ -62,19 +63,20 @@ Celem tego punktu końcowego jest umożliwienie uwierzytelnionym użytkownikom "
 5. **Sprawdzenie uwierzytelnienia**: Handler sprawdza, czy `context.locals.user` istnieje. Jeśli nie, zwracany jest błąd `401`.
 6. Handler wywołuje metodę serwisu `FlashcardService.softDeleteFlashcard(supabase, userId, flashcardId)`.
 7. **Logika Serwisu (`FlashcardService`):**
-    a.  Pobiera fiszkę z bazy danych używając `supabase.from('flashcards').select('user_id, is_deleted').eq('id', flashcardId).single()`.
-    b.  **Obsługa nieznalezienia/braku dostępu**: Jeśli zapytanie zwróci błąd (np. PGRST116 z Supabase dla `single()` gdy RLS blokuje lub rekord nie istnieje), serwis interpretuje to jako `404 Not Found`.
-    c.  **Weryfikacja właściciela**: Porównuje `flashcard.user_id` z `userId` (ID zalogowanego użytkownika). Jeśli nie pasują, zwraca błąd prowadzący do odpowiedzi `403 Forbidden`.
-    d.  **Sprawdzenie, czy już usunięta**: Jeśli `flashcard.is_deleted` jest `true`, operacja jest uznawana za idempotentną i serwis zwraca sukces (co prowadzi do odpowiedzi `204 No Content`).
-    e.  **Aktualizacja rekordu**: Wykonuje `UPDATE` na tabeli `flashcards`, ustawiając `is_deleted = true` i `deleted_at = new Date().toISOString()` dla danego `flashcardId` i `user_id`.
-    f.  Jeśli aktualizacja w bazie danych nie powiedzie się, serwis zwraca błąd prowadzący do odpowiedzi `500 Internal Server Error`.
-    g.  Jeśli aktualizacja powiedzie się, serwis zwraca sukces.
+   a. Pobiera fiszkę z bazy danych używając `supabase.from('flashcards').select('user_id, is_deleted').eq('id', flashcardId).single()`.
+   b. **Obsługa nieznalezienia/braku dostępu**: Jeśli zapytanie zwróci błąd (np. PGRST116 z Supabase dla `single()` gdy RLS blokuje lub rekord nie istnieje), serwis interpretuje to jako `404 Not Found`.
+   c. **Weryfikacja właściciela**: Porównuje `flashcard.user_id` z `userId` (ID zalogowanego użytkownika). Jeśli nie pasują, zwraca błąd prowadzący do odpowiedzi `403 Forbidden`.
+   d. **Sprawdzenie, czy już usunięta**: Jeśli `flashcard.is_deleted` jest `true`, operacja jest uznawana za idempotentną i serwis zwraca sukces (co prowadzi do odpowiedzi `204 No Content`).
+   e. **Aktualizacja rekordu**: Wykonuje `UPDATE` na tabeli `flashcards`, ustawiając `is_deleted = true` i `deleted_at = new Date().toISOString()` dla danego `flashcardId` i `user_id`.
+   f. Jeśli aktualizacja w bazie danych nie powiedzie się, serwis zwraca błąd prowadzący do odpowiedzi `500 Internal Server Error`.
+   g. Jeśli aktualizacja powiedzie się, serwis zwraca sukces.
 8. Handler API na podstawie wyniku z serwisu zwraca odpowiedni kod statusu (`204`, `403`, `404`, `500`).
 
 ## 6. Względy Bezpieczeństwa
 
 - **Uwierzytelnianie:** Zapewniane przez middleware Astro; punkt końcowy musi sprawdzać istnienie `context.locals.user`.
 - **Autoryzacja:**
+
   - Na poziomie aplikacji: `FlashcardService` musi jawnie weryfikować, czy `auth.uid()` (ID zalogowanego użytkownika) jest równe `user_id` fiszki przed wykonaniem operacji.
   - Na poziomie bazy danych: Zasady Row Level Security (RLS) dla tabeli `flashcards` muszą być skonfigurowane tak, aby użytkownik mógł modyfikować (w tym przypadku `UPDATE`) własne, jeszcze nieusunięte fiszki. Odpowiednia polityka RLS (`Allow users to soft-delete their own flashcards`) powinna wyglądać mniej więcej tak:
 
@@ -98,42 +100,46 @@ Celem tego punktu końcowego jest umożliwienie uwierzytelnionym użytkownikom "
 ## 8. Etapy Wdrożenia
 
 1. **Konfiguracja RLS w Supabase (jeśli jeszcze nie istnieje lub wymaga modyfikacji):**
-    - Upewnić się, że polityka RLS dla tabeli `flashcards` zezwala użytkownikom na aktualizację (`UPDATE`) własnych, nieusuniętych (`is_deleted = FALSE`) fiszek w celu ustawienia `is_deleted = TRUE` i `deleted_at`.
+
+   - Upewnić się, że polityka RLS dla tabeli `flashcards` zezwala użytkownikom na aktualizację (`UPDATE`) własnych, nieusuniętych (`is_deleted = FALSE`) fiszek w celu ustawienia `is_deleted = TRUE` i `deleted_at`.
 
 2. **Utworzenie/aktualizacja `FlashcardService` (`src/lib/services/flashcardService.ts`):**
-    - Zaimplementować metodę `async softDeleteFlashcard(supabase: SupabaseClient, userId: string, flashcardId: string): Promise<{ error: ServiceError | null }>`:
-        - Pobranie fiszki (ID, user\_id, is\_deleted).
-        - Obsługa przypadku, gdy fiszka nie istnieje (zwróć błąd typu `NotFound`).
-        - Weryfikacja, czy `userId` pasuje do `flashcard.user_id` (jeśli nie, zwróć błąd typu `Forbidden`).
-        - Sprawdzenie, czy fiszka jest już `is_deleted` (jeśli tak, zwróć sukces – idempotencja).
-        - Wykonanie operacji `UPDATE` w Supabase: `supabase.from('flashcards').update({ is_deleted: true, deleted_at: new Date().toISOString() }).eq('id', flashcardId).eq('user_id', userId)`.
-        - Obsługa błędów z Supabase (zwróć błąd typu `DatabaseError`).
-        - Zwrócenie wyniku operacji.
+
+   - Zaimplementować metodę `async softDeleteFlashcard(supabase: SupabaseClient, userId: string, flashcardId: string): Promise<{ error: ServiceError | null }>`:
+     - Pobranie fiszki (ID, user_id, is_deleted).
+     - Obsługa przypadku, gdy fiszka nie istnieje (zwróć błąd typu `NotFound`).
+     - Weryfikacja, czy `userId` pasuje do `flashcard.user_id` (jeśli nie, zwróć błąd typu `Forbidden`).
+     - Sprawdzenie, czy fiszka jest już `is_deleted` (jeśli tak, zwróć sukces – idempotencja).
+     - Wykonanie operacji `UPDATE` w Supabase: `supabase.from('flashcards').update({ is_deleted: true, deleted_at: new Date().toISOString() }).eq('id', flashcardId).eq('user_id', userId)`.
+     - Obsługa błędów z Supabase (zwróć błąd typu `DatabaseError`).
+     - Zwrócenie wyniku operacji.
 
 3. **Implementacja Handlera API Astro (`src/pages/api/flashcards/[flashcardId].ts`):**
-    - Utworzyć plik, jeśli nie istnieje.
-    - Dodać `export const prerender = false;`.
-    - Zaimplementować funkcję `export const DEL: APIRoute = async ({ params, locals }) => { ... }`.
-    - Pobrać `user` i `supabase` z `locals`. Sprawdzić, czy `user` istnieje (jeśli nie, zwrócić `401`).
-    - Zwalidować `params.flashcardId` przy użyciu Zod (schemat `z.object({ flashcardId: z.string().uuid() })`). W przypadku błędu walidacji zwrócić `400`.
-    - Wywołać `flashcardService.softDeleteFlashcard(...)`.
-    - Na podstawie wyniku z serwisu, zwrócić odpowiedni kod statusu:
-        - Sukces: `204 No Content`.
-        - Błąd `NotFound` z serwisu: `404 Not Found`.
-        - Błąd `Forbidden` z serwisu: `403 Forbidden`.
-        - Inne błędy serwisu (np. `DatabaseError`): `500 Internal Server Error`.
-    - Dodać obsługę nieoczekiwanych wyjątków (`try...catch`) i zwrócić `500`.
+
+   - Utworzyć plik, jeśli nie istnieje.
+   - Dodać `export const prerender = false;`.
+   - Zaimplementować funkcję `export const DEL: APIRoute = async ({ params, locals }) => { ... }`.
+   - Pobrać `user` i `supabase` z `locals`. Sprawdzić, czy `user` istnieje (jeśli nie, zwrócić `401`).
+   - Zwalidować `params.flashcardId` przy użyciu Zod (schemat `z.object({ flashcardId: z.string().uuid() })`). W przypadku błędu walidacji zwrócić `400`.
+   - Wywołać `flashcardService.softDeleteFlashcard(...)`.
+   - Na podstawie wyniku z serwisu, zwrócić odpowiedni kod statusu:
+     - Sukces: `204 No Content`.
+     - Błąd `NotFound` z serwisu: `404 Not Found`.
+     - Błąd `Forbidden` z serwisu: `403 Forbidden`.
+     - Inne błędy serwisu (np. `DatabaseError`): `500 Internal Server Error`.
+   - Dodać obsługę nieoczekiwanych wyjątków (`try...catch`) i zwrócić `500`.
 
 4. **Testowanie:**
-    - **Testy jednostkowe** dla logiki w `FlashcardService` (mockując klienta Supabase).
-    - **Testy integracyjne/E2E** dla punktu końcowego API:
-        - Przypadek sukcesu (prawidłowy `flashcardId`, użytkownik jest właścicielem, fiszka nieusunięta).
-        - Niepoprawny format `flashcardId` (`400`).
-        - Brak uwierzytelnienia (`401`).
-        - Użytkownik nie jest właścicielem fiszki (`403`).
-        - Fiszka nie istnieje (`404`).
-        - Fiszka już jest usunięta (oczekiwane `204`).
-        - Symulacja błędu bazy danych (`500`).
+
+   - **Testy jednostkowe** dla logiki w `FlashcardService` (mockując klienta Supabase).
+   - **Testy integracyjne/E2E** dla punktu końcowego API:
+     - Przypadek sukcesu (prawidłowy `flashcardId`, użytkownik jest właścicielem, fiszka nieusunięta).
+     - Niepoprawny format `flashcardId` (`400`).
+     - Brak uwierzytelnienia (`401`).
+     - Użytkownik nie jest właścicielem fiszki (`403`).
+     - Fiszka nie istnieje (`404`).
+     - Fiszka już jest usunięta (oczekiwane `204`).
+     - Symulacja błędu bazy danych (`500`).
 
 5. **Dokumentacja (jeśli dotyczy):**
-    - Zaktualizować dokumentację API (np. Swagger/OpenAPI), jeśli jest prowadzona oddzielnie. Specyfikacja w tym zadaniu jest już dostarczona.
+   - Zaktualizować dokumentację API (np. Swagger/OpenAPI), jeśli jest prowadzona oddzielnie. Specyfikacja w tym zadaniu jest już dostarczona.

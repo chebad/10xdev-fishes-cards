@@ -46,9 +46,10 @@ MyFlashcardsView (główny kontener widoku)
 ## 4. Szczegóły komponentów
 
 ### MyFlashcardsView
+
 - **Opis komponentu:** Główny kontener widoku zarządzający stanem aplikacji, orchestrujący komunikację między komponentami potomnymi oraz wywołania API.
 - **Główne elementy:** Div z układem CSS Grid/Flexbox zawierający wszystkie komponenty potomne, system zarządzania stanem React (useState, useEffect), obsługę błędów i loadingu.
-- **Obsługiwane interakcje:** 
+- **Obsługiwane interakcje:**
   - Inicjalizacja widoku (pobieranie listy fiszek)
   - Obsługa zmiany filtrów/sortowania
   - Obsługa zmiany strony paginacji
@@ -59,6 +60,7 @@ MyFlashcardsView (główny kontener widoku)
 - **Propsy:** Nie przyjmuje propsów - jest komponentem głównym
 
 ### FlashcardsControls
+
 - **Opis komponentu:** Panel kontrolny z przyciskiem dodawania, polem wyszukiwania oraz filtrami sortowania i typu fiszki.
 - **Główne elementy:** Card container z Button (Dodaj fiszkę), Input (wyszukiwanie), Select komponenty (sortowanie, kierunek, typ AI), Button (Wyczyść filtry), licznik fiszek
 - **Obsługiwane interakcje:**
@@ -68,7 +70,7 @@ MyFlashcardsView (główny kontener widoku)
   - Klik "Wyczyść filtry" → reset do domyślnych wartości
 - **Obsługiwana walidacja:** Debouncing wyszukiwania, walidacja wartości select
 - **Typy:** `FlashcardsControlsProps`, `GetFlashcardsQuery`
-- **Propsy:** 
+- **Propsy:**
   ```typescript
   interface FlashcardsControlsProps {
     filters: GetFlashcardsQuery;
@@ -79,6 +81,7 @@ MyFlashcardsView (główny kontener widoku)
   ```
 
 ### FlashcardsList
+
 - **Opis komponentu:** Lista fiszek z paginacją, obsługujący stany ładowania i brak wyników.
 - **Główne elementy:** Div container z FlashcardItem components, Pagination component, loading spinner, empty state message
 - **Obsługiwane interakcje:**
@@ -100,6 +103,7 @@ MyFlashcardsView (główny kontener widoku)
   ```
 
 ### FlashcardItem
+
 - **Opis komponentu:** Pojedyncza karta fiszki z pytaniem, odpowiedzią, metadanymi i przyciskami akcji.
 - **Główne elementy:** Card z pytaniem (Input-styled), odpowiedzią (Textarea-styled), Badge (AI/ręczne), Button (Edytuj), Button (Usuń), metadata (daty)
 - **Obsługiwane interakcje:**
@@ -120,6 +124,7 @@ MyFlashcardsView (główny kontener widoku)
   ```
 
 ### FlashcardCreateModal
+
 - **Opis komponentu:** Modal do tworzenia nowej fiszki z formularzem pytania i odpowiedzi.
 - **Główne elementy:** Dialog container, Form z Input (pytanie), Textarea (odpowiedź), licznik znaków, Button (Zapisz), Button (Anuluj), Alert (błędy)
 - **Obsługiwane interakcje:**
@@ -143,6 +148,7 @@ MyFlashcardsView (główny kontener widoku)
   ```
 
 ### FlashcardEditModal
+
 - **Opis komponentu:** Modal do edycji istniejącej fiszki z przedwypełnionym formularzem.
 - **Główne elementy:** Dialog container, Form z wypełnionymi danymi, Input (pytanie), Textarea (odpowiedź), licznik znaków, Button (Zapisz), Button (Anuluj), Alert (błędy)
 - **Obsługiwane interakcje:**
@@ -168,6 +174,7 @@ MyFlashcardsView (główny kontener widoku)
   ```
 
 ### DeleteConfirmModal
+
 - **Opis komponentu:** Modal potwierdzenia usunięcia fiszki z ostrzeżeniem.
 - **Główne elementy:** Dialog container, Alert z ostrzeżeniem, informacje o fiszce (pytanie), Button (Usuń), Button (Anuluj)
 - **Obsługiwane interakcje:**
@@ -190,6 +197,7 @@ MyFlashcardsView (główny kontener widoku)
 ## 5. Typy
 
 ### Główne typy interfejsu (wykorzystywane z types.ts):
+
 - `FlashcardListItemDto` - typ dla pojedynczej fiszki na liście
 - `FlashcardsListDto` - typ odpowiedzi API z listą i paginacją
 - `PaginationDetails` - informacje o paginacji
@@ -253,6 +261,7 @@ interface MyFlashcardsViewProps {
 Widok wykorzystuje stan lokalny React z hooks useState i useEffect. Główny stan zarządzany przez komponent MyFlashcardsView:
 
 ### Hook useFlashcards (custom hook):
+
 ```typescript
 const useFlashcards = (initialFilters?: Partial<GetFlashcardsQuery>) => {
   const [state, setState] = useState<MyFlashcardsViewState>({
@@ -270,20 +279,28 @@ const useFlashcards = (initialFilters?: Partial<GetFlashcardsQuery>) => {
   });
 
   // Funkcje zarządzania stanem
-  const fetchFlashcards = async (newFilters?: Partial<GetFlashcardsQuery>) => { /* implementacja */ };
-  const handleFiltersChange = (newFilters: Partial<GetFlashcardsQuery>) => { /* implementacja */ };
-  const handlePageChange = (page: number) => { /* implementacja */ };
-  
+  const fetchFlashcards = async (newFilters?: Partial<GetFlashcardsQuery>) => {
+    /* implementacja */
+  };
+  const handleFiltersChange = (newFilters: Partial<GetFlashcardsQuery>) => {
+    /* implementacja */
+  };
+  const handlePageChange = (page: number) => {
+    /* implementacja */
+  };
+
   return { state, modalState, actions: { fetchFlashcards, handleFiltersChange, handlePageChange } };
 };
 ```
 
 ### Zarządzanie stanem modali:
+
 - Każdy modal ma własny stan (isOpen, isSubmitting/isDeleting)
 - Stan modalu edit przechowuje aktualnie edytowaną fiszkę
 - Stan modalu delete przechowuje fiszkę do usunięcia
 
 ### Synchronizacja stanu:
+
 - Po każdej operacji CRUD odświeżana jest lista fiszek
 - Toast notifications informują o powodzeniu/błędzie operacji
 - Optymistyczne aktualizacje dla lepszego UX
@@ -293,26 +310,31 @@ const useFlashcards = (initialFilters?: Partial<GetFlashcardsQuery>) => {
 ### Wykorzystywane endpointy:
 
 **GET /api/flashcards**
+
 - **Typ żądania:** `GetFlashcardsQuery`
 - **Typ odpowiedzi:** `FlashcardsListDto`
 - **Zastosowanie:** Pobieranie listy fiszek z filtrami i paginacją
 
 **POST /api/flashcards**
+
 - **Typ żądania:** `CreateFlashcardCommand`
 - **Typ odpowiedzi:** `FlashcardDto`
 - **Zastosowanie:** Tworzenie nowej fiszki ręcznie
 
 **PATCH /api/flashcards/{flashcardId}**
+
 - **Typ żądania:** `UpdateFlashcardCommand`
 - **Typ odpowiedzi:** `FlashcardDto`
 - **Zastosowanie:** Aktualizacja istniejącej fiszki
 
 **DELETE /api/flashcards/{flashcardId}**
+
 - **Typ żądania:** Brak body
 - **Typ odpowiedzi:** 204 No Content
 - **Zastosowanie:** Miękkie usunięcie fiszki
 
 ### Funkcje API service:
+
 ```typescript
 const flashcardsApiService = {
   async fetchFlashcards(filters: GetFlashcardsQuery): Promise<FlashcardsListDto> {
@@ -323,9 +345,9 @@ const flashcardsApiService = {
   },
 
   async createFlashcard(data: CreateFlashcardCommand): Promise<FlashcardDto> {
-    const response = await fetch('/api/flashcards', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/flashcards", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
     return response.json();
@@ -333,8 +355,8 @@ const flashcardsApiService = {
 
   async updateFlashcard(id: string, data: UpdateFlashcardCommand): Promise<FlashcardDto> {
     const response = await fetch(`/api/flashcards/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
     });
     return response.json();
@@ -342,7 +364,7 @@ const flashcardsApiService = {
 
   async deleteFlashcard(id: string): Promise<void> {
     await fetch(`/api/flashcards/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   },
 };
@@ -353,26 +375,31 @@ const flashcardsApiService = {
 ### Scenariusze interakcji:
 
 1. **Przeglądanie fiszek:**
+
    - Użytkownik wchodzi na widok → automatyczne pobieranie listy fiszek
    - Wyświetlenie listy z paginacją (12 fiszek na stronę)
    - Możliwość przejścia między stronami
 
 2. **Wyszukiwanie:**
+
    - Użytkownik wpisuje w pole wyszukiwania → debounced request (300ms)
    - Wyniki filtrowane po pytaniach i odpowiedziach
    - Resetowanie paginacji do strony 1
 
 3. **Filtrowanie i sortowanie:**
+
    - Zmiana sortowania → natychmiastowe ponowne zapytanie
    - Filtrowanie po typie (AI/ręczne) → aktualizacja listy
    - Wyczyść filtry → powrót do domyślnych ustawień
 
 4. **Tworzenie fiszki:**
+
    - Klik "Dodaj fiszkę" → otwiera modal
    - Wypełnienie formularza → walidacja w czasie rzeczywistym
    - Submit → utworzenie fiszki + toast + odświeżenie listy + zamknięcie modalu
 
 5. **Edycja fiszki:**
+
    - Klik "Edytuj" na fiszce → otwiera modal z danymi
    - Modyfikacja pól → walidacja
    - Submit → aktualizacja + toast + odświeżenie listy + zamknięcie modalu
@@ -386,7 +413,8 @@ const flashcardsApiService = {
 ### Walidacja po stronie klienta:
 
 **FlashcardCreateModal i FlashcardEditModal:**
-- Pytanie: 
+
+- Pytanie:
   - Wymagane (nie może być puste po trim)
   - Minimum 3 znaki po trim
   - Maximum 1000 znaków
@@ -396,21 +424,25 @@ const flashcardsApiService = {
   - Maximum 2000 znaków
 
 **FlashcardsControls:**
+
 - Debouncing wyszukiwania (300ms)
 - Walidacja wartości select (sortBy, sortOrder, isAiGenerated)
 - Sprawdzenie formatu page i limit dla paginacji
 
 **FlashcardsList:**
+
 - Walidacja numerów stron (nie może być < 1 lub > totalPages)
 - Sprawdzenie czy pagination.currentPage jest w dozwolonym zakresie
 
 ### Warunki biznesowe:
+
 - Użytkownik może edytować/usuwać tylko własne fiszki (weryfikowane przez API)
 - Lista domyślnie sortowana po dacie utworzenia (malejąco)
 - Paginacja z limitem 12 fiszek na stronę
 - Automatyczne odświeżanie po operacjach CRUD
 
 ### Walidacja uprawnień:
+
 - Sprawdzenie sesji użytkownika przed dostępem do widoku
 - Weryfikacja tokenu JWT przy każdym zapytaniu API
 - Obsługa błędów 401/403 z przekierowaniem do logowania
@@ -420,19 +452,23 @@ const flashcardsApiService = {
 ### Scenariusze błędów i ich obsługa:
 
 1. **Błędy sieciowe:**
+
    - Brak połączenia → toast z informacją "Sprawdź połączenie internetowe"
    - Timeout → toast "Żądanie przekroczyło limit czasu"
    - Błąd serwera (5xx) → toast "Wystąpił błąd serwera. Spróbuj ponownie"
 
 2. **Błędy autoryzacji:**
+
    - 401 Unauthorized → przekierowanie do strony logowania
    - 403 Forbidden → toast "Brak uprawnień do wykonania tej operacji"
 
 3. **Błędy walidacji:**
+
    - 400 Bad Request → wyświetlenie błędów pod polami formularza
    - Błędy klienckie → podświetlenie nieprawidłowych pól
 
 4. **Błędy biznesowe:**
+
    - 404 Not Found → toast "Fiszka nie została znaleziona"
    - Próba edycji nieistniejącej fiszki → odświeżenie listy
 
@@ -441,12 +477,14 @@ const flashcardsApiService = {
    - Brak wyników wyszukiwania → "Nie znaleziono fiszek spełniających kryteria"
 
 ### Mechanizmy odporności:
+
 - Retry dla zapytań GET (max 3 próby)
 - Graceful degradation (wyświetlanie partial data)
 - Fallback UI dla błędów krytycznych
 - Logging błędów do konsoli (tryb development)
 
 ### Komponenty błędów:
+
 ```typescript
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -457,7 +495,7 @@ const FlashcardsErrorBoundary: React.FC = ({ children }) => {
   // Implementacja Error Boundary dla całego widoku
 };
 
-const ErrorToast = (message: string, type: 'error' | 'warning' | 'success') => {
+const ErrorToast = (message: string, type: "error" | "warning" | "success") => {
   // Wyświetlanie toast notifications
 };
 ```
@@ -465,67 +503,78 @@ const ErrorToast = (message: string, type: 'error' | 'warning' | 'success') => {
 ## 11. Kroki implementacji
 
 ### Krok 1: Przygotowanie struktury
+
 1. Utworzenie pliku głównego komponentu `src/components/flashcards/MyFlashcardsView.tsx`
 2. Sprawdzenie i aktualizacja istniejących komponentów (FlashcardsControls, FlashcardsList, FlashcardItem)
 3. Sprawdzenie modali (FlashcardCreateModal, FlashcardEditModal)
 4. Utworzenie DeleteConfirmModal jeśli nie istnieje
 
 ### Krok 2: Implementacja custom hook
+
 1. Utworzenie `src/hooks/useFlashcards.ts`
 2. Implementacja zarządzania stanem fiszek
 3. Implementacja funkcji API calls
 4. Dodanie obsługi błędów i loading states
 
 ### Krok 3: Implementacja głównego komponentu
+
 1. Utworzenie MyFlashcardsView z podstawową strukturą
 2. Integracja z useFlashcards hook
 3. Implementacja renderowania komponentów potomnych
 4. Dodanie obsługi modali
 
 ### Krok 4: Implementacja obsługi zdarzeń
+
 1. Implementacja handleCreateFlashcard
-2. Implementacja handleEditFlashcard  
+2. Implementacja handleEditFlashcard
 3. Implementacja handleDeleteFlashcard
 4. Implementacja handleFiltersChange i handlePageChange
 
 ### Krok 5: Implementacja API service
+
 1. Utworzenie `src/lib/services/flashcardsApiService.ts`
 2. Implementacja wszystkich metod API
 3. Dodanie obsługi błędów i typów response
 4. Integracja z hook useFlashcards
 
 ### Krok 6: Aktualizacja/utworzenie modali
+
 1. Sprawdzenie i aktualizacja FlashcardCreateModal
 2. Sprawdzenie i aktualizacja FlashcardEditModal
 3. Utworzenie DeleteConfirmModal
 4. Implementacja obsługi zamykania modali
 
 ### Krok 7: Implementacja systemu powiadomień
+
 1. Integracja z Sonner (toast library)
 2. Dodanie powiadomień sukcesu dla operacji CRUD
 3. Dodanie powiadomień błędów
 4. Konfiguracja stylu i pozycji toastów
 
 ### Krok 8: Stylowanie i responsywność
+
 1. Implementacja układu responsywnego (mobile-first)
 2. Dodanie animacji i transycji
 3. Testowanie na różnych rozdzielczościach
 4. Optymalizacja dla dostępności (a11y)
 
 ### Krok 9: Integracja z aplikacją
+
 1. Dodanie widoku do routing systemu
 2. Integracja z layout aplikacji
 3. Dodanie zabezpieczeń (sprawdzenie sesji)
 4. Konfiguracja domyślnych filtrów
 
 ### Krok 10: Testowanie i optymalizacja
+
 1. Testowanie wszystkich scenariuszy użycia
 2. Testowanie obsługi błędów
 3. Optymalizacja wydajności (debouncing, memo)
 4. Walidacja zgodności z wymaganiami PRD
 
 ### Krok 11: Dokumentacja i finalizacja
+
 1. Dodanie komentarzy JSDoc do komponentów
 2. Aktualizacja typów w types.ts jeśli potrzebne
 3. Sprawdzenie linting i TypeScript errors
-4. Przygotowanie do merge/deploy 
+4. Przygotowanie do merge/deploy

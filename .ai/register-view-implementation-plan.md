@@ -159,34 +159,36 @@ Interakcja z backendem w celu rejestracji użytkownika będzie realizowana za po
 - **Metoda Supabase SDK:** `supabase.auth.signUp(credentials)`
 - **Parametry (Credentials):**
 
-    ```typescript
-    interface SignUpWithPasswordCredentials {
-      email: string;
-      password: string;
-      options?: {
-        emailRedirectTo?: string; // URL, na który użytkownik zostanie przekierowany po kliknięciu linku weryfikacyjnego w emailu
-        data?: object; // Dodatkowe metadane użytkownika
-      };
-    }
-    ```
+  ```typescript
+  interface SignUpWithPasswordCredentials {
+    email: string;
+    password: string;
+    options?: {
+      emailRedirectTo?: string; // URL, na który użytkownik zostanie przekierowany po kliknięciu linku weryfikacyjnego w emailu
+      data?: object; // Dodatkowe metadane użytkownika
+    };
+  }
+  ```
 
-    W naszym przypadku, `email` i `password` będą pochodzić z `RegisterFormData`.
-    `emailRedirectTo` powinno być skonfigurowane na URL w aplikacji, np. `window.location.origin + '/auth/callback'` lub inna strona docelowa.
+  W naszym przypadku, `email` i `password` będą pochodzić z `RegisterFormData`.
+  `emailRedirectTo` powinno być skonfigurowane na URL w aplikacji, np. `window.location.origin + '/auth/callback'` lub inna strona docelowa.
+
 - **Odpowiedź Supabase SDK:**
 
-    ```typescript
-    interface AuthResponse {
-      data: {
-        user: User | null;
-        session: Session | null;
-      };
-      error: AuthError | null;
-    }
-    ```
+  ```typescript
+  interface AuthResponse {
+    data: {
+      user: User | null;
+      session: Session | null;
+    };
+    error: AuthError | null;
+  }
+  ```
 
   - `data.user`: Obiekt użytkownika, jeśli tworzenie/logowanie się powiodło.
   - `data.session`: Obiekt sesji, jeśli tworzenie/logowanie się powiodło.
   - `error`: Obiekt `AuthError` w przypadku błędu. `error.message` będzie zawierał czytelny dla użytkownika komunikat.
+
 - **Obsługa odpowiedzi:**
   - **Sukces (`error === null`):**
     - Wyświetlić toast o sukcesie (np. "Rejestracja pomyślna! Sprawdź email, aby potwierdzić konto.").
@@ -198,25 +200,25 @@ Interakcja z backendem w celu rejestracji użytkownika będzie realizowana za po
 ## 8. Interakcje użytkownika
 
 1. **Wprowadzanie danych:** Użytkownik wpisuje dane w pola formularza (email, hasło, potwierdzenie hasła).
-    - Wynik: Dane są widoczne w polach. Walidacja `react-hook-form` może pokazywać błędy na bieżąco (on change/on blur).
+   - Wynik: Dane są widoczne w polach. Walidacja `react-hook-form` może pokazywać błędy na bieżąco (on change/on blur).
 2. **Zaznaczenie checkboxa "Akceptuję politykę prywatności":**
-    - Wynik: Checkbox zmienia stan.
+   - Wynik: Checkbox zmienia stan.
 3. **Kliknięcie linku "polityki prywatności":**
-    - Wynik: Użytkownik jest przekierowywany na stronę `/privacy-policy` (lub inny zdefiniowany URL).
+   - Wynik: Użytkownik jest przekierowywany na stronę `/privacy-policy` (lub inny zdefiniowany URL).
 4. **Kliknięcie przycisku "Zarejestruj":**
-    - **Jeśli walidacja po stronie klienta (Zod) nie powiedzie się:**
-        - Wynik: Komunikaty o błędach są wyświetlane pod odpowiednimi polami. Formularz nie jest wysyłany. Przycisk nie pokazuje stanu ładowania.
-    - **Jeśli walidacja po stronie klienta powiedzie się:**
-        - Wynik: `isLoading` ustawiane na `true`. Przycisk "Zarejestruj" pokazuje wskaźnik ładowania i jest zablokowany. Wywoływana jest funkcja `supabase.auth.signUp`.
-        - **Po odpowiedzi z Supabase (sukces):**
-            - `isLoading` ustawiane na `false`.
-            - Toast o sukcesie rejestracji jest wyświetlany.
-            - Użytkownik może zostać przekierowany.
-        - **Po odpowiedzi z Supabase (błąd):**
-            - `isLoading` ustawiane na `false`.
-            - `apiError` jest ustawiany komunikatem błędu z Supabase.
-            - Toast z błędem jest wyświetlany.
-            - Komunikat `apiError` może być wyświetlony globalnie dla formularza.
+   - **Jeśli walidacja po stronie klienta (Zod) nie powiedzie się:**
+     - Wynik: Komunikaty o błędach są wyświetlane pod odpowiednimi polami. Formularz nie jest wysyłany. Przycisk nie pokazuje stanu ładowania.
+   - **Jeśli walidacja po stronie klienta powiedzie się:**
+     - Wynik: `isLoading` ustawiane na `true`. Przycisk "Zarejestruj" pokazuje wskaźnik ładowania i jest zablokowany. Wywoływana jest funkcja `supabase.auth.signUp`.
+     - **Po odpowiedzi z Supabase (sukces):**
+       - `isLoading` ustawiane na `false`.
+       - Toast o sukcesie rejestracji jest wyświetlany.
+       - Użytkownik może zostać przekierowany.
+     - **Po odpowiedzi z Supabase (błąd):**
+       - `isLoading` ustawiane na `false`.
+       - `apiError` jest ustawiany komunikatem błędu z Supabase.
+       - Toast z błędem jest wyświetlany.
+       - Komunikat `apiError` może być wyświetlony globalnie dla formularza.
 
 ## 9. Warunki i walidacja
 
@@ -258,54 +260,54 @@ Walidacja będzie odbywać się na dwóch poziomach: po stronie klienta (w przeg
 ## 11. Kroki implementacji
 
 1. **Przygotowanie środowiska Supabase:**
-    - Upewnić się, że projekt Supabase jest skonfigurowany.
-    - Zanotować `SUPABASE_URL` i `SUPABASE_ANON_KEY`.
-    - Skonfigurować opcje autentykacji w Supabase (np. włączyć/wyłączyć potwierdzenie email, ustawić `Email redirect URL` na odpowiednią wartość, np. `http://localhost:4321/auth/callback` dla dewelopmentu).
+   - Upewnić się, że projekt Supabase jest skonfigurowany.
+   - Zanotować `SUPABASE_URL` i `SUPABASE_ANON_KEY`.
+   - Skonfigurować opcje autentykacji w Supabase (np. włączyć/wyłączyć potwierdzenie email, ustawić `Email redirect URL` na odpowiednią wartość, np. `http://localhost:4321/auth/callback` dla dewelopmentu).
 2. **Stworzenie typów:**
-    - Zdefiniować interfejsy `RegisterFormData`, `RegistrationFormProps`, `PrivacyPolicyLinkProps` w `src/types.ts` lub dedykowanym pliku (np. `src/components/auth/types.ts`).
+   - Zdefiniować interfejsy `RegisterFormData`, `RegistrationFormProps`, `PrivacyPolicyLinkProps` w `src/types.ts` lub dedykowanym pliku (np. `src/components/auth/types.ts`).
 3. **Implementacja komponentu `PrivacyPolicyLink.tsx`:**
-    - Stworzyć prosty komponent React wyświetlający link.
+   - Stworzyć prosty komponent React wyświetlający link.
 4. **Implementacja schematu walidacji Zod:**
-    - Stworzyć schemat Zod dla `RegisterFormData` (np. w `src/components/auth/validation.ts` lub bezpośrednio w `RegistrationForm.tsx`).
+   - Stworzyć schemat Zod dla `RegisterFormData` (np. w `src/components/auth/validation.ts` lub bezpośrednio w `RegistrationForm.tsx`).
 5. **Implementacja komponentu `RegistrationForm.tsx`:**
-    - Zainstalować `react-hook-form` i `zod`.
-    - Użyć komponentów Shadcn/ui: `Form`, `Card` (opcjonalnie), `Input`, `Checkbox`, `Button`.
-    - Zintegrować `react-hook-form` z Zod (`zodResolver`).
-    - Stworzyć pola formularza dla email, hasła, potwierdzenia hasła, i checkboxa polityki prywatności z linkiem.
-    - Implementować wyświetlanie błędów walidacji (`FormMessage`).
-    - Przekazać `isLoading` i `apiError` jako propsy i odpowiednio nimi zarządzać (np. stan ładowania na przycisku, wyświetlanie `apiError`).
-    - Wywołać `props.onSubmit` z danymi formularza.
+   - Zainstalować `react-hook-form` i `zod`.
+   - Użyć komponentów Shadcn/ui: `Form`, `Card` (opcjonalnie), `Input`, `Checkbox`, `Button`.
+   - Zintegrować `react-hook-form` z Zod (`zodResolver`).
+   - Stworzyć pola formularza dla email, hasła, potwierdzenia hasła, i checkboxa polityki prywatności z linkiem.
+   - Implementować wyświetlanie błędów walidacji (`FormMessage`).
+   - Przekazać `isLoading` i `apiError` jako propsy i odpowiednio nimi zarządzać (np. stan ładowania na przycisku, wyświetlanie `apiError`).
+   - Wywołać `props.onSubmit` z danymi formularza.
 6. **Implementacja komponentu `RegisterPageViewComponent.tsx`:**
-    - Zarządzać stanami `isLoading` i `apiError`.
-    - Stworzyć klienta Supabase (`createClient` z `@supabase/supabase-js`).
-    - Zaimplementować funkcję `handleRegister` (lub `onSubmit` przekazywaną do `RegistrationForm`):
-        - Ustawić `isLoading(true)`, `setApiError(null)`.
-        - Wywołać `supabase.auth.signUp()` z danymi z formularza.
-        - Obsłużyć odpowiedź (sukces/błąd) i zaktualizować stan (`isLoading`, `apiError`).
-        - Użyć `useToast` do wyświetlania powiadomień.
-        - Opcjonalnie, obsłużyć przekierowanie po sukcesie (`window.location.href = ...`).
-    - Renderować `RegistrationForm`, przekazując odpowiednie propsy.
+   - Zarządzać stanami `isLoading` i `apiError`.
+   - Stworzyć klienta Supabase (`createClient` z `@supabase/supabase-js`).
+   - Zaimplementować funkcję `handleRegister` (lub `onSubmit` przekazywaną do `RegistrationForm`):
+     - Ustawić `isLoading(true)`, `setApiError(null)`.
+     - Wywołać `supabase.auth.signUp()` z danymi z formularza.
+     - Obsłużyć odpowiedź (sukces/błąd) i zaktualizować stan (`isLoading`, `apiError`).
+     - Użyć `useToast` do wyświetlania powiadomień.
+     - Opcjonalnie, obsłużyć przekierowanie po sukcesie (`window.location.href = ...`).
+   - Renderować `RegistrationForm`, przekazując odpowiednie propsy.
 7. **Implementacja nagłówka `HeaderUnauthenticated.tsx`:**
-    - Stworzyć komponent nagłówka z linkami, np. do strony logowania.
+   - Stworzyć komponent nagłówka z linkami, np. do strony logowania.
 8. **Stworzenie layoutu `RegisterPageLayout.astro` (lub modyfikacja `BaseLayout.astro`):**
-    - Dodać `HeaderUnauthenticated` i `<slot />`.
-    - Upewnić się, że `Toaster` z Shadcn/ui jest skonfigurowany globalnie (prawdopodobnie w głównym layoucie aplikacji).
+   - Dodać `HeaderUnauthenticated` i `<slot />`.
+   - Upewnić się, że `Toaster` z Shadcn/ui jest skonfigurowany globalnie (prawdopodobnie w głównym layoucie aplikacji).
 9. **Stworzenie strony `src/pages/register.astro`:**
-    - Użyć `RegisterPageLayout`.
-    - Osadzić `RegisterPageViewComponent` z atrybutem `client:load`.
+   - Użyć `RegisterPageLayout`.
+   - Osadzić `RegisterPageViewComponent` z atrybutem `client:load`.
 10. **Konfiguracja routingu dla polityki prywatności:**
     - Upewnić się, że istnieje strona `/privacy-policy` (lub inna zdefiniowana) i link w `PrivacyPolicyLink` jest poprawny.
 11. **Stylowanie:**
     - Dostosować style za pomocą Tailwind CSS, aby zapewnić spójny wygląd z resztą aplikacji. Komponenty Shadcn/ui są już częściowo ostylowane, ale mogą wymagać dostosowań.
 12. **Testowanie:**
     - Przetestować wszystkie scenariusze:
-        - Poprawna rejestracja.
-        - Błędy walidacji pól.
-        - Email już istnieje.
-        - Niepoprawne hasło (np. zbyt krótkie, jeśli Supabase tego wymaga).
-        - Niezaznaczony checkbox polityki prywatności.
-        - Działanie linku do polityki prywatności.
-        - Wygląd i responsywność na różnych urządzeniach.
-        - Dostępność (nawigacja klawiaturą, czytniki ekranu).
+      - Poprawna rejestracja.
+      - Błędy walidacji pól.
+      - Email już istnieje.
+      - Niepoprawne hasło (np. zbyt krótkie, jeśli Supabase tego wymaga).
+      - Niezaznaczony checkbox polityki prywatności.
+      - Działanie linku do polityki prywatności.
+      - Wygląd i responsywność na różnych urządzeniach.
+      - Dostępność (nawigacja klawiaturą, czytniki ekranu).
 13. **Obsługa przekierowania po weryfikacji email (jeśli dotyczy):**
     - Jeśli włączone jest potwierdzenie email, utworzyć stronę callback (np. `/auth/callback`), która obsłuży token weryfikacyjny od Supabase (Supabase SDK może to ułatwić).

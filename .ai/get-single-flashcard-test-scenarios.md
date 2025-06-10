@@ -283,4 +283,4 @@ done
 2. **Użyj flagi `-v`** w curl aby zobaczyć pełne nagłówki HTTP
 3. **Sprawdź RLS policies** w Supabase jeśli testy bezpieczeństwa nie przechodzą
 4. **Weryfikuj tokeny JWT** - upewnij się, że token nie wygasł
-5. **Sprawdź middleware** - upewnij się, że `session` i `supabase` są dostępne w `locals` 
+5. **Sprawdź middleware** - upewnij się, że `session` i `supabase` są dostępne w `locals`

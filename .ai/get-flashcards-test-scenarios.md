@@ -173,7 +173,7 @@ curl -X GET "http://localhost:3000/api/flashcards?search=nonexistentterm12345" \
   "data": [
     {
       "id": "uuid",
-      "userId": "uuid", 
+      "userId": "uuid",
       "question": "string",
       "answer": "string",
       "isAiGenerated": false,

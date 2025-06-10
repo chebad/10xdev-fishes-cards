@@ -34,6 +34,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                       autoComplete="email"
                       disabled={isLoading}
                       className="h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                      data-testid="email-input"
                       {...field}
                     />
                   </FormControl>
@@ -55,6 +56,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
                       autoComplete="current-password"
                       disabled={isLoading}
                       className="h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                      data-testid="password-input"
                       {...field}
                     />
                   </FormControl>
@@ -73,6 +75,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
               type="submit"
               className="w-full h-11 text-base font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-50"
               disabled={isLoading || !isFormValid}
+              data-testid="login-submit"
             >
               {isLoading ? (
                 <>

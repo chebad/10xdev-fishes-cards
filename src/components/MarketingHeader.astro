@@ -4,8 +4,8 @@ import AppLogo from "./AppLogo.astro";
 // Sprawdź czy użytkownik jest zalogowany
 const isAuthenticated = !!Astro.locals.session?.user;
 const logoHref = isAuthenticated ? "/app" : "/";
-const logoAriaLabel = isAuthenticated 
-  ? "Przejdź do aplikacji 10xdevs-fishes-cards" 
+const logoAriaLabel = isAuthenticated
+  ? "Przejdź do aplikacji 10xdevs-fishes-cards"
   : "Strona główna 10xdevs-fishes-cards";
 ---
 

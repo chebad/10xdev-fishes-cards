@@ -1,12 +1,11 @@
-import { useState, useCallback } from 'react';
-import type { 
-  ContactFormData, 
-  ContactFormState, 
+import { useState, useCallback } from "react";
+import type {
+  ContactFormData,
   ContactFormErrors,
+  ContactFormState,
   CreateContactSubmissionCommand,
-  ContactSubmissionDto,
-  FieldValidationConfig
-} from '../../types';
+  FieldValidationConfig,
+} from "@/types";
 
 /**
  * Custom hook do zarządzania formularzem kontaktowym
@@ -14,84 +13,71 @@ import type {
  */
 export const useContactForm = () => {
   const [formData, setFormData] = useState<ContactFormData>({
-    email: '',
-    subject: '',
-    messageBody: ''
+    email: "",
+    subject: "",
+    messageBody: "",
   });
 
   const [formState, setFormState] = useState<ContactFormState>({
     isSubmitting: false,
     isSuccess: false,
     errors: null,
-    submitAttempted: false
+    submitAttempted: false,
   });
 
   // Konfiguracja walidacji dla każdego pola
   const validationConfig: Record<keyof ContactFormData, FieldValidationConfig> = {
     email: {
       required: true,
-      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
     subject: {
       required: false,
-      maxLength: 200
+      maxLength: 200,
     },
     messageBody: {
       required: true,
       minLength: 10,
-      maxLength: 2000
-    }
+      maxLength: 2000,
+    },
   };
 
   /**
    * Waliduje pojedyncze pole formularza
    */
-  const validateField = useCallback((name: keyof ContactFormData, value: string): string | null => {
-    const config = validationConfig[name];
-    
-    // Sprawdź czy pole jest wymagane
-    if (config.required && !value.trim()) {
-      switch (name) {
-        case 'email':
-          return 'Podaj adres email';
-        case 'messageBody':
-          return 'Wiadomość jest wymagana';
-        default:
-          return 'To pole jest wymagane';
+  const validateField = useCallback(
+    (name: keyof ContactFormData, value: string): string | null => {
+      const config = validationConfig[name];
+
+      // Sprawdź czy pole jest wymagane
+      if (config.required && (!value || value.trim().length === 0)) {
+        return config.requiredMessage || `Pole ${name} jest wymagane`;
       }
-    }
 
-    // Sprawdź pattern (email)
-    if (config.pattern && value && !config.pattern.test(value)) {
-      if (name === 'email') {
-        return 'Podaj poprawny adres email';
+      // Sprawdź minimalną długość
+      if (config.minLength && value.length < config.minLength) {
+        return config.minLengthMessage || `Pole ${name} musi mieć co najmniej ${config.minLength} znaków`;
       }
-    }
 
-    // Sprawdź minimalną długość
-    if (config.minLength && value.length < config.minLength) {
-      return `Wiadomość musi mieć co najmniej ${config.minLength} znaków`;
-    }
-
-    // Sprawdź maksymalną długość
-    if (config.maxLength && value.length > config.maxLength) {
-      switch (name) {
-        case 'subject':
-          return 'Temat może mieć maksymalnie 200 znaków';
-        case 'messageBody':
-          return 'Wiadomość może mieć maksymalnie 2000 znaków';
-        default:
-          return `Pole może mieć maksymalnie ${config.maxLength} znaków`;
+      // Sprawdź maksymalną długość
+      if (config.maxLength && value.length > config.maxLength) {
+        return config.maxLengthMessage || `Pole ${name} może mieć maksymalnie ${config.maxLength} znaków`;
       }
-    }
 
-    // Walidacja custom
-    if (config.customValidator) {
-      return config.customValidator(value);
-    }
+      // Sprawdź pattern
+      if (config.pattern && !config.pattern.test(value)) {
+        return config.patternMessage || `Pole ${name} ma nieprawidłowy format`;
+      }
 
-    return null;
-  }, []);
+      // Sprawdź custom validator
+      if (config.customValidator) {
+        return config.customValidator(value);
+      }
+
+      return null;
+    },
+    [validationConfig]
+  );
 
   /**
    * Waliduje cały formularz
@@ -101,7 +87,7 @@ export const useContactForm = () => {
     let hasErrors = false;
 
     // Waliduj każde pole
-    Object.keys(formData).forEach(key => {
+    Object.keys(formData).forEach((key) => {
       const fieldName = key as keyof ContactFormData;
       const error = validateField(fieldName, formData[fieldName]);
       if (error) {
@@ -116,59 +102,67 @@ export const useContactForm = () => {
   /**
    * Obsługuje zmianę wartości pola
    */
-  const handleFieldChange = useCallback((name: keyof ContactFormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-
-    // Usuń błąd dla tego pola jeśli istnieje
-    if (formState.errors?.[name]) {
-      setFormState(prev => ({
+  const handleFieldChange = useCallback(
+    (name: keyof ContactFormData, value: string) => {
+      setFormData((prev) => ({
         ...prev,
-        errors: prev.errors ? {
-          ...prev.errors,
-          [name]: undefined
-        } : null
+        [name]: value,
       }));
-    }
-  }, [formState.errors]);
+
+      // Usuń błąd dla tego pola jeśli istnieje
+      if (formState.errors?.[name]) {
+        setFormState((prev) => ({
+          ...prev,
+          errors: prev.errors
+            ? {
+                ...prev.errors,
+                [name]: undefined,
+              }
+            : null,
+        }));
+      }
+    },
+    [formState.errors]
+  );
 
   /**
    * Obsługuje blur na polu (walidacja real-time)
    */
-  const handleFieldBlur = useCallback((name: keyof ContactFormData) => {
-    const error = validateField(name, formData[name]);
-    
-    if (error) {
-      setFormState(prev => ({
-        ...prev,
-        errors: {
-          ...prev.errors,
-          [name]: error
-        }
-      }));
-    }
-  }, [formData, validateField]);
+  const handleFieldBlur = useCallback(
+    (name: keyof ContactFormData) => {
+      const error = validateField(name, formData[name]);
+
+      if (error) {
+        setFormState((prev) => ({
+          ...prev,
+          errors: {
+            ...prev.errors,
+            [name]: error,
+          },
+        }));
+      }
+    },
+    [formData, validateField]
+  );
 
   /**
    * Wysyła formularz do API
    */
   const submitForm = useCallback(async (): Promise<boolean> => {
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
       submitAttempted: true,
       isSubmitting: true,
-      errors: null
+      errors: null,
     }));
 
     // Waliduj formularz
     const validationErrors = validateForm();
     if (validationErrors) {
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         isSubmitting: false,
-        errors: validationErrors
+        errors: validationErrors,
       }));
       return false;
     }
@@ -178,25 +172,25 @@ export const useContactForm = () => {
       const submitData: CreateContactSubmissionCommand = {
         emailAddress: formData.email.trim(),
         subject: formData.subject.trim() || undefined,
-        messageBody: formData.messageBody.trim()
+        messageBody: formData.messageBody.trim(),
       };
 
       // Wywołaj API
-      const response = await fetch('/api/contact-submissions', {
-        method: 'POST',
+      const response = await fetch("/api/contact-submissions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(submitData)
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        
+
         if (response.status === 400 && errorData.details) {
           // Błędy walidacji z serwera
           const serverErrors: ContactFormErrors = {};
-          
+
           if (errorData.details.emailAddress) {
             serverErrors.email = errorData.details.emailAddress[0];
           }
@@ -207,51 +201,52 @@ export const useContactForm = () => {
             serverErrors.messageBody = errorData.details.messageBody[0];
           }
 
-          setFormState(prev => ({
+          setFormState((prev) => ({
             ...prev,
             isSubmitting: false,
-            errors: serverErrors
+            errors: serverErrors,
           }));
           return false;
         }
 
         // Inne błędy
-        const errorMessage = response.status === 429 
-          ? 'Zbyt wiele prób. Spróbuj ponownie za chwilę'
-          : response.status >= 500
-          ? 'Wystąpił błąd serwera. Spróbuj ponownie później'
-          : 'Wystąpił błąd podczas wysyłania wiadomości';
+        const errorMessage =
+          response.status === 429
+            ? "Zbyt wiele prób. Spróbuj ponownie za chwilę"
+            : response.status >= 500
+              ? "Wystąpił błąd serwera. Spróbuj ponownie później"
+              : "Wystąpił błąd podczas wysyłania wiadomości";
 
-        setFormState(prev => ({
+        setFormState((prev) => ({
           ...prev,
           isSubmitting: false,
-          errors: { general: errorMessage }
+          errors: { general: errorMessage },
         }));
         return false;
       }
 
       // Sukces
-      const result: ContactSubmissionDto = await response.json();
-      
-      setFormState(prev => ({
+      await response.json();
+
+      setFormState((prev) => ({
         ...prev,
         isSubmitting: false,
         isSuccess: true,
-        errors: null
+        errors: null,
       }));
 
       return true;
-
     } catch (error) {
       // Błędy sieci
-      const errorMessage = error instanceof Error && error.name === 'AbortError'
-        ? 'Request timed out. Spróbuj ponownie'
-        : 'Brak połączenia. Sprawdź połączenie internetowe';
+      const errorMessage =
+        error instanceof Error && error.name === "AbortError"
+          ? "Request timed out. Spróbuj ponownie"
+          : "Brak połączenia. Sprawdź połączenie internetowe";
 
-      setFormState(prev => ({
+      setFormState((prev) => ({
         ...prev,
         isSubmitting: false,
-        errors: { general: errorMessage }
+        errors: { general: errorMessage },
       }));
       return false;
     }
@@ -262,24 +257,24 @@ export const useContactForm = () => {
    */
   const resetForm = useCallback(() => {
     setFormData({
-      email: '',
-      subject: '',
-      messageBody: ''
+      email: "",
+      subject: "",
+      messageBody: "",
     });
-    
+
     setFormState({
       isSubmitting: false,
       isSuccess: false,
       errors: null,
-      submitAttempted: false
+      submitAttempted: false,
     });
   }, []);
 
   /**
    * Sprawdza czy formularz ma błędy
    */
-  const hasErrors = formState.errors && Object.values(formState.errors).some(error => error);
-  
+  const hasErrors = formState.errors && Object.values(formState.errors).some((error) => error);
+
   /**
    * Sprawdza czy formularz jest wypełniony poprawnie
    */
@@ -291,12 +286,12 @@ export const useContactForm = () => {
     formState,
     isFormValid: Boolean(isFormValid),
     hasErrors: Boolean(hasErrors),
-    
+
     // Handlery
     handleFieldChange,
     handleFieldBlur,
     submitForm,
     resetForm,
-    validateField
+    validateField,
   };
-}; 
+};

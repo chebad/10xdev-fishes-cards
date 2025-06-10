@@ -38,7 +38,7 @@ const buildQueryString = (query: GetFlashcardsQuery): string => {
 const handleApiResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
     let errorMessage = `HTTP ${response.status}`;
-    
+
     try {
       const errorData = await response.json();
       errorMessage = errorData.error || errorData.message || errorMessage;
@@ -64,12 +64,12 @@ const handleApiResponse = async <T>(response: Response): Promise<T> => {
           errorMessage = "Wystąpił nieoczekiwany błąd";
       }
     }
-    
+
     const apiError: ApiError = {
       message: errorMessage,
       status: response.status,
     };
-    
+
     throw new Error(apiError.message);
   }
 
@@ -80,7 +80,7 @@ const handleApiResponse = async <T>(response: Response): Promise<T> => {
 
   try {
     return await response.json();
-  } catch (error) {
+  } catch {
     throw new Error("Błąd podczas przetwarzania odpowiedzi serwera");
   }
 };
@@ -88,17 +88,16 @@ const handleApiResponse = async <T>(response: Response): Promise<T> => {
 /**
  * Wykonuje request z retry logic dla operacji GET
  */
-const fetchWithRetry = async <T>(
-  url: string,
-  options: RequestInit,
-  maxRetries: number = 3
-): Promise<T> => {
-  let lastError: Error;
+const fetchWithRetry = async <T>(url: string, options: RequestInit, maxRetries = 3): Promise<T> => {
+  let lastError: Error | null = null;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`[API] Attempt ${attempt}/${maxRetries}: ${options.method} ${url}`);
-      
+      // Log attempt only in development
+      if (import.meta.env.DEV) {
+        console.log(`[API] Attempt ${attempt}/${maxRetries}: ${options.method} ${url}`);
+      }
+
       const response = await fetch(url, {
         ...options,
         headers: {
@@ -108,30 +107,20 @@ const fetchWithRetry = async <T>(
       });
 
       return await handleApiResponse<T>(response);
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error("Unknown error");
-      
-      // Nie retry dla błędów autoryzacji i validation
-      if (lastError.message.includes('401') || 
-          lastError.message.includes('403') || 
-          lastError.message.includes('400')) {
-        throw lastError;
-      }
-      
-      // Dla ostatniej próby, rzuć błąd
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error("Unknown error");
+
       if (attempt === maxRetries) {
-        console.error(`[API] All ${maxRetries} attempts failed for ${options.method} ${url}:`, lastError);
         throw lastError;
       }
-      
-      // Czekaj przed kolejną próbą (exponential backoff)
-      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-      console.warn(`[API] Attempt ${attempt} failed, retrying in ${delay}ms:`, lastError.message);
-      await new Promise(resolve => setTimeout(resolve, delay));
+
+      // Exponential backoff
+      const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
-  throw lastError!;
+  throw lastError || new Error("Max retries exceeded");
 };
 
 // === MAIN API SERVICE ===
@@ -155,10 +144,14 @@ export const flashcardsApiService = {
    * POST /api/flashcards
    */
   async createFlashcard(data: CreateFlashcardCommand): Promise<FlashcardDto> {
-    return fetchWithRetry<FlashcardDto>("/api/flashcards", {
-      method: "POST",
-      body: JSON.stringify(data),
-    }, 1); // Nie retry dla operacji POST
+    return fetchWithRetry<FlashcardDto>(
+      "/api/flashcards",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      },
+      1
+    ); // Nie retry dla operacji POST
   },
 
   /**
@@ -170,10 +163,14 @@ export const flashcardsApiService = {
       throw new Error("ID fiszki jest wymagane do aktualizacji");
     }
 
-    return fetchWithRetry<FlashcardDto>(`/api/flashcards/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    }, 1); // Nie retry dla operacji PATCH
+    return fetchWithRetry<FlashcardDto>(
+      `/api/flashcards/${id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      },
+      1
+    ); // Nie retry dla operacji PATCH
   },
 
   /**
@@ -185,9 +182,15 @@ export const flashcardsApiService = {
       throw new Error("ID fiszki jest wymagane do usunięcia");
     }
 
-    return fetchWithRetry<void>(`/api/flashcards/${id}`, {
+    const url = `/api/flashcards/${id}`;
+    const response = await fetch(url, {
       method: "DELETE",
-    }, 1); // Nie retry dla operacji DELETE
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
   },
 
   /**
@@ -208,4 +211,4 @@ export const flashcardsApiService = {
 /**
  * Eksport domyślny dla wygody
  */
-export default flashcardsApiService; 
+export default flashcardsApiService;

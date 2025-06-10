@@ -1,38 +1,19 @@
 ---
-
 import AuthLayout from "../layouts/AuthLayout.astro";
-
-
 
 import { LoginForm } from "../components/auth/LoginForm";
 
-
-
 // Sprawdź czy użytkownik jest już zalogowany
 
-
-
 if (Astro.locals.session?.user) {
-
   // Użytkownik jest już zalogowany, przekieruj do app
 
-
-
   return Astro.redirect("/app");
-
 }
-
 ---
 
-
-
 <AuthLayout title="Logowanie - 10xdevs-fishes-cards">
-
   <div class="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 py-8">
-
     <LoginForm client:load />
-
   </div>
-
 </AuthLayout>
-

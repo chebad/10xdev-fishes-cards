@@ -28,38 +28,33 @@ export const useFlashcards = () => {
     filtersRef.current = state.filters;
   }, [state.filters]);
 
-  const fetchFlashcards = useCallback(
-    async (query: GetFlashcardsQuery = {}) => {
+  const fetchFlashcards = useCallback(async (query: GetFlashcardsQuery = {}) => {
+    setState((prev) => ({
+      ...prev,
+      isLoading: true,
+      error: undefined,
+      filters: { ...prev.filters, ...query },
+    }));
+
+    try {
+      const data: FlashcardsListDto = await flashcardsApiService.fetchFlashcards(query);
+
       setState((prev) => ({
         ...prev,
-        isLoading: true,
+        isLoading: false,
+        flashcards: data.data,
+        pagination: data.pagination,
+        lastFetchedAt: new Date(),
         error: undefined,
-        filters: { ...prev.filters, ...query },
       }));
-
-      try {
-        console.log(`[FLASHCARDS] Fetching with query:`, query);
-
-        const data: FlashcardsListDto = await flashcardsApiService.fetchFlashcards(query);
-
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          flashcards: data.data,
-          pagination: data.pagination,
-          lastFetchedAt: new Date(),
-          error: undefined,
-        }));
-      } catch (error) {
-        setState((prev) => ({
-          ...prev,
-          isLoading: false,
-          error: error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd",
-        }));
-      }
-    },
-    []
-  );
+    } catch (error) {
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd",
+      }));
+    }
+  }, []);
 
   const createFlashcard = useCallback(
     async (command: CreateFlashcardCommand): Promise<FlashcardDto | null> => {

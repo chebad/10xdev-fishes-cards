@@ -50,23 +50,21 @@ export default function MyFlashcardsView({ initialFilters }: MyFlashcardsViewPro
                 <span className="text-lg">❌</span>
                 <h3 className="font-semibold">Nie udało się załadować fiszek</h3>
               </div>
-              
-              <p className="text-sm">
-                {flashcardsState.error}
-              </p>
-              
+
+              <p className="text-sm">{flashcardsState.error}</p>
+
               <div className="flex space-x-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => fetchFlashcards()}
                   className="flex items-center gap-2"
                 >
                   🔄 Spróbuj ponownie
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => window.location.reload()}
                   className="flex items-center gap-2"
                 >
@@ -100,11 +98,7 @@ export default function MyFlashcardsView({ initialFilters }: MyFlashcardsViewPro
                   <span>⚠️</span>
                   <span>{flashcardsState.error}</span>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => fetchFlashcards(flashcardsState.filters)}
-                >
+                <Button variant="outline" size="sm" onClick={() => fetchFlashcards(flashcardsState.filters)}>
                   Spróbuj ponownie
                 </Button>
               </div>
@@ -151,13 +145,8 @@ export default function MyFlashcardsView({ initialFilters }: MyFlashcardsViewPro
         />
 
         {/* Toast notifications */}
-        <Toaster 
-          position="top-right"
-          expand={false}
-          richColors
-          closeButton
-        />
+        <Toaster position="top-right" expand={false} richColors closeButton />
       </div>
     </ErrorBoundary>
   );
-} 
+}

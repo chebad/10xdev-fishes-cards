@@ -3,7 +3,8 @@ import MarketingLayout from "../layouts/MarketingLayout.astro";
 import { ContactFormContainer } from "../components/ContactFormContainer";
 
 const title = "Kontakt | 10xdevs-fishes-cards";
-const description = "Skontaktuj się z nami. Wyślij wiadomość, zgłoś problem lub zadaj pytanie dotyczące aplikacji do tworzenia fiszek.";
+const description =
+  "Skontaktuj się z nami. Wyślij wiadomość, zgłoś problem lub zadaj pytanie dotyczące aplikacji do tworzenia fiszek.";
 ---
 
 <MarketingLayout title={title}>
@@ -11,17 +12,17 @@ const description = "Skontaktuj się z nami. Wyślij wiadomość, zgłoś proble
   <Fragment slot="head">
     <meta name="description" content={description} />
     <meta name="keywords" content="kontakt, wsparcie, pomoc, fiszki, AI, generator fiszek" />
-    
+
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    
+
     <!-- Structured Data dla SEO -->
     <script type="application/ld+json">
       {
@@ -37,12 +38,10 @@ const description = "Skontaktuj się z nami. Wyślij wiadomość, zgłoś proble
   <div class="container mx-auto px-4 py-12 max-w-2xl">
     <!-- Header sekcji kontaktowej -->
     <div class="text-center mb-12">
-      <h1 class="text-4xl font-bold text-foreground mb-4">
-        Skontaktuj się z nami
-      </h1>
+      <h1 class="text-4xl font-bold text-foreground mb-4">Skontaktuj się z nami</h1>
       <p class="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-        Masz pytania, sugestie lub potrzebujesz pomocy? Wyślij nam wiadomość, 
-        a my postaramy się odpowiedzieć jak najszybciej.
+        Masz pytania, sugestie lub potrzebujesz pomocy? Wyślij nam wiadomość, a my postaramy się odpowiedzieć jak
+        najszybciej.
       </p>
     </div>
 
@@ -54,14 +53,12 @@ const description = "Skontaktuj się z nami. Wyślij wiadomość, zgłoś proble
 
     <!-- Dodatkowe informacje -->
     <aside class="mt-16 p-6 bg-card/30 rounded-lg border border-border/50">
-      <h2 class="text-xl font-semibold text-foreground mb-3">
-        Informacje o przetwarzaniu danych
-      </h2>
+      <h2 class="text-xl font-semibold text-foreground mb-3">Informacje o przetwarzaniu danych</h2>
       <p class="text-sm text-muted-foreground">
-        Wysyłając formularz kontaktowy, wyrażasz zgodę na przetwarzanie podanych danych 
-        w celu udzielenia odpowiedzi na Twoje zapytanie. Szczegóły znajdziesz w naszej 
+        Wysyłając formularz kontaktowy, wyrażasz zgodę na przetwarzanie podanych danych w celu udzielenia odpowiedzi na
+        Twoje zapytanie. Szczegóły znajdziesz w naszej
         <a href="/privacy-policy" class="text-primary hover:underline">polityce prywatności</a>.
       </p>
     </aside>
   </div>
-</MarketingLayout> 
+</MarketingLayout>

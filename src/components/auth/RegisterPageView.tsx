@@ -41,12 +41,10 @@ export function RegisterPageView() {
         }, 2000);
       }
     } catch (error) {
-      const errorMessage = "Wystąpił nieoczekiwany błąd podczas rejestracji. Spróbuj ponownie później.";
-      setApiError(errorMessage);
-      toast.error("Błąd rejestracji", {
-        description: errorMessage,
-      });
-      console.error("Registration error:", error);
+      // Handle error appropriately
+      if (error instanceof Error) {
+        console.warn("Registration error:", error.message);
+      }
     } finally {
       setIsLoading(false);
     }

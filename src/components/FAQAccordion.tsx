@@ -1,37 +1,22 @@
 import React from "react";
-import { 
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger 
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { FAQAccordionProps } from "@/types";
 
 /**
  * Komponent React wykorzystujący Shadcn/ui Accordion do prezentacji pytań i odpowiedzi FAQ.
  * Zapewnia dostępną nawigację klawiaturą i responsywny design.
  */
-export function FAQAccordion({ 
-  items, 
-  allowMultiple = true, 
-  className = "" 
-}: FAQAccordionProps) {
+export function FAQAccordion({ items, allowMultiple = true, className = "" }: FAQAccordionProps) {
   // Walidacja danych FAQ
-  const validItems = items.filter(
-    item => item.id && item.question?.trim() && item.answer?.trim()
-  );
+  const validItems = items.filter((item) => item.id && item.question?.trim() && item.answer?.trim());
 
   if (validItems.length === 0) {
     return (
       <div className="text-center py-12">
         <div className="mx-auto max-w-md">
           <div className="mb-4 text-4xl text-muted-foreground/50">🤔</div>
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            Brak dostępnych pytań
-          </h3>
-          <p className="text-muted-foreground text-sm">
-            Nie znaleziono żadnych pytań i odpowiedzi do wyświetlenia.
-          </p>
+          <h3 className="text-lg font-medium text-foreground mb-2">Brak dostępnych pytań</h3>
+          <p className="text-muted-foreground text-sm">Nie znaleziono żadnych pytań i odpowiedzi do wyświetlenia.</p>
         </div>
       </div>
     );
@@ -39,14 +24,10 @@ export function FAQAccordion({
 
   return (
     <div className={`w-full ${className}`}>
-      <Accordion 
-        type={allowMultiple ? "multiple" : "single"} 
-        className="w-full space-y-3"
-        collapsible
-      >
+      <Accordion type={allowMultiple ? "multiple" : "single"} className="w-full space-y-3" collapsible>
         {validItems.map((item, index) => (
-          <AccordionItem 
-            key={item.id} 
+          <AccordionItem
+            key={item.id}
             value={item.id}
             className="group border border-border/40 rounded-xl overflow-hidden bg-card/20 hover:bg-card/40 transition-all duration-200 hover:shadow-md hover:border-border/60"
           >
@@ -62,7 +43,7 @@ export function FAQAccordion({
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
               <div className="ml-12 text-muted-foreground leading-relaxed">
-                {item.answer.split('\n').map((paragraph, paragraphIndex) => (
+                {item.answer.split("\n").map((paragraph, paragraphIndex) => (
                   <p key={paragraphIndex} className="mb-3 last:mb-0 text-sm sm:text-base">
                     {paragraph}
                   </p>
@@ -81,4 +62,4 @@ export function FAQAccordion({
       </Accordion>
     </div>
   );
-} 
+}

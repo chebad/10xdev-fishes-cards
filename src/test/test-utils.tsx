@@ -1,33 +1,27 @@
-import React from 'react'
-import type { ReactElement } from 'react'
-import { render } from '@testing-library/react'
-import type { RenderOptions } from '@testing-library/react'
-import { vi } from 'vitest'
+import React from "react";
+import type { ReactElement } from "react";
+import { render } from "@testing-library/react";
+import type { RenderOptions } from "@testing-library/react";
+import { vi } from "vitest";
 
 // Mock for Next Themes
 const MockThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  return <div data-testid="theme-provider">{children}</div>
-}
+  return <div data-testid="theme-provider">{children}</div>;
+};
 
 // Custom render function with providers
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <MockThemeProvider>
-      {children}
-    </MockThemeProvider>
-  )
-}
+  return <MockThemeProvider>{children}</MockThemeProvider>;
+};
 
-const customRender = (
-  ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
-) => render(ui, { wrapper: AllTheProviders, ...options })
+const customRender = (ui: ReactElement, options?: Omit<RenderOptions, "wrapper">) =>
+  render(ui, { wrapper: AllTheProviders, ...options });
 
 // Export everything from @testing-library/react
-export * from '@testing-library/react'
+export * from "@testing-library/react";
 
 // Override render
-export { customRender as render }
+export { customRender as render };
 
 // Utilities for Supabase mocks
 export const mockSupabaseClient = {
@@ -46,21 +40,31 @@ export const mockSupabaseClient = {
     eq: vi.fn().mockReturnThis(),
     single: vi.fn(),
   })),
-}
+};
 
 // Helpers for mocking API responses
-export const createMockApiResponse = <T,>(data: T, error: any = null) => ({
+export const createMockApiResponse = <T,>(data: T, error: unknown = null) => ({
   data,
   error,
   count: null,
   status: error ? 400 : 200,
-  statusText: error ? 'Bad Request' : 'OK',
-})
+  statusText: error ? "Bad Request" : "OK",
+});
 
 // Helper for mocking user events
 export const createMockUser = (overrides = {}) => ({
-  id: 'test-user-id',
-  email: 'test@example.com',
-  created_at: '2024-01-01T00:00:00Z',
+  id: "test-user-id",
+  email: "test@example.com",
+  created_at: "2024-01-01T00:00:00Z",
   ...overrides,
-}) 
+});
+
+interface CustomRenderOptions {
+  preloadedState?: Record<string, unknown>;
+  store?: unknown;
+  [key: string]: unknown;
+}
+
+export const renderWithProviders = (ui: React.ReactElement, options: CustomRenderOptions = {}) => {
+  return render(ui, { wrapper: AllTheProviders, ...options });
+};

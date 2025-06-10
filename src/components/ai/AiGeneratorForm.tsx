@@ -63,31 +63,39 @@ export default function AiGeneratorForm({ onGenerate, isGenerating, error }: AiG
     const wordCount = sourceText.trim() ? sourceText.trim().split(/\s+/).length : 0;
     const progress = Math.min((charCount / 1000) * 100, 100);
     const isValid = charCount >= 1000 && charCount <= 10000;
-    
-    let status: 'empty' | 'too-short' | 'valid' | 'too-long' = 'empty';
-    if (charCount === 0) status = 'empty';
-    else if (charCount < 1000) status = 'too-short';
-    else if (charCount <= 10000) status = 'valid';
-    else status = 'too-long';
+
+    let status: "empty" | "too-short" | "valid" | "too-long" = "empty";
+    if (charCount === 0) status = "empty";
+    else if (charCount < 1000) status = "too-short";
+    else if (charCount <= 10000) status = "valid";
+    else status = "too-long";
 
     return { charCount, wordCount, progress, isValid, status };
   }, [sourceText]);
 
   const getStatusColor = () => {
     switch (stats.status) {
-      case 'valid': return "text-green-600";
-      case 'too-long': return "text-red-500";
-      case 'too-short': return "text-amber-600";
-      default: return "text-gray-500";
+      case "valid":
+        return "text-green-600";
+      case "too-long":
+        return "text-red-500";
+      case "too-short":
+        return "text-amber-600";
+      default:
+        return "text-gray-500";
     }
   };
 
   const getProgressColor = () => {
     switch (stats.status) {
-      case 'valid': return "bg-green-500";
-      case 'too-long': return "bg-red-500";
-      case 'too-short': return "bg-amber-500";
-      default: return "bg-gray-300";
+      case "valid":
+        return "bg-green-500";
+      case "too-long":
+        return "bg-red-500";
+      case "too-short":
+        return "bg-amber-500";
+      default:
+        return "bg-gray-300";
     }
   };
 
@@ -119,7 +127,7 @@ export default function AiGeneratorForm({ onGenerate, isGenerating, error }: AiG
                 Słowa: {stats.wordCount} | Znaki: {stats.charCount}
               </div>
             </div>
-            
+
             <Textarea
               id="sourceText"
               placeholder="Wklej tutaj tekst z którego chcesz wygenerować fiszki...
@@ -144,26 +152,22 @@ Unikaj: prostych list, tabel bez kontekstu, bardzo technicznych specyfikacji."
               <div className="flex items-center justify-between text-xs">
                 <span className={getStatusColor()}>
                   {stats.charCount}/10000 znaków
-                  {stats.status === 'too-short' && !isTyping && stats.charCount > 0 && (
-                    <span className="ml-2 text-amber-600">
-                      (potrzebujesz jeszcze {1000 - stats.charCount} znaków)
-                    </span>
+                  {stats.status === "too-short" && !isTyping && stats.charCount > 0 && (
+                    <span className="ml-2 text-amber-600">(potrzebujesz jeszcze {1000 - stats.charCount} znaków)</span>
                   )}
-                  {stats.status === 'valid' && (
-                    <span className="ml-2 text-green-600">✓ Gotowe do generowania</span>
-                  )}
+                  {stats.status === "valid" && <span className="ml-2 text-green-600">✓ Gotowe do generowania</span>}
                 </span>
                 <span className="text-gray-500">
-                  {stats.status === 'too-short' && `${Math.round(stats.progress)}%`}
-                  {stats.status === 'valid' && '✅ Optymalna długość'}
-                  {stats.status === 'too-long' && '⚠️ Za długi'}
+                  {stats.status === "too-short" && `${Math.round(stats.progress)}%`}
+                  {stats.status === "valid" && "✅ Optymalna długość"}
+                  {stats.status === "too-long" && "⚠️ Za długi"}
                 </span>
               </div>
-              
+
               {/* Progress bar for texts under 1000 chars */}
-              {stats.status === 'too-short' && stats.charCount > 0 && (
+              {stats.status === "too-short" && stats.charCount > 0 && (
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div 
+                  <div
                     className={`h-1.5 rounded-full transition-all duration-300 ${getProgressColor()}`}
                     style={{ width: `${stats.progress}%` }}
                   ></div>
@@ -196,9 +200,9 @@ Unikaj: prostych list, tabel bez kontekstu, bardzo technicznych specyfikacji."
 
           {/* Generate button with enhanced states */}
           <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              disabled={!stats.isValid || isGenerating || isTyping} 
+            <Button
+              type="submit"
+              disabled={!stats.isValid || isGenerating || isTyping}
               className="min-w-[160px] transition-all duration-200"
               size="lg"
             >
@@ -208,9 +212,7 @@ Unikaj: prostych list, tabel bez kontekstu, bardzo technicznych specyfikacji."
                   Generuję...
                 </span>
               ) : (
-                <span className="flex items-center gap-2">
-                  ✨ Generuj fiszki
-                </span>
+                <span className="flex items-center gap-2">✨ Generuj fiszki</span>
               )}
             </Button>
           </div>

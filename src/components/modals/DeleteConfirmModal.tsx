@@ -36,9 +36,7 @@ export default function DeleteConfirmModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-red-600">Usuń fiszkę</DialogTitle>
-          <DialogDescription>
-            Ta operacja jest nieodwracalna. Czy na pewno chcesz usunąć tę fiszkę?
-          </DialogDescription>
+          <DialogDescription>Ta operacja jest nieodwracalna. Czy na pewno chcesz usunąć tę fiszkę?</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-4">
@@ -54,27 +52,18 @@ export default function DeleteConfirmModal({
             <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
               <div>
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Pytanie:</h4>
-                <p className="text-sm text-gray-900 bg-blue-50 p-2 rounded">
-                  {truncateText(flashcard.question, 150)}
-                </p>
+                <p className="text-sm text-gray-900 bg-blue-50 p-2 rounded">{truncateText(flashcard.question, 150)}</p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-gray-700 mb-2">Odpowiedź:</h4>
-                <p className="text-sm text-gray-900 bg-green-50 p-2 rounded">
-                  {truncateText(flashcard.answer, 150)}
-                </p>
+                <p className="text-sm text-gray-900 bg-green-50 p-2 rounded">{truncateText(flashcard.answer, 150)}</p>
               </div>
             </div>
           )}
 
           {/* Przyciski */}
           <div className="flex justify-end space-x-2 pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose} 
-              disabled={isDeleting}
-            >
+            <Button type="button" variant="outline" onClick={onClose} disabled={isDeleting}>
               Anuluj
             </Button>
             <Button
@@ -91,4 +80,4 @@ export default function DeleteConfirmModal({
       </DialogContent>
     </Dialog>
   );
-} 
+}

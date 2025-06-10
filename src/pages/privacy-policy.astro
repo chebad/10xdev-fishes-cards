@@ -2,35 +2,36 @@
 import AuthLayout from "../layouts/AuthLayout.astro";
 
 // Meta description dla SEO
-const description = "Polityka prywatności aplikacji 10xdevs-fishes-cards. Informacje o gromadzeniu, przetwarzaniu i ochronie danych osobowych użytkowników zgodnie z RODO.";
+const description =
+  "Polityka prywatności aplikacji 10xdevs-fishes-cards. Informacje o gromadzeniu, przetwarzaniu i ochronie danych osobowych użytkowników zgodnie z RODO.";
 const lastUpdated = new Date().toISOString();
 
 // Structured data dla SEO
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  "name": "Polityka Prywatności - 10xdevs-fishes-cards",
-  "description": description,
-  "url": "https://10xdevs-fishes-cards.com/privacy-policy",
-  "dateModified": lastUpdated,
-  "inLanguage": "pl-PL",
-  "isPartOf": {
+  name: "Polityka Prywatności - 10xdevs-fishes-cards",
+  description: description,
+  url: "https://10xdevs-fishes-cards.com/privacy-policy",
+  dateModified: lastUpdated,
+  inLanguage: "pl-PL",
+  isPartOf: {
     "@type": "WebSite",
-    "name": "10xdevs-fishes-cards",
-    "url": "https://10xdevs-fishes-cards.com"
+    name: "10xdevs-fishes-cards",
+    url: "https://10xdevs-fishes-cards.com",
   },
-  "about": {
+  about: {
     "@type": "Organization",
-    "name": "10xdevs Sp. z o.o.",
-    "address": {
+    name: "10xdevs Sp. z o.o.",
+    address: {
       "@type": "PostalAddress",
-      "streetAddress": "ul. Przykładowa 123",
-      "addressLocality": "Warszawa",
-      "postalCode": "00-001",
-      "addressCountry": "PL"
+      streetAddress: "ul. Przykładowa 123",
+      addressLocality: "Warszawa",
+      postalCode: "00-001",
+      addressCountry: "PL",
     },
-    "email": "privacy@10xdevs.com"
-  }
+    email: "privacy@10xdevs.com",
+  },
 };
 ---
 
@@ -40,7 +41,7 @@ const structuredData = {
     <meta name="description" content={description} />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://10xdevs-fishes-cards.com/privacy-policy" />
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://10xdevs-fishes-cards.com/privacy-policy" />
@@ -48,64 +49,72 @@ const structuredData = {
     <meta property="og:description" content={description} />
     <meta property="og:locale" content="pl_PL" />
     <meta property="og:site_name" content="10xdevs-fishes-cards" />
-    
+
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Polityka Prywatności - 10xdevs-fishes-cards" />
     <meta name="twitter:description" content={description} />
-    
+
     <!-- Structured Data -->
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
-    
+
     <!-- Additional meta -->
     <meta name="author" content="10xdevs Sp. z o.o." />
     <meta name="language" content="Polish" />
     <meta name="revisit-after" content="30 days" />
   </Fragment>
 
-  <div class="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-50 to-gray-100 py-4 px-3 sm:py-8 sm:px-4 md:py-12 md:px-6 lg:px-8">
+  <div
+    class="min-h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-50 to-gray-100 py-4 px-3 sm:py-8 sm:px-4 md:py-12 md:px-6 lg:px-8"
+  >
     <div class="max-w-4xl mx-auto">
       <article class="bg-white/95 backdrop-blur-sm shadow-lg rounded-lg border-0 p-4 sm:p-6 lg:p-8" role="main">
         <!-- Page Header -->
         <header class="mb-6 sm:mb-8 lg:mb-10">
-          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
-            Polityka Prywatności
-          </h1>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">Polityka Prywatności</h1>
           <p class="text-gray-600 mt-2 text-xs sm:text-sm lg:text-base">
             <time datetime={lastUpdated}>
-              Ostatnia aktualizacja: {new Date().toLocaleDateString('pl-PL')}
+              Ostatnia aktualizacja: {new Date().toLocaleDateString("pl-PL")}
             </time>
           </p>
         </header>
 
         <!-- Content Section -->
-        <div class="prose prose-gray prose-sm sm:prose-base lg:prose-lg max-w-none space-y-6 sm:space-y-8 lg:space-y-10">
+        <div
+          class="prose prose-gray prose-sm sm:prose-base lg:prose-lg max-w-none space-y-6 sm:space-y-8 lg:space-y-10"
+        >
           <!-- General Info -->
           <section aria-labelledby="general-info">
-            <h2 id="general-info" class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5">
+            <h2
+              id="general-info"
+              class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5"
+            >
               1. Informacje ogólne
             </h2>
             <p class="text-gray-700 leading-relaxed text-sm sm:text-base">
               Niniejsza Polityka Prywatności określa zasady przetwarzania i ochrony danych osobowych użytkowników
-              aplikacji 10xdevs-fishes-cards (dalej: „Aplikacja"). Polityka została przygotowana zgodnie z 
-              Rozporządzeniem Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. 
-              w sprawie ochrony osób fizycznych w związku z przetwarzaniem danych osobowych (RODO).
+              aplikacji 10xdevs-fishes-cards (dalej: „Aplikacja"). Polityka została przygotowana zgodnie z
+              Rozporządzeniem Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. w sprawie ochrony
+              osób fizycznych w związku z przetwarzaniem danych osobowych (RODO).
             </p>
           </section>
 
           <!-- Data Controller -->
           <section aria-labelledby="data-controller">
-            <h2 id="data-controller" class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5">
+            <h2
+              id="data-controller"
+              class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5"
+            >
               2. Administrator danych osobowych
             </h2>
             <p class="text-gray-700 leading-relaxed text-sm sm:text-base">
-              Administratorem danych osobowych w rozumieniu RODO jest 10xdevs Sp. z o.o. z siedzibą w Warszawie, 
-              ul. Przykładowa 123, 00-001 Warszawa, wpisana do Krajowego Rejestru Sądowego pod numerem KRS 0000000000.
+              Administratorem danych osobowych w rozumieniu RODO jest 10xdevs Sp. z o.o. z siedzibą w Warszawie, ul.
+              Przykładowa 123, 00-001 Warszawa, wpisana do Krajowego Rejestru Sądowego pod numerem KRS 0000000000.
             </p>
             <p class="text-gray-700 leading-relaxed mt-3 sm:mt-4 text-sm sm:text-base">
               Kontakt z administratorem w sprawach ochrony danych osobowych:
-              <a 
-                href="mailto:privacy@10xdevs.com" 
+              <a
+                href="mailto:privacy@10xdevs.com"
                 class="text-primary hover:text-primary/80 underline hover:no-underline transition-colors ml-1 break-all"
                 aria-label="Wyślij email do administratora danych"
               >
@@ -116,17 +125,23 @@ const structuredData = {
 
           <!-- Data Scope -->
           <section aria-labelledby="data-scope">
-            <h2 id="data-scope" class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5">
+            <h2
+              id="data-scope"
+              class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5"
+            >
               3. Zakres zbieranych danych osobowych
             </h2>
             <p class="text-gray-700 leading-relaxed mb-4 text-sm sm:text-base">
               W ramach korzystania z Aplikacji zbieramy i przetwarzamy następujące kategorie danych osobowych:
             </p>
-            
+
             <h3 class="text-sm sm:text-base lg:text-lg font-medium text-gray-900 mb-2 mt-4 sm:mt-5">
               Dane podawane dobrowolnie:
             </h3>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 sm:space-y-2 leading-relaxed ml-2 sm:ml-4 text-sm sm:text-base" role="list">
+            <ul
+              class="list-disc list-inside text-gray-700 space-y-1 sm:space-y-2 leading-relaxed ml-2 sm:ml-4 text-sm sm:text-base"
+              role="list"
+            >
               <li>Adres email (wymagany do rejestracji i logowania)</li>
               <li>Hasło (przechowywane w formie zahashowanej)</li>
               <li>Treść wiadomości w formularzach kontaktowych</li>
@@ -136,7 +151,10 @@ const structuredData = {
             <h3 class="text-sm sm:text-base lg:text-lg font-medium text-gray-900 mb-2 mt-4 sm:mt-5">
               Dane zbierane automatycznie:
             </h3>
-            <ul class="list-disc list-inside text-gray-700 space-y-1 sm:space-y-2 leading-relaxed ml-2 sm:ml-4 text-sm sm:text-base" role="list">
+            <ul
+              class="list-disc list-inside text-gray-700 space-y-1 sm:space-y-2 leading-relaxed ml-2 sm:ml-4 text-sm sm:text-base"
+              role="list"
+            >
               <li>Adres IP</li>
               <li>Informacje o przeglądarce i urządzeniu</li>
               <li>Czas i częstotliwość korzystania z Aplikacji</li>
@@ -147,14 +165,17 @@ const structuredData = {
               Cookies i technologie śledzące:
             </h3>
             <p class="text-gray-700 leading-relaxed ml-2 sm:ml-4 text-sm sm:text-base">
-              Aplikacja używa plików cookies niezbędnych do funkcjonowania (sesje użytkownika, preferencje). 
-              Nie używamy cookies do celów marketingowych czy analitycznych bez Twojej zgody.
+              Aplikacja używa plików cookies niezbędnych do funkcjonowania (sesje użytkownika, preferencje). Nie używamy
+              cookies do celów marketingowych czy analitycznych bez Twojej zgody.
             </p>
           </section>
 
           <!-- Processing Purpose -->
           <section aria-labelledby="processing-purpose">
-            <h2 id="processing-purpose" class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5">
+            <h2
+              id="processing-purpose"
+              class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5"
+            >
               4. Cele i podstawy prawne przetwarzania danych
             </h2>
             <p class="text-gray-700 leading-relaxed mb-4 text-sm sm:text-base">
@@ -165,7 +186,7 @@ const structuredData = {
               <div class="border-l-4 border-primary/20 pl-3 sm:pl-4">
                 <h3 class="font-medium text-gray-900 mb-2 text-sm sm:text-base">Świadczenie usług Aplikacji</h3>
                 <p class="text-gray-700 text-xs sm:text-sm leading-relaxed">
-                  <strong>Podstawa prawna:</strong> Wykonanie umowy (art. 6 ust. 1 lit. b RODO)<br>
+                  <strong>Podstawa prawna:</strong> Wykonanie umowy (art. 6 ust. 1 lit. b RODO)<br />
                   <strong>Zakres:</strong> Rejestracja konta, logowanie, zarządzanie fiszkami, funkcje AI
                 </p>
               </div>
@@ -173,7 +194,7 @@ const structuredData = {
               <div class="border-l-4 border-primary/20 pl-3 sm:pl-4">
                 <h3 class="font-medium text-gray-900 mb-2 text-sm sm:text-base">Komunikacja z użytkownikami</h3>
                 <p class="text-gray-700 text-xs sm:text-sm leading-relaxed">
-                  <strong>Podstawa prawna:</strong> Uzasadniony interes administratora (art. 6 ust. 1 lit. f RODO)<br>
+                  <strong>Podstawa prawna:</strong> Uzasadniony interes administratora (art. 6 ust. 1 lit. f RODO)<br />
                   <strong>Zakres:</strong> Odpowiedzi na pytania, wsparcie techniczne, informacje o zmianach
                 </p>
               </div>
@@ -181,7 +202,7 @@ const structuredData = {
               <div class="border-l-4 border-primary/20 pl-3 sm:pl-4">
                 <h3 class="font-medium text-gray-900 mb-2 text-sm sm:text-base">Zapewnienie bezpieczeństwa</h3>
                 <p class="text-gray-700 text-xs sm:text-sm leading-relaxed">
-                  <strong>Podstawa prawna:</strong> Uzasadniony interes administratora (art. 6 ust. 1 lit. f RODO)<br>
+                  <strong>Podstawa prawna:</strong> Uzasadniony interes administratora (art. 6 ust. 1 lit. f RODO)<br />
                   <strong>Zakres:</strong> Ochrona przed nieuprawnionym dostępem, zapobieganie nadużyciom
                 </p>
               </div>
@@ -190,7 +211,10 @@ const structuredData = {
 
           <!-- User Rights -->
           <section aria-labelledby="user-rights">
-            <h2 id="user-rights" class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5">
+            <h2
+              id="user-rights"
+              class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5"
+            >
               5. Prawa użytkownika
             </h2>
             <p class="text-gray-700 leading-relaxed mb-4 text-sm sm:text-base">
@@ -238,22 +262,29 @@ const structuredData = {
 
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mt-4 sm:mt-6" role="note">
               <p class="text-blue-800 text-xs sm:text-sm leading-relaxed">
-                <strong>Jak skorzystać z praw:</strong> Aby skorzystać z powyższych praw, skontaktuj się z nami pod adresem 
-                <a href="mailto:privacy@10xdevs.com" class="underline hover:no-underline break-all">privacy@10xdevs.com</a>. 
-                Odpowiemy na Twoje żądanie w ciągu 30 dni.
+                <strong>Jak skorzystać z praw:</strong> Aby skorzystać z powyższych praw, skontaktuj się z nami pod adresem
+                <a href="mailto:privacy@10xdevs.com" class="underline hover:no-underline break-all"
+                  >privacy@10xdevs.com</a
+                >. Odpowiemy na Twoje żądanie w ciągu 30 dni.
               </p>
             </div>
           </section>
 
           <!-- Additional Sections -->
           <section aria-labelledby="data-retention">
-            <h2 id="data-retention" class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5">
+            <h2
+              id="data-retention"
+              class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5"
+            >
               6. Okres przechowywania danych
             </h2>
             <p class="text-gray-700 leading-relaxed text-sm sm:text-base">
               Twoje dane osobowe przechowujemy przez okres niezbędny do realizacji celów, dla których zostały zebrane:
             </p>
-            <ul class="list-disc list-inside text-gray-700 mt-3 sm:mt-4 space-y-1 sm:space-y-2 leading-relaxed ml-2 sm:ml-4 text-sm sm:text-base" role="list">
+            <ul
+              class="list-disc list-inside text-gray-700 mt-3 sm:mt-4 space-y-1 sm:space-y-2 leading-relaxed ml-2 sm:ml-4 text-sm sm:text-base"
+              role="list"
+            >
               <li>Dane konta - do momentu usunięcia konta przez użytkownika</li>
               <li>Fiszki i treści - do momentu usunięcia przez użytkownika lub usunięcia konta</li>
               <li>Logi bezpieczeństwa - maksymalnie 12 miesięcy</li>
@@ -262,45 +293,53 @@ const structuredData = {
           </section>
 
           <section aria-labelledby="data-security">
-            <h2 id="data-security" class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5">
+            <h2
+              id="data-security"
+              class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5"
+            >
               7. Bezpieczeństwo danych
             </h2>
             <p class="text-gray-700 leading-relaxed text-sm sm:text-base">
-              Stosujemy odpowiednie środki techniczne i organizacyjne w celu ochrony Twoich danych osobowych, 
-              w tym szyfrowanie połączeń (HTTPS), bezpieczne przechowywanie haseł oraz regularne aktualizacje 
-              bezpieczeństwa. Dostęp do danych mają wyłącznie upoważnione osoby.
+              Stosujemy odpowiednie środki techniczne i organizacyjne w celu ochrony Twoich danych osobowych, w tym
+              szyfrowanie połączeń (HTTPS), bezpieczne przechowywanie haseł oraz regularne aktualizacje bezpieczeństwa.
+              Dostęp do danych mają wyłącznie upoważnione osoby.
             </p>
           </section>
 
           <!-- Contact Info -->
           <section aria-labelledby="contact-info">
-            <h2 id="contact-info" class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5">
+            <h2
+              id="contact-info"
+              class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 lg:mb-5"
+            >
               8. Kontakt
             </h2>
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4">
               <p class="text-gray-700 leading-relaxed text-sm sm:text-base">
-                W sprawach dotyczących ochrony danych osobowych oraz w celu skorzystania z przysługujących Ci praw 
+                W sprawach dotyczących ochrony danych osobowych oraz w celu skorzystania z przysługujących Ci praw
                 możesz skontaktować się z nami:
               </p>
               <div class="mt-3 sm:mt-4 space-y-2 text-gray-700 text-sm sm:text-base">
                 <p>
-                  <strong>Email:</strong> 
-                  <a 
-                    href="mailto:privacy@10xdevs.com" 
+                  <strong>Email:</strong>
+                  <a
+                    href="mailto:privacy@10xdevs.com"
                     class="text-primary hover:text-primary/80 underline hover:no-underline transition-colors ml-1 break-all"
                     aria-label="Wyślij email w sprawie ochrony danych"
                   >
                     privacy@10xdevs.com
                   </a>
                 </p>
-                <p class="break-words"><strong>Adres:</strong> 10xdevs Sp. z o.o., ul. Przykładowa 123, 00-001 Warszawa</p>
+                <p class="break-words">
+                  <strong>Adres:</strong> 10xdevs Sp. z o.o., ul. Przykładowa 123, 00-001 Warszawa
+                </p>
               </div>
             </div>
 
             <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-4 mt-3 sm:mt-4" role="note">
               <p class="text-amber-800 text-xs sm:text-sm leading-relaxed">
-                <strong>Prawo wniesienia skargi:</strong> Masz prawo wniesienia skargi do organu nadzorczego 
-                (Prezes Urzędu Ochrony Danych Osobowych) w przypadku naruszenia przepisów o ochronie danych osobowych.
+                <strong>Prawo wniesienia skargi:</strong> Masz prawo wniesienia skargi do organu nadzorczego (Prezes Urzędu
+                Ochrony Danych Osobowych) w przypadku naruszenia przepisów o ochronie danych osobowych.
               </p>
             </div>
           </section>
@@ -314,7 +353,13 @@ const structuredData = {
               class="inline-flex items-center text-primary hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:ring-offset-2 rounded-md transition-colors duration-200 p-2 -ml-2 text-sm sm:text-base"
               aria-label="Wróć do strony rejestracji"
             >
-              <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                class="w-4 h-4 mr-2 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
               </svg>
               <span class="min-w-0">Powrót do rejestracji</span>

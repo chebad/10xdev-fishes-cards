@@ -472,7 +472,7 @@ export interface ContactFormProps {
 export interface ContactFormFieldProps {
   name: keyof ContactFormData;
   label: string;
-  type: 'email' | 'text' | 'textarea';
+  type: "email" | "text" | "textarea";
   value: string;
   onChange: (value: string) => void;
   onBlur: () => void;

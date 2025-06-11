@@ -4,7 +4,8 @@ import { FAQAccordion } from "../components/FAQAccordion";
 import { faqData } from "../lib/data/faq-data";
 
 const title = "Często Zadawane Pytania | 10xdevs-fishes-cards";
-const description = "Znajdź odpowiedzi na najczęściej zadawane pytania dotyczące aplikacji do tworzenia fiszek z wykorzystaniem sztucznej inteligencji.";
+const description =
+  "Znajdź odpowiedzi na najczęściej zadawane pytania dotyczące aplikacji do tworzenia fiszek z wykorzystaniem sztucznej inteligencji.";
 ---
 
 <MarketingLayout title={title}>
@@ -12,17 +13,17 @@ const description = "Znajdź odpowiedzi na najczęściej zadawane pytania dotycz
   <Fragment slot="head">
     <meta name="description" content={description} />
     <meta name="keywords" content="FAQ, fiszki, AI, generator fiszek, pytania, odpowiedzi, pomoc" />
-    
+
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    
+
     <!-- Structured Data dla SEO -->
     <script type="application/ld+json">
       {
@@ -54,37 +55,28 @@ const description = "Znajdź odpowiedzi na najczęściej zadawane pytania dotycz
   <div class="container mx-auto px-4 py-12 max-w-4xl">
     <!-- Header sekcji FAQ -->
     <div class="text-center mb-12">
-      <h1 class="text-4xl font-bold text-foreground mb-4">
-        Często Zadawane Pytania
-      </h1>
+      <h1 class="text-4xl font-bold text-foreground mb-4">Często Zadawane Pytania</h1>
       <p class="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-        Znajdź odpowiedzi na najczęściej zadawane pytania dotyczące tworzenia fiszek, 
-        generowania treści przez AI oraz zarządzania kontem w naszej aplikacji.
+        Znajdź odpowiedzi na najczęściej zadawane pytania dotyczące tworzenia fiszek, generowania treści przez AI oraz
+        zarządzania kontem w naszej aplikacji.
       </p>
     </div>
 
     <!-- Sekcja z akordeonem FAQ -->
     <section aria-labelledby="faq-heading" class="mb-16">
       <h2 id="faq-heading" class="sr-only">Lista pytań i odpowiedzi</h2>
-      <FAQAccordion 
-        items={faqData} 
-        allowMultiple={true}
-        className="max-w-none"
-        client:load
-      />
+      <FAQAccordion items={faqData} allowMultiple={true} className="max-w-none" client:load />
     </section>
 
     <!-- Dodatkowe informacje i call-to-action -->
     <aside class="mt-16 p-6 bg-card/30 rounded-lg border border-border/50">
-      <h2 class="text-xl font-semibold text-foreground mb-3">
-        Nie znalazłeś odpowiedzi na swoje pytanie?
-      </h2>
+      <h2 class="text-xl font-semibold text-foreground mb-3">Nie znalazłeś odpowiedzi na swoje pytanie?</h2>
       <p class="text-muted-foreground mb-4">
-        Jeśli masz inne pytania lub potrzebujesz dodatkowej pomocy, skontaktuj się z nami 
-        za pomocą formularza kontaktowego dostępnego w aplikacji.
+        Jeśli masz inne pytania lub potrzebujesz dodatkowej pomocy, skontaktuj się z nami za pomocą formularza
+        kontaktowego dostępnego w aplikacji.
       </p>
-      <a 
-        href="/contact" 
+      <a
+        href="/contact"
         class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         aria-label="Przejdź do strony kontaktu"
       >
@@ -92,4 +84,4 @@ const description = "Znajdź odpowiedzi na najczęściej zadawane pytania dotycz
       </a>
     </aside>
   </div>
-</MarketingLayout> 
+</MarketingLayout>

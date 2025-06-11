@@ -46,7 +46,10 @@ export function RegistrationForm({ onSubmit, isLoading, apiError }: Registration
     try {
       await onSubmit(data);
     } catch (error) {
-      console.error("Registration form submission error:", error);
+      // Handle error appropriately
+      if (error instanceof Error) {
+        console.warn("Registration form error:", error.message);
+      }
     }
   };
 

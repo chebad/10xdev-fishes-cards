@@ -10,23 +10,24 @@ import { Badge } from "@/components/ui/badge";
 import type { AiFlashcardSuggestionItem, FlashcardDto } from "@/types";
 
 export default function AiGeneratorTab() {
-  const { 
-    state, 
-    generateSuggestions, 
-    acceptSuggestion, 
-    rejectSuggestion, 
+  const {
+    state,
+    generateSuggestions,
+    acceptSuggestion,
+    rejectSuggestion,
     clearSuggestions,
     cancelRequest,
     getStats,
-    clearCache 
+    clearCache,
   } = useAiGeneration();
 
   // Statistics and analytics
   const analytics = useMemo(() => {
     const stats = getStats();
-    const successRate = stats.totalRequests > 0 ? Math.round((stats.successfulRequests / stats.totalRequests) * 100) : 0;
+    const successRate =
+      stats.totalRequests > 0 ? Math.round((stats.successfulRequests / stats.totalRequests) * 100) : 0;
     const cacheHitRate = stats.totalRequests > 0 ? Math.round((stats.cachedRequests / stats.totalRequests) * 100) : 0;
-    
+
     return {
       ...stats,
       successRate,
@@ -40,7 +41,7 @@ export default function AiGeneratorTab() {
     const total = state.suggestions.length;
     const processed = 0; // Will be tracked by AiSuggestionsList
     const remaining = total - processed;
-    
+
     return { total, processed, remaining };
   }, [state.suggestions.length]);
 
@@ -55,99 +56,111 @@ export default function AiGeneratorTab() {
   }, [state.lastGeneratedAt]);
 
   // Enhanced accept handler with analytics
-  const handleAcceptSuggestion = useCallback(async (suggestion: AiFlashcardSuggestionItem): Promise<FlashcardDto | null> => {
-    const startTime = Date.now();
-    
-    try {
-      const result = await acceptSuggestion(suggestion);
-      const duration = Date.now() - startTime;
-      
-      if (result) {
-        toast.success("✅ Fiszka zapisana!", {
-          description: `${suggestion.suggestedQuestion.slice(0, 50)}${suggestion.suggestedQuestion.length > 50 ? '...' : ''}`,
-          duration: 3000,
-          action: duration > 3000 ? undefined : {
-            label: "Zobacz",
-            onClick: () => {
-              // Could navigate to "Moje Fiszki" tab
-            },
+  const handleAcceptSuggestion = useCallback(
+    async (suggestion: AiFlashcardSuggestionItem): Promise<FlashcardDto | null> => {
+      const startTime = Date.now();
+
+      try {
+        const result = await acceptSuggestion(suggestion);
+        const duration = Date.now() - startTime;
+
+        if (result) {
+          toast.success("✅ Fiszka zapisana!", {
+            description: `${suggestion.suggestedQuestion.slice(0, 50)}${suggestion.suggestedQuestion.length > 50 ? "..." : ""}`,
+            duration: 3000,
+            action:
+              duration > 3000
+                ? undefined
+                : {
+                    label: "Zobacz",
+                    onClick: () => {
+                      // Could navigate to "Moje Fiszki" tab
+                    },
+                  },
+          });
+
+          if (duration > 5000) {
+            toast("⏱️ Zapisywanie trwało dłużej niż zwykle", {
+              description: "Sprawdź połączenie internetowe",
+              duration: 3000,
+            });
+          }
+        }
+
+        return result;
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd";
+
+        toast.error("❌ Nie udało się zapisać fiszki", {
+          description: errorMessage,
+          duration: 6000,
+          action: {
+            label: "Ponów",
+            onClick: () => handleAcceptSuggestion(suggestion),
           },
         });
 
-        if (duration > 5000) {
-          toast("⏱️ Zapisywanie trwało dłużej niż zwykle", {
-            description: "Sprawdź połączenie internetowe",
-            duration: 3000,
-          });
-        }
+        throw error;
       }
-      
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd";
-      
-      toast.error("❌ Nie udało się zapisać fiszki", {
-        description: errorMessage,
-        duration: 6000,
-        action: {
-          label: "Ponów",
-          onClick: () => handleAcceptSuggestion(suggestion),
-        },
-      });
-      
-      throw error;
-    }
-  }, [acceptSuggestion]);
+    },
+    [acceptSuggestion]
+  );
 
   // Enhanced reject handler with feedback
-  const handleRejectSuggestion = useCallback((suggestion: AiFlashcardSuggestionItem) => {
-    rejectSuggestion(suggestion);
-    
-    // Contextual feedback based on number of remaining suggestions
-    const remaining = state.suggestions.length - 1;
-    let description = "Fiszka nie zostanie zapisana";
-    
-    if (remaining === 0) {
-      description = "Wszystkie sugestie zostały przejrzane";
-    } else if (remaining <= 2) {
-      description = `Pozostało ${remaining} fiszek do przejrzenia`;
-    }
-    
-    toast.info("🗑️ Sugestia odrzucona", {
-      description,
-      duration: 2000,
-    });
-  }, [rejectSuggestion, state.suggestions.length]);
+  const handleRejectSuggestion = useCallback(
+    (suggestion: AiFlashcardSuggestionItem) => {
+      rejectSuggestion(suggestion);
+
+      // Contextual feedback based on number of remaining suggestions
+      const remaining = state.suggestions.length - 1;
+      let description = "Fiszka nie zostanie zapisana";
+
+      if (remaining === 0) {
+        description = "Wszystkie sugestie zostały przejrzane";
+      } else if (remaining <= 2) {
+        description = `Pozostało ${remaining} fiszek do przejrzenia`;
+      }
+
+      toast.info("🗑️ Sugestia odrzucona", {
+        description,
+        duration: 2000,
+      });
+    },
+    [rejectSuggestion, state.suggestions.length]
+  );
 
   // Enhanced generate handler with smart notifications
-  const handleGenerateSuggestions = useCallback(async (command: { sourceText: string }) => {
-    try {
-      // Smart loading notification based on text length
-      const estimatedTime = Math.max(10, Math.min(45, command.sourceText.length / 200));
-      
-      const loadingToast = toast.loading("🤖 AI analizuje tekst...", {
-        description: `Szacowany czas: ${Math.round(estimatedTime)}s`,
-      });
+  const handleGenerateSuggestions = useCallback(
+    async (command: { sourceText: string }) => {
+      try {
+        // Smart loading notification based on text length
+        const estimatedTime = Math.max(10, Math.min(45, command.sourceText.length / 200));
 
-      const startTime = Date.now();
-      await generateSuggestions(command);
-      const actualTime = Math.round((Date.now() - startTime) / 1000);
-
-      // Dismiss loading toast
-      toast.dismiss(loadingToast);
-
-      // Success feedback is handled by the hook's cache logic or here for fresh generation
-      if (state.suggestions.length > 0) {
-        toast.success("🎉 Fiszki wygenerowane!", {
-          description: `${state.suggestions.length} sugestii w ${actualTime}s`,
-          duration: 4000,
+        const loadingToast = toast.loading("🤖 AI analizuje tekst...", {
+          description: `Szacowany czas: ${Math.round(estimatedTime)}s`,
         });
+
+        const startTime = Date.now();
+        await generateSuggestions(command);
+        const actualTime = Math.round((Date.now() - startTime) / 1000);
+
+        // Dismiss loading toast
+        toast.dismiss(loadingToast);
+
+        // Success feedback is handled by the hook's cache logic or here for fresh generation
+        if (state.suggestions.length > 0) {
+          toast.success("🎉 Fiszki wygenerowane!", {
+            description: `${state.suggestions.length} sugestii w ${actualTime}s`,
+            duration: 4000,
+          });
+        }
+      } catch (error) {
+        console.error("Error in generate suggestions:", error);
+        // Error handling is done in the hook
       }
-    } catch (error) {
-      console.error("Error in generate suggestions:", error);
-      // Error handling is done in the hook
-    }
-  }, [generateSuggestions, state.suggestions.length]);
+    },
+    [generateSuggestions, state.suggestions.length]
+  );
 
   // Utility functions
   const handleClearCache = useCallback(() => {
@@ -192,7 +205,7 @@ export default function AiGeneratorTab() {
                 )}
               </CardDescription>
             </div>
-            
+
             {/* Quick actions */}
             {(analytics.cacheSize > 0 || state.isGenerating) && (
               <div className="flex items-center gap-2">
@@ -228,7 +241,7 @@ export default function AiGeneratorTab() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-blue-600">⚡</span>
-              <span>Inteligentne cache'owanie</span>
+              <span>Inteligentne cache&apos;owanie</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-green-600">✏️</span>
@@ -239,11 +252,7 @@ export default function AiGeneratorTab() {
       </Card>
 
       {/* Enhanced form with performance tracking */}
-      <AiGeneratorForm 
-        onGenerate={handleGenerateSuggestions} 
-        isGenerating={state.isGenerating} 
-        error={state.error} 
-      />
+      <AiGeneratorForm onGenerate={handleGenerateSuggestions} isGenerating={state.isGenerating} error={state.error} />
 
       {/* Enhanced generation status */}
       {state.isGenerating && (
@@ -252,9 +261,7 @@ export default function AiGeneratorTab() {
             <div className="space-y-4">
               <div className="flex items-center justify-center space-x-3">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <span className="text-blue-700 font-medium">
-                  🤖 AI analizuje Twój tekst i generuje fiszki...
-                </span>
+                <span className="text-blue-700 font-medium">🤖 AI analizuje Twój tekst i generuje fiszki...</span>
               </div>
               <div className="text-center space-y-2">
                 <div className="text-sm text-gray-600">
@@ -262,7 +269,7 @@ export default function AiGeneratorTab() {
                 </div>
                 {analytics.hasData && (
                   <div className="text-xs text-gray-500">
-                    Średni czas w tej sesji: ~{Math.round((analytics.totalRequests > 0 ? 25 : 20))}s
+                    Średni czas w tej sesji: ~{Math.round(analytics.totalRequests > 0 ? 25 : 20)}s
                   </div>
                 )}
               </div>
@@ -312,11 +319,7 @@ export default function AiGeneratorTab() {
                 🔄 Spróbuj ponownie
               </Button>
               {analytics.cacheSize > 0 && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleClearCache}
-                >
+                <Button size="sm" variant="ghost" onClick={handleClearCache}>
                   🗑️ Wyczyść cache
                 </Button>
               )}
@@ -334,8 +337,7 @@ export default function AiGeneratorTab() {
               <span>🎉</span>
               <div className="flex-1">
                 <strong>Świetnie!</strong> AI wygenerował {state.suggestions.length} sugest
-                {state.suggestions.length === 1 ? 'ię' : 
-                 state.suggestions.length < 5 ? 'ie' : 'ii'} fiszek.
+                {state.suggestions.length === 1 ? "ię" : state.suggestions.length < 5 ? "ie" : "ii"} fiszek.
                 <br />
                 <span className="text-sm">
                   Przejrzyj je, edytuj w razie potrzeby i zapisz te, które uznasz za przydatne.
@@ -343,16 +345,16 @@ export default function AiGeneratorTab() {
               </div>
               {state.lastGeneratedAt && (
                 <div className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded">
-                  {new Date(state.lastGeneratedAt).toLocaleTimeString('pl-PL')}
+                  {new Date(state.lastGeneratedAt).toLocaleTimeString("pl-PL")}
                 </div>
               )}
             </AlertDescription>
           </Alert>
 
-          <AiSuggestionsList 
-            suggestions={state.suggestions} 
-            onAccept={handleAcceptSuggestion} 
-            onReject={handleRejectSuggestion} 
+          <AiSuggestionsList
+            suggestions={state.suggestions}
+            onAccept={handleAcceptSuggestion}
+            onReject={handleRejectSuggestion}
           />
         </div>
       )}
@@ -365,9 +367,7 @@ export default function AiGeneratorTab() {
               <span className="text-4xl">🤔</span>
               <h3 className="font-medium text-gray-900">Brak sugestii</h3>
               <div className="space-y-2">
-                <p className="text-sm text-gray-600">
-                  AI nie udało się wygenerować fiszek z podanego tekstu.
-                </p>
+                <p className="text-sm text-gray-600">AI nie udało się wygenerować fiszek z podanego tekstu.</p>
                 <div className="text-xs text-gray-500 space-y-1">
                   <div>Możliwe przyczyny:</div>
                   <ul className="list-disc list-inside">
@@ -377,11 +377,7 @@ export default function AiGeneratorTab() {
                   </ul>
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => clearSuggestions()}
-              >
+              <Button size="sm" variant="outline" onClick={() => clearSuggestions()}>
                 🔄 Spróbuj z innym tekstem
               </Button>
             </div>
@@ -398,31 +394,43 @@ export default function AiGeneratorTab() {
           <CardContent>
             <div className="space-y-4 text-sm text-blue-800">
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  1
+                </span>
                 <div>
-                  <strong>Wklej tekst edukacyjny</strong> (1000-10000 znaków) - może to być fragment podręcznika, artykuł naukowy, notatki z wykładu, lub dowolny materiał do nauki.
+                  <strong>Wklej tekst edukacyjny</strong> (1000-10000 znaków) - może to być fragment podręcznika,
+                  artykuł naukowy, notatki z wykładu, lub dowolny materiał do nauki.
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  2
+                </span>
                 <div>
-                  <strong>Kliknij "Generuj fiszki"</strong> i poczekaj, aż AI przeanalizuje treść i stworzy pytania oraz odpowiedzi. Pierwsza generacja może potrwać 10-45 sekund.
+                  <strong>Kliknij &ldquo;Generuj fiszki&rdquo;</strong> i poczekaj, aż AI przeanalizuje treść i stworzy
+                  pytania oraz odpowiedzi. Pierwsza generacja może potrwać 10-45 sekund.
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  3
+                </span>
                 <div>
-                  <strong>Przejrzyj i dostosuj</strong> wygenerowane fiszki - możesz edytować pytania i odpowiedzi przed zapisaniem. Każda zmiana jest natychmiast walidowana.
+                  <strong>Przejrzyj i dostosuj</strong> wygenerowane fiszki - możesz edytować pytania i odpowiedzi przed
+                  zapisaniem. Każda zmiana jest natychmiast walidowana.
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                  4
+                </span>
                 <div>
-                  <strong>Zapisz wybrane fiszki</strong> i rozpocznij naukę! Zapisane fiszki znajdziesz w zakładce "Moje Fiszki". Możesz też użyć akcji grupowych dla szybszego przetwarzania.
+                  <strong>Zapisz wybrane fiszki</strong> i rozpocznij naukę! Zapisane fiszki znajdziesz w zakładce{" "}
+                  &ldquo;Moje Fiszki&rdquo;. Możesz też użyć akcji grupowych dla szybszego przetwarzania.
                 </div>
               </div>
             </div>
-            
+
             {/* Pro tips */}
             {analytics.hasData && (
               <div className="mt-6 p-3 bg-blue-100 rounded border border-blue-300">
@@ -440,4 +448,3 @@ export default function AiGeneratorTab() {
     </div>
   );
 }
-

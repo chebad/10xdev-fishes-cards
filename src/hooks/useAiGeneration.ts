@@ -53,13 +53,13 @@ const generateHash = (text: string): string => {
   // Safe hash generation that handles Unicode characters (including Polish diacritics)
   let hash = 0;
   const textSample = text.slice(0, 100) + text.length;
-  
+
   for (let i = 0; i < textSample.length; i++) {
     const char = textSample.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
-  
+
   // Convert to positive string and ensure it's alphanumeric
   return Math.abs(hash).toString(36);
 };
@@ -79,12 +79,11 @@ const cleanCache = (): void => {
       suggestionCache.delete(key);
     }
   }
-  
+
   // Keep only the most recent entries
   if (suggestionCache.size > CONFIG.cache.maxEntries) {
-    const entries = Array.from(suggestionCache.entries())
-      .sort(([, a], [, b]) => b.timestamp - a.timestamp);
-    
+    const entries = Array.from(suggestionCache.entries()).sort(([, a], [, b]) => b.timestamp - a.timestamp);
+
     suggestionCache.clear();
     entries.slice(0, CONFIG.cache.maxEntries).forEach(([key, value]) => {
       suggestionCache.set(key, value);
@@ -100,38 +99,28 @@ const getRetryDelay = (attempt: number): number => {
 const retryWithBackoff = async <T>(
   operation: () => Promise<T>,
   maxAttempts: number = CONFIG.retry.maxAttempts,
-  onRetry?: (attempt: number, error: Error) => void
+  onRetry?: (attempt: number, _error: Error) => void
 ): Promise<T> => {
-  let lastError: Error;
-  
+  let lastError: Error | null = null;
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await operation();
     } catch (error) {
-      lastError = error as Error;
-      
-      // Don't retry on client errors except rate limits
-      if (error instanceof Error) {
-        const isRateLimitError = error.message.includes('429') || error.message.includes('rate limit');
-        const isClientError = /^4\d\d/.test(error.message) && !isRateLimitError;
-        
-        if (isClientError) {
-          throw error;
-        }
+      lastError = error instanceof Error ? error : new Error("Unknown error");
+
+      if (attempt === maxAttempts) break;
+
+      if (onRetry) {
+        onRetry(attempt, lastError);
       }
-      
-      if (attempt === maxAttempts) {
-        throw lastError;
-      }
-      
+
       const delay = getRetryDelay(attempt);
-      onRetry?.(attempt, lastError);
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
-  
-  throw lastError!;
+
+  throw lastError || new Error("Retry operation failed");
 };
 
 export const useAiGeneration = () => {
@@ -156,24 +145,24 @@ export const useAiGeneration = () => {
   const generateSuggestions = useCallback(async (command: GenerateAiFlashcardsCommand) => {
     const requestId = Math.random().toString(36).substr(2, 9);
     const startTime = Date.now();
-    
+
     performanceRef.current = { startTime, requestId };
     statsRef.current.totalRequests += 1;
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
 
     const cacheKey = getCacheKey(command.sourceText);
     if (CONFIG.cache.enabled && suggestionCache.has(cacheKey)) {
-      const cached = suggestionCache.get(cacheKey)!;
-      if (isCacheValid(cached)) {
+      const cached = suggestionCache.get(cacheKey);
+      if (cached && isCacheValid(cached)) {
         statsRef.current.cachedRequests += 1;
-        
+
         setState((prev) => ({
           ...prev,
           isGenerating: false,
@@ -216,14 +205,14 @@ export const useAiGeneration = () => {
 
           if (!response.ok) {
             let errorMessage = "Błąd podczas generowania fiszek";
-            
+
             try {
               const errorData = await response.json();
               errorMessage = errorData.error || errorMessage;
             } catch {
               errorMessage = `${response.status}: ${response.statusText}`;
             }
-            
+
             if (response.status === 429) {
               errorMessage = "Zbyt wiele żądań. Spróbuj ponownie za 1-2 minuty.";
             } else if (response.status === 401) {
@@ -237,14 +226,14 @@ export const useAiGeneration = () => {
             } else if (response.status >= 500) {
               errorMessage = "Tymczasowy problem z serwerem. Spróbuj ponownie.";
             }
-            
+
             throw new Error(errorMessage);
           }
 
           return await response.json();
         },
         CONFIG.retry.maxAttempts,
-        (attempt, error) => {
+        (attempt) => {
           toast.loading(`Ponów ${attempt}/3...`, {
             id: `retry-${requestId}`,
             duration: 2000,
@@ -282,11 +271,10 @@ export const useAiGeneration = () => {
       }));
 
       statsRef.current.successfulRequests += 1;
-
     } catch (error) {
       if (!abortController.signal.aborted) {
         const errorMessage = error instanceof Error ? error.message : "Wystąpił nieoczekiwany błąd";
-        
+
         setState((prev) => ({
           ...prev,
           isGenerating: false,
@@ -312,61 +300,55 @@ export const useAiGeneration = () => {
 
   const acceptSuggestion = useCallback(
     async (suggestion: AiFlashcardSuggestionItem): Promise<FlashcardDto | null> => {
-      try {
-        const command: CreateFlashcardCommand = {
-          question: suggestion.suggestedQuestion.trim(),
-          answer: suggestion.suggestedAnswer.trim(),
-          isAiGenerated: true,
-          sourceTextForAi: state.sourceText,
-        };
+      const command: CreateFlashcardCommand = {
+        question: suggestion.suggestedQuestion.trim(),
+        answer: suggestion.suggestedAnswer.trim(),
+        isAiGenerated: true,
+        sourceTextForAi: state.sourceText,
+      };
 
-        const result = await retryWithBackoff(async () => {
-          const response = await fetch("/api/flashcards", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(command),
-          });
-
-          if (!response.ok) {
-            let errorMessage = "Błąd podczas zapisywania fiszki";
-            
-            try {
-              const errorData = await response.json();
-              errorMessage = errorData.error || errorMessage;
-            } catch {
-              errorMessage = `${response.status}: ${response.statusText}`;
-            }
-            
-            if (response.status === 409) {
-              errorMessage = "Taka fiszka już istnieje w Twojej kolekcji";
-            } else if (response.status === 413) {
-              errorMessage = "Fiszka jest zbyt długa. Skróć treść pytania lub odpowiedzi.";
-            }
-            
-            throw new Error(errorMessage);
-          }
-
-          return await response.json();
+      const result = await retryWithBackoff(async () => {
+        const response = await fetch("/api/flashcards", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(command),
         });
 
-        const flashcard: FlashcardDto = result;
+        if (!response.ok) {
+          let errorMessage = "Błąd podczas zapisywania fiszki";
 
-        setState((prev) => ({
-          ...prev,
-          suggestions: prev.suggestions.filter(
-            (s) =>
-              s.suggestedQuestion !== suggestion.suggestedQuestion || 
-              s.suggestedAnswer !== suggestion.suggestedAnswer
-          ),
-        }));
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            errorMessage = `${response.status}: ${response.statusText}`;
+          }
 
-        return flashcard;
+          if (response.status === 409) {
+            errorMessage = "Taka fiszka już istnieje w Twojej kolekcji";
+          } else if (response.status === 413) {
+            errorMessage = "Fiszka jest zbyt długa. Skróć treść pytania lub odpowiedzi.";
+          }
 
-      } catch (error) {
-        throw error;
-      }
+          throw new Error(errorMessage);
+        }
+
+        return await response.json();
+      });
+
+      const flashcard: FlashcardDto = result;
+
+      setState((prev) => ({
+        ...prev,
+        suggestions: prev.suggestions.filter(
+          (s) =>
+            s.suggestedQuestion !== suggestion.suggestedQuestion || s.suggestedAnswer !== suggestion.suggestedAnswer
+        ),
+      }));
+
+      return flashcard;
     },
     [state.sourceText]
   );
@@ -375,9 +357,7 @@ export const useAiGeneration = () => {
     setState((prev) => ({
       ...prev,
       suggestions: prev.suggestions.filter(
-        (s) => 
-          s.suggestedQuestion !== suggestion.suggestedQuestion || 
-          s.suggestedAnswer !== suggestion.suggestedAnswer
+        (s) => s.suggestedQuestion !== suggestion.suggestedQuestion || s.suggestedAnswer !== suggestion.suggestedAnswer
       ),
     }));
   }, []);
@@ -395,12 +375,12 @@ export const useAiGeneration = () => {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    
+
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
       debounceTimeoutRef.current = null;
     }
-    
+
     setState(initialState);
   }, []);
 
@@ -409,14 +389,14 @@ export const useAiGeneration = () => {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
-    
+
     if (state.isGenerating) {
       setState((prev) => ({
         ...prev,
         isGenerating: false,
         error: "Żądanie zostało anulowane przez użytkownika",
       }));
-      
+
       toast.info("🚫 Generowanie zostało anulowane", {
         duration: 3000,
       });
@@ -428,25 +408,23 @@ export const useAiGeneration = () => {
     async (suggestions: AiFlashcardSuggestionItem[]): Promise<FlashcardDto[]> => {
       const results: FlashcardDto[] = [];
       const batchSize = CONFIG.performance.batchSize;
-      
+
       for (let i = 0; i < suggestions.length; i += batchSize) {
         const batch = suggestions.slice(i, i + batchSize);
-        
-        const batchResults = await Promise.allSettled(
-          batch.map(suggestion => acceptSuggestion(suggestion))
-        );
-        
+
+        const batchResults = await Promise.allSettled(batch.map((suggestion) => acceptSuggestion(suggestion)));
+
         batchResults.forEach((result) => {
-          if (result.status === 'fulfilled' && result.value) {
+          if (result.status === "fulfilled" && result.value) {
             results.push(result.value);
           }
         });
-        
+
         if (i + batchSize < suggestions.length) {
-          await new Promise(resolve => setTimeout(resolve, CONFIG.performance.batchDelay));
+          await new Promise((resolve) => setTimeout(resolve, CONFIG.performance.batchDelay));
         }
       }
-      
+
       return results;
     },
     [acceptSuggestion]

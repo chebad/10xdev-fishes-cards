@@ -26,7 +26,9 @@ const { title = "10xdevs-fishes-cards" } = Astro.props;
         <slot />
       </main>
       <!-- Stopka dla niezalogowanych użytkowników -->
-      <footer class="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <footer
+        class="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      >
         <div class="container mx-auto px-4 py-6">
           <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="text-sm text-muted-foreground">
@@ -34,15 +36,15 @@ const { title = "10xdevs-fishes-cards" } = Astro.props;
             </div>
             <div class="flex items-center space-x-6">
               <!-- Link do FAQ -->
-              <a 
-                href="/faq" 
+              <a
+                href="/faq"
                 class="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm"
               >
                 FAQ
               </a>
               <!-- Link do Polityki Prywatności -->
-              <a 
-                href="/privacy-policy" 
+              <a
+                href="/privacy-policy"
                 class="text-sm text-muted-foreground hover:text-primary transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-sm"
               >
                 Polityka Prywatności

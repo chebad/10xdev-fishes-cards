@@ -12,43 +12,43 @@ Tabela `auth.users` jest dostarczana i zarządzana przez Supabase. Zawiera co na
 - `created_at`: `TIMESTAMPTZ` - Data utworzenia konta.
 - `updated_at`: `TIMESTAMPTZ` - Data ostatniej aktualizacji konta.
 
-*Uwaga: Akceptacja polityki prywatności jest warunkiem koniecznym do rejestracji i nie jest przechowywana jako osobne pole w bazie danych na etapie MVP, gdyż sam fakt istnienia użytkownika w systemie oznacza jej akceptację.*
+_Uwaga: Akceptacja polityki prywatności jest warunkiem koniecznym do rejestracji i nie jest przechowywana jako osobne pole w bazie danych na etapie MVP, gdyż sam fakt istnienia użytkownika w systemie oznacza jej akceptację._
 
 ### b. Tabela `flashcards`
 
 Przechowuje fiszki stworzone przez użytkowników, zarówno ręcznie, jak i wygenerowane przez AI.
 
-| Nazwa Kolumny      | Typ Danych        | Ograniczenia                                                                  | Opis                                                                 |
-|--------------------|-------------------|-------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| `id`               | `UUID`            | `PRIMARY KEY DEFAULT gen_random_uuid()`                                       | Unikalny identyfikator fiszki.                                       |
-| `user_id`          | `UUID`            | `NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE`                        | Identyfikator użytkownika, do którego należy fiszka.                   |
-| `question`         | `VARCHAR(1000)`   | `NOT NULL CHECK (length(question) >= 5)`                                      | Treść pytania na fiszce.                                             |
-| `answer`           | `TEXT`            | `NOT NULL CHECK (length(answer) >= 3)`                                        | Treść odpowiedzi na fiszce.                                          |
-| `source_text_for_ai` | `TEXT`          | `NULL`                                                                        | Tekst źródłowy użyty przez AI do wygenerowania fiszki (jeśli dotyczy). |
-| `is_ai_generated`  | `BOOLEAN`         | `NOT NULL DEFAULT FALSE`                                                      | Flaga wskazująca, czy fiszka została wygenerowana przez AI.            |
-| `ai_accepted_at`   | `TIMESTAMPTZ`     | `NULL`                                                                        | Data i czas akceptacji fiszki wygenerowanej przez AI przez użytkownika. |
-| `created_at`       | `TIMESTAMPTZ`     | `NOT NULL DEFAULT NOW()`                                                      | Data i czas utworzenia fiszki.                                       |
-| `updated_at`       | `TIMESTAMPTZ`     | `NOT NULL DEFAULT NOW()`                                                      | Data i czas ostatniej modyfikacji fiszki.                            |
-| `is_deleted`       | `BOOLEAN`         | `NOT NULL DEFAULT FALSE`                                                      | Flaga wskazująca, czy fiszka została miękko usunięta.                |
-| `deleted_at`       | `TIMESTAMPTZ`     | `NULL`                                                                        | Data i czas miękkiego usunięcia fiszki.                              |
+| Nazwa Kolumny        | Typ Danych      | Ograniczenia                                           | Opis                                                                    |
+| -------------------- | --------------- | ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `id`                 | `UUID`          | `PRIMARY KEY DEFAULT gen_random_uuid()`                | Unikalny identyfikator fiszki.                                          |
+| `user_id`            | `UUID`          | `NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE` | Identyfikator użytkownika, do którego należy fiszka.                    |
+| `question`           | `VARCHAR(1000)` | `NOT NULL CHECK (length(question) >= 5)`               | Treść pytania na fiszce.                                                |
+| `answer`             | `TEXT`          | `NOT NULL CHECK (length(answer) >= 3)`                 | Treść odpowiedzi na fiszce.                                             |
+| `source_text_for_ai` | `TEXT`          | `NULL`                                                 | Tekst źródłowy użyty przez AI do wygenerowania fiszki (jeśli dotyczy).  |
+| `is_ai_generated`    | `BOOLEAN`       | `NOT NULL DEFAULT FALSE`                               | Flaga wskazująca, czy fiszka została wygenerowana przez AI.             |
+| `ai_accepted_at`     | `TIMESTAMPTZ`   | `NULL`                                                 | Data i czas akceptacji fiszki wygenerowanej przez AI przez użytkownika. |
+| `created_at`         | `TIMESTAMPTZ`   | `NOT NULL DEFAULT NOW()`                               | Data i czas utworzenia fiszki.                                          |
+| `updated_at`         | `TIMESTAMPTZ`   | `NOT NULL DEFAULT NOW()`                               | Data i czas ostatniej modyfikacji fiszki.                               |
+| `is_deleted`         | `BOOLEAN`       | `NOT NULL DEFAULT FALSE`                               | Flaga wskazująca, czy fiszka została miękko usunięta.                   |
+| `deleted_at`         | `TIMESTAMPTZ`   | `NULL`                                                 | Data i czas miękkiego usunięcia fiszki.                                 |
 
 ### c. Tabela `contact_form_submissions`
 
 Przechowuje zgłoszenia wysłane poprzez formularz kontaktowy.
 
-| Nazwa Kolumny   | Typ Danych    | Ograniczenia                                                | Opis                                                                   |
-|-----------------|---------------|-------------------------------------------------------------|------------------------------------------------------------------------|
-| `id`            | `UUID`        | `PRIMARY KEY DEFAULT gen_random_uuid()`                     | Unikalny identyfikator zgłoszenia.                                   |
-| `user_id`       | `UUID`        | `NULL REFERENCES auth.users(id) ON DELETE SET NULL`         | Identyfikator zalogowanego użytkownika (jeśli dotyczy).                |
-| `email_address` | `VARCHAR(255)`| `NOT NULL`                                                  | Adres email osoby wysyłającej zgłoszenie.                              |
-| `subject`       | `VARCHAR(255)`| `NULL`                                                      | Temat zgłoszenia.                                                      |
-| `message_body`  | `TEXT`        | `NOT NULL`                                                  | Treść wiadomości zgłoszenia.                                          |
-| `submitted_at`  | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()`                                    | Data i czas wysłania zgłoszenia.                                       |
+| Nazwa Kolumny   | Typ Danych     | Ograniczenia                                        | Opis                                                    |
+| --------------- | -------------- | --------------------------------------------------- | ------------------------------------------------------- |
+| `id`            | `UUID`         | `PRIMARY KEY DEFAULT gen_random_uuid()`             | Unikalny identyfikator zgłoszenia.                      |
+| `user_id`       | `UUID`         | `NULL REFERENCES auth.users(id) ON DELETE SET NULL` | Identyfikator zalogowanego użytkownika (jeśli dotyczy). |
+| `email_address` | `VARCHAR(255)` | `NOT NULL`                                          | Adres email osoby wysyłającej zgłoszenie.               |
+| `subject`       | `VARCHAR(255)` | `NULL`                                              | Temat zgłoszenia.                                       |
+| `message_body`  | `TEXT`         | `NOT NULL`                                          | Treść wiadomości zgłoszenia.                            |
+| `submitted_at`  | `TIMESTAMPTZ`  | `NOT NULL DEFAULT NOW()`                            | Data i czas wysłania zgłoszenia.                        |
 
 ## 2. Relacje między tabelami
 
-- **`auth.users` (1) - (0..*) `flashcards`**: Jeden użytkownik może mieć wiele fiszek. Każda fiszka musi należeć do jednego użytkownika. Usunięcie użytkownika kaskadowo usuwa jego fiszki (`ON DELETE CASCADE`).
-- **`auth.users` (1) - (0..*) `contact_form_submissions`**: Jeden użytkownik może wysłać wiele zgłoszeń przez formularz kontaktowy. Zgłoszenie może być opcjonalnie powiązane z użytkownikiem. Jeśli użytkownik zostanie usunięty, jego `user_id` w powiązanych zgłoszeniach zostanie ustawione na `NULL` (`ON DELETE SET NULL`). Zgłoszenia mogą być również wysyłane przez użytkowników anonimowych (`user_id` jest `NULL`).
+- **`auth.users` (1) - (0..\*) `flashcards`**: Jeden użytkownik może mieć wiele fiszek. Każda fiszka musi należeć do jednego użytkownika. Usunięcie użytkownika kaskadowo usuwa jego fiszki (`ON DELETE CASCADE`).
+- **`auth.users` (1) - (0..\*) `contact_form_submissions`**: Jeden użytkownik może wysłać wiele zgłoszeń przez formularz kontaktowy. Zgłoszenie może być opcjonalnie powiązane z użytkownikiem. Jeśli użytkownik zostanie usunięty, jego `user_id` w powiązanych zgłoszeniach zostanie ustawione na `NULL` (`ON DELETE SET NULL`). Zgłoszenia mogą być również wysyłane przez użytkowników anonimowych (`user_id` jest `NULL`).
 
 ## 3. Indeksy
 
@@ -62,7 +62,7 @@ Przechowuje zgłoszenia wysłane poprzez formularz kontaktowy.
   - Dla sortowania/filtrowania fiszek po dacie utworzenia.
 - `CREATE INDEX idx_flashcards_is_ai_generated ON flashcards(is_ai_generated);`
   - Dla filtrowania fiszek na podstawie tego, czy były generowane przez AI.
-- *Opcjonalnie, dla wyszukiwania tekstowego `ILIKE` w `question` (jeśli wydajność stanie się problemem):*
+- _Opcjonalnie, dla wyszukiwania tekstowego `ILIKE` w `question` (jeśli wydajność stanie się problemem):_
   - `CREATE INDEX idx_flashcards_question_trgm ON flashcards USING gin (question gin_trgm_ops);` (wymaga rozszerzenia `pg_trgm`)
 
 ### b. Tabela `contact_form_submissions`
@@ -98,7 +98,7 @@ Należy włączyć RLS dla tabeli: `ALTER TABLE flashcards ENABLE ROW LEVEL SECU
   WITH CHECK (auth.uid() = user_id AND is_deleted = FALSE);
   ```
 
-  *Uwaga: Zaleca się, aby `user_id` było ustawiane przez logikę aplikacji lub trigger, a nie bezpośrednio przez użytkownika, aby zapewnić, że `user_id` = `auth.uid()`.*
+  _Uwaga: Zaleca się, aby `user_id` było ustawiane przez logikę aplikacji lub trigger, a nie bezpośrednio przez użytkownika, aby zapewnić, że `user_id` = `auth.uid()`._
 
 - **Zasada `UPDATE`**: Użytkownicy mogą modyfikować tylko własne, nieusunięte fiszki. Nie mogą zmieniać `user_id`. Miękkie usuwanie odbywa się przez dedykowaną zasadę `DELETE` lub procedurę.
 
@@ -107,14 +107,14 @@ Należy włączyć RLS dla tabeli: `ALTER TABLE flashcards ENABLE ROW LEVEL SECU
   ON flashcards
   FOR UPDATE
   USING (auth.uid() = user_id AND is_deleted = FALSE)
-  WITH CHECK (auth.uid() = user_id AND is_deleted = FALSE); 
+  WITH CHECK (auth.uid() = user_id AND is_deleted = FALSE);
   -- Dodatkowe ograniczenie, aby nie można było zmienić user_id, można zrealizować triggerem.
   -- Miękkie usuwanie (zmiana is_deleted na TRUE) powinno być obsługiwane przez politykę DELETE.
   ```
 
 - **Zasada `DELETE` (dla miękkiego usuwania)**: Użytkownicy mogą "miękko" usuwać tylko własne, nieusunięte fiszki. Operacja ta powinna być realizowana przez `UPDATE` ustawiający `is_deleted = TRUE` i `deleted_at = NOW()`. Standardowa operacja `DELETE` powinna być zablokowana lub ograniczona do administratorów.
-  *Zamiast standardowej polityki `DELETE`, preferowane jest zaimplementowanie miękkiego usuwania poprzez `UPDATE` w ramach logiki aplikacji lub funkcji bazodanowej, która jest wywoływana przez użytkownika. Jeśli jednak używamy polityki `DELETE` do tego celu, musiałaby ona przekierowywać na `UPDATE` lub być zastąpiona przez funkcję.*
-  
+  _Zamiast standardowej polityki `DELETE`, preferowane jest zaimplementowanie miękkiego usuwania poprzez `UPDATE` w ramach logiki aplikacji lub funkcji bazodanowej, która jest wywoływana przez użytkownika. Jeśli jednak używamy polityki `DELETE` do tego celu, musiałaby ona przekierowywać na `UPDATE` lub być zastąpiona przez funkcję._
+
   Jako alternatywa, jeśli chcemy zablokować twarde usuwanie przez użytkowników:
 
   ```sql
@@ -124,12 +124,12 @@ Należy włączyć RLS dla tabeli: `ALTER TABLE flashcards ENABLE ROW LEVEL SECU
   USING (FALSE); -- Nikomu nie pozwala na DELETE (poza superuserem/bypassrls)
   ```
 
-  *Miękkie usuwanie powinno być realizowane przez operację `UPDATE` na `is_deleted` i `deleted_at`, objętą odpowiednią polityką `UPDATE` lub dedykowaną funkcją.*
-  *Dla uproszczenia, polityka `UPDATE` powyżej pozwala na modyfikację, ale nie na zmianę `is_deleted` na `TRUE` w celu usunięcia. Lepszym podejściem jest dedykowana funkcja `soft_delete_flashcard(flashcard_id UUID)`.*
+  _Miękkie usuwanie powinno być realizowane przez operację `UPDATE` na `is_deleted` i `deleted_at`, objętą odpowiednią polityką `UPDATE` lub dedykowaną funkcją._
+  _Dla uproszczenia, polityka `UPDATE` powyżej pozwala na modyfikację, ale nie na zmianę `is_deleted` na `TRUE` w celu usunięcia. Lepszym podejściem jest dedykowana funkcja `soft_delete_flashcard(flashcard_id UUID)`._
 
   Polityka dla operacji "miękkiego usuwania" (jeśli zaimplementowana jako `UPDATE` przez użytkownika):
 
-   ```sql
+  ```sql
   CREATE POLICY "Allow users to soft-delete their own flashcards"
   ON flashcards
   FOR UPDATE -- Zakładając, że miękkie usuwanie to UPDATE is_deleted i deleted_at
@@ -137,7 +137,7 @@ Należy włączyć RLS dla tabeli: `ALTER TABLE flashcards ENABLE ROW LEVEL SECU
   WITH CHECK (auth.uid() = user_id); -- Użytkownik może ustawić is_deleted = TRUE i deleted_at
   ```
 
-  *Należy upewnić się, że ta polityka nie koliduje z ogólną polityką UPDATE i że użytkownik nie może zmienić `is_deleted` z `TRUE` na `FALSE`.*
+  _Należy upewnić się, że ta polityka nie koliduje z ogólną polityką UPDATE i że użytkownik nie może zmienić `is_deleted` z `TRUE` na `FALSE`._
 
 ### b. Tabela `contact_form_submissions`
 

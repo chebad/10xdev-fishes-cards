@@ -4,15 +4,10 @@ import type { CharacterCounterProps } from "@/types";
 /**
  * Komponent wyświetlający licznik znaków z wizualną informacją o statusie
  */
-export default function CharacterCounter({
-  current,
-  min,
-  max,
-  showProgress = false,
-}: CharacterCounterProps) {
+export default function CharacterCounter({ current, min, max, showProgress = false }: CharacterCounterProps) {
   // Oblicz procent wykorzystania
   const percentage = max > 0 ? (current / max) * 100 : 0;
-  
+
   // Określ kolor na podstawie statusu
   const getColorClass = () => {
     if (current < min) {
@@ -29,20 +24,20 @@ export default function CharacterCounter({
 
   // Określ czy stan jest poprawny
   const isValid = current >= min && current <= max;
-  
+
   // Wiadomość pomocnicza
   const getMessage = () => {
     if (current < min) {
       const needed = min - current;
-      return `Potrzebujesz jeszcze ${needed} ${needed === 1 ? 'znak' : needed < 5 ? 'znaki' : 'znaków'}`;
+      return `Potrzebujesz jeszcze ${needed} ${needed === 1 ? "znak" : needed < 5 ? "znaki" : "znaków"}`;
     }
     if (current > max) {
       const excess = current - max;
-      return `Przekroczono limit o ${excess} ${excess === 1 ? 'znak' : excess < 5 ? 'znaki' : 'znaków'}`;
+      return `Przekroczono limit o ${excess} ${excess === 1 ? "znak" : excess < 5 ? "znaki" : "znaków"}`;
     }
     if (percentage > 90) {
       const remaining = max - current;
-      return `Zostało ${remaining} ${remaining === 1 ? 'znak' : remaining < 5 ? 'znaki' : 'znaków'}`;
+      return `Zostało ${remaining} ${remaining === 1 ? "znak" : remaining < 5 ? "znaki" : "znaków"}`;
     }
     return null;
   };
@@ -65,10 +60,10 @@ export default function CharacterCounter({
               current > max
                 ? "bg-red-500"
                 : percentage > 90
-                ? "bg-yellow-500"
-                : current >= min
-                ? "bg-green-500"
-                : "bg-orange-500"
+                  ? "bg-yellow-500"
+                  : current >= min
+                    ? "bg-green-500"
+                    : "bg-orange-500"
             }`}
             style={{
               width: `${Math.min(percentage, 100)}%`,
@@ -78,11 +73,7 @@ export default function CharacterCounter({
       )}
 
       {/* Wiadomość pomocnicza */}
-      {message && (
-        <div className={`text-xs ${getColorClass()}`}>
-          {message}
-        </div>
-      )}
+      {message && <div className={`text-xs ${getColorClass()}`}>{message}</div>}
     </div>
   );
-} 
+}

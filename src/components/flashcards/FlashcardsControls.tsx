@@ -25,7 +25,6 @@ export default function FlashcardsControls({
 
     const timeoutId = setTimeout(() => {
       if (searchValue !== filters.search) {
-        console.log("[FLASHCARDS_CONTROLS] Triggering onFiltersChange with search:", searchValue); // Debug log
         onFiltersChange({ search: searchValue || undefined });
       }
     }, 300);

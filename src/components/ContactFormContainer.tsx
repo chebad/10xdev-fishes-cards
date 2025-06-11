@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { toast } from 'sonner';
-import { ContactForm } from './ContactForm';
-import { Toaster } from '@/components/ui/sonner';
-import type { ContactFormData } from '../types';
+import React, { useState } from "react";
+import { toast } from "sonner";
+import { ContactForm } from "./ContactForm";
+import { Toaster } from "@/components/ui/sonner";
 
 /**
  * Główny kontener dla formularza kontaktowego
@@ -12,15 +11,15 @@ export const ContactFormContainer: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [lastSubmissionTime, setLastSubmissionTime] = useState<Date | null>(null);
 
-  const handleFormSubmit = async (data: ContactFormData) => {
+  const handleFormSubmit = async () => {
     try {
       // Oznacz sukces
       setIsSuccess(true);
       setLastSubmissionTime(new Date());
 
       // Wyświetl toast sukcesu
-      toast.success('Wiadomość została wysłana!', {
-        description: 'Dziękujemy za kontakt. Odpowiemy na Twoje zapytanie tak szybko, jak to możliwe.',
+      toast.success("Wiadomość została wysłana!", {
+        description: "Dziękujemy za kontakt. Odpowiemy na Twoje zapytanie tak szybko, jak to możliwe.",
         duration: 5000,
       });
 
@@ -28,13 +27,15 @@ export const ContactFormContainer: React.FC = () => {
       setTimeout(() => {
         setIsSuccess(false);
       }, 10000);
-
     } catch (error) {
-      console.error('Unexpected error in ContactFormContainer:', error);
-      
+      // Log error for debugging
+      if (error instanceof Error) {
+        console.warn("Unexpected error in ContactFormContainer:", error.message);
+      }
+
       // Backup toast - jeśli coś pójdzie nie tak w kontenerze
-      toast.error('Wystąpił nieoczekiwany błąd', {
-        description: 'Spróbuj ponownie lub skontaktuj się z nami w inny sposób.',
+      toast.error("Wystąpił nieoczekiwany błąd", {
+        description: "Spróbuj ponownie lub skontaktuj się z nami w inny sposób.",
         duration: 5000,
       });
     }
@@ -58,33 +59,27 @@ export const ContactFormContainer: React.FC = () => {
               xmlns="http://www.w3.org/2000/svg"
               aria-hidden="true"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
 
           {/* Komunikat sukcesu */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-semibold text-foreground">
-              Wiadomość została wysłana!
-            </h3>
+            <h3 className="text-2xl font-semibold text-foreground">Wiadomość została wysłana!</h3>
             <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
-              Dziękujemy za kontakt. Otrzymaliśmy Twoją wiadomość i odpowiemy 
-              na Twoje zapytanie tak szybko, jak to możliwe.
+              Dziękujemy za kontakt. Otrzymaliśmy Twoją wiadomość i odpowiemy na Twoje zapytanie tak szybko, jak to
+              możliwe.
             </p>
-            
+
             {lastSubmissionTime && (
               <p className="text-sm text-muted-foreground">
-                Wysłano: {lastSubmissionTime.toLocaleString('pl-PL', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
+                Wysłano:{" "}
+                {lastSubmissionTime.toLocaleString("pl-PL", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
                 })}
               </p>
             )}
@@ -98,7 +93,7 @@ export const ContactFormContainer: React.FC = () => {
             >
               Wyślij kolejną wiadomość
             </button>
-            
+
             <a
               href="/faq"
               className="px-6 py-2 text-muted-foreground hover:text-foreground border border-border hover:border-border/80 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -123,13 +118,11 @@ export const ContactFormContainer: React.FC = () => {
 
       {/* Dodatkowa informacja dla użytkowników */}
       <div className="mt-6 text-center">
-        <p className="text-sm text-muted-foreground">
-          Odpowiadamy zwykle w ciągu 24 godzin w dni robocze.
-        </p>
+        <p className="text-sm text-muted-foreground">Odpowiadamy zwykle w ciągu 24 godzin w dni robocze.</p>
       </div>
 
       {/* Toast Provider */}
       <Toaster />
     </div>
   );
-}; 
+};

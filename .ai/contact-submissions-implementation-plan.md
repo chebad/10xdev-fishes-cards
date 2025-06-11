@@ -13,13 +13,13 @@ Celem tego punktu końcowego jest umożliwienie użytkownikom (zarówno anonimow
   - Opcjonalne: Brak parametrów URL.
 - **Request Body (JSON):**
 
-    ```json
-    {
-        "emailAddress": "string (valid email, required)",
-        "subject": "string (optional)",
-        "messageBody": "string (required)"
-    }
-    ```
+  ```json
+  {
+    "emailAddress": "string (valid email, required)",
+    "subject": "string (optional)",
+    "messageBody": "string (required)"
+  }
+  ```
 
   - `emailAddress`: Adres email osoby przesyłającej zgłoszenie. Musi być poprawnym formatem email.
   - `subject`: Temat zgłoszenia.
@@ -29,44 +29,46 @@ Celem tego punktu końcowego jest umożliwienie użytkownikom (zarówno anonimow
 
 - **Command Model (Request):** `CreateContactSubmissionCommand` (zdefiniowany w `src/types.ts`)
 
-    ```typescript
-    export interface CreateContactSubmissionCommand {
-      emailAddress: TablesInsert<"contact_form_submissions">["email_address"]; // string
-      subject?: TablesInsert<"contact_form_submissions">["subject"]; // string | undefined
-      messageBody: TablesInsert<"contact_form_submissions">["message_body"]; // string
-    }
-    ```
+  ```typescript
+  export interface CreateContactSubmissionCommand {
+    emailAddress: TablesInsert<"contact_form_submissions">["email_address"]; // string
+    subject?: TablesInsert<"contact_form_submissions">["subject"]; // string | undefined
+    messageBody: TablesInsert<"contact_form_submissions">["message_body"]; // string
+  }
+  ```
 
 - **Data Transfer Object (Response):** `ContactSubmissionDto` (zdefiniowany w `src/types.ts`)
 
-    ```typescript
-    export interface ContactSubmissionDto {
-      id: Tables<"contact_form_submissions">["id"]; // string (uuid)
-      userId: Tables<"contact_form_submissions">["user_id"]; // string (uuid) | null
-      emailAddress: Tables<"contact_form_submissions">["email_address"]; // string
-      subject: Tables<"contact_form_submissions">["subject"]; // string | null
-      messageBody: Tables<"contact_form_submissions">["message_body"]; // string
-      submittedAt: Tables<"contact_form_submissions">["submitted_at"]; // string (timestamp)
-    }
-    ```
+  ```typescript
+  export interface ContactSubmissionDto {
+    id: Tables<"contact_form_submissions">["id"]; // string (uuid)
+    userId: Tables<"contact_form_submissions">["user_id"]; // string (uuid) | null
+    emailAddress: Tables<"contact_form_submissions">["email_address"]; // string
+    subject: Tables<"contact_form_submissions">["subject"]; // string | null
+    messageBody: Tables<"contact_form_submissions">["message_body"]; // string
+    submittedAt: Tables<"contact_form_submissions">["submitted_at"]; // string (timestamp)
+  }
+  ```
 
 ## 4. Szczegóły odpowiedzi
 
 - **Sukces (201 Created):**
 
-    ```json
-    {
-        "id": "uuid",
-        "userId": "uuid | null",
-        "emailAddress": "string",
-        "subject": "string | null",
-        "messageBody": "string",
-        "submittedAt": "timestamp"
-    }
-    ```
+  ```json
+  {
+    "id": "uuid",
+    "userId": "uuid | null",
+    "emailAddress": "string",
+    "subject": "string | null",
+    "messageBody": "string",
+    "submittedAt": "timestamp"
+  }
+  ```
 
-    Zwraca nowo utworzony obiekt zgłoszenia kontaktowego.
+  Zwraca nowo utworzony obiekt zgłoszenia kontaktowego.
+
 - **Błędy:**
+
   - `400 Bad Request`: Nieprawidłowe dane wejściowe.
 
         ```json
@@ -92,12 +94,12 @@ Celem tego punktu końcowego jest umożliwienie użytkownikom (zarówno anonimow
 2. Handler API Astro (`src/pages/api/contact-submissions.ts`) odbiera żądanie.
 3. Pobierany jest potencjalny `userId` zalogowanego użytkownika z `Astro.locals.user.id`.
 4. Dane wejściowe są walidowane przy użyciu schematu Zod na podstawie `CreateContactSubmissionCommand`.
-    - Jeśli walidacja nie powiedzie się, zwracana jest odpowiedź `400 Bad Request` ze szczegółami błędów.
+   - Jeśli walidacja nie powiedzie się, zwracana jest odpowiedź `400 Bad Request` ze szczegółami błędów.
 5. Jeśli walidacja powiedzie się, wywoływana jest funkcja serwisu `contactSubmissionsService.createSubmission(data, userId)`.
 6. Serwis `contactSubmissionsService` (`src/lib/services/contactSubmissionsService.ts`):
-    a.  Przygotowuje obiekt danych do wstawienia do tabeli `contact_form_submissions` w Supabase, włączając `userId` (jeśli istnieje).
-    b.  Wykonuje operację wstawienia do bazy danych za pomocą klienta Supabase (`context.locals.supabase` zgodnie z regułą `backend.mdc`).
-    c.  Jeśli operacja na bazie danych nie powiedzie się, serwis rzuca błąd.
+   a. Przygotowuje obiekt danych do wstawienia do tabeli `contact_form_submissions` w Supabase, włączając `userId` (jeśli istnieje).
+   b. Wykonuje operację wstawienia do bazy danych za pomocą klienta Supabase (`context.locals.supabase` zgodnie z regułą `backend.mdc`).
+   c. Jeśli operacja na bazie danych nie powiedzie się, serwis rzuca błąd.
 7. Jeśli serwis pomyślnie utworzy zgłoszenie, zwraca utworzony obiekt (`ContactSubmissionDto`).
 8. Handler API zwraca odpowiedź `201 Created` z danymi utworzonego zgłoszenia.
 9. W przypadku błędu w serwisie lub nieoczekiwanego błędu w handlerze, zwracana jest odpowiedź `500 Internal Server Error`.
@@ -135,53 +137,59 @@ Celem tego punktu końcowego jest umożliwienie użytkownikom (zarówno anonimow
 ## 9. Etapy wdrożenia
 
 1. **Utworzenie pliku endpointu API:**
-    - Stwórz plik `src/pages/api/contact-submissions.ts`.
-    - Zdefiniuj `export const prerender = false;` zgodnie z regułami projektu.
+   - Stwórz plik `src/pages/api/contact-submissions.ts`.
+   - Zdefiniuj `export const prerender = false;` zgodnie z regułami projektu.
 2. **Implementacja handlera `POST`:**
-    - W `src/pages/api/contact-submissions.ts` zaimplementuj funkcję `POST({ request, locals }: APIContext)`.
+   - W `src/pages/api/contact-submissions.ts` zaimplementuj funkcję `POST({ request, locals }: APIContext)`.
 3. **Pobranie danych użytkownika:**
-    - W handlerze `POST`, uzyskaj dostęp do `locals.user` i `locals.supabase` z obiektu `APIContext`.
-    - Odczytaj `userId` z `locals.user.id` (jeśli użytkownik jest zalogowany).
+   - W handlerze `POST`, uzyskaj dostęp do `locals.user` i `locals.supabase` z obiektu `APIContext`.
+   - Odczytaj `userId` z `locals.user.id` (jeśli użytkownik jest zalogowany).
 4. **Walidacja danych wejściowych:**
-    - Zdefiniuj schemat Zod dla `CreateContactSubmissionCommand` w `src/lib/schemas/contactSubmissionSchemas.ts` (lub podobnym pliku, jeśli nie istnieje, utwórz go).
 
-        ```typescript
-        // src/lib/schemas/contactSubmissionSchemas.ts
-        import { z } from 'zod';
+   - Zdefiniuj schemat Zod dla `CreateContactSubmissionCommand` w `src/lib/schemas/contactSubmissionSchemas.ts` (lub podobnym pliku, jeśli nie istnieje, utwórz go).
 
-        export const CreateContactSubmissionSchema = z.object({
-          emailAddress: z.string({ required_error: "Email address is required." }).email({ message: "Invalid email format." }),
-          subject: z.string().optional(),
-          messageBody: z.string({ required_error: "Message body is required." }).min(1, { message: "Message body cannot be empty." })
-        });
-        ```
+     ```typescript
+     // src/lib/schemas/contactSubmissionSchemas.ts
+     import { z } from "zod";
 
-    - W handlerze `POST`, sparsuj i zwaliduj `await request.json()` używając `CreateContactSubmissionSchema.safeParseAsync()`.
-    - W przypadku niepowodzenia walidacji, zwróć odpowiedź `400 Bad Request` z odpowiednio sformatowanymi błędami.
+     export const CreateContactSubmissionSchema = z.object({
+       emailAddress: z
+         .string({ required_error: "Email address is required." })
+         .email({ message: "Invalid email format." }),
+       subject: z.string().optional(),
+       messageBody: z
+         .string({ required_error: "Message body is required." })
+         .min(1, { message: "Message body cannot be empty." }),
+     });
+     ```
+
+   - W handlerze `POST`, sparsuj i zwaliduj `await request.json()` używając `CreateContactSubmissionSchema.safeParseAsync()`.
+   - W przypadku niepowodzenia walidacji, zwróć odpowiedź `400 Bad Request` z odpowiednio sformatowanymi błędami.
+
 5. **Utworzenie serwisu `contactSubmissionsService`:**
-    - Stwórz plik `src/lib/services/contactSubmissionsService.ts` (jeśli nie istnieje).
-    - Zaimplementuj funkcję `async createSubmission(submissionData: CreateContactSubmissionCommand, userId: string | null, supabase: SupabaseClient): Promise<ContactSubmissionDto>`
-        - Funkcja powinna przyjmować dane zgłoszenia, opcjonalne `userId` oraz instancję klienta Supabase.
-        - Przygotuj obiekt do zapisu, mapując `CreateContactSubmissionCommand` na `TablesInsert<"contact_form_submissions">`.
-        - Użyj `supabase.from('contact_form_submissions').insert({...submissionData, user_id: userId}).select().single()`.
-        - Obsłuż potencjalne błędy z Supabase (np. opakowując wywołanie w `try...catch` i rzucając niestandardowy błąd lub pozwalając na propagację).
-        - Zwróć zmapowane dane jako `ContactSubmissionDto`.
+   - Stwórz plik `src/lib/services/contactSubmissionsService.ts` (jeśli nie istnieje).
+   - Zaimplementuj funkcję `async createSubmission(submissionData: CreateContactSubmissionCommand, userId: string | null, supabase: SupabaseClient): Promise<ContactSubmissionDto>`
+     - Funkcja powinna przyjmować dane zgłoszenia, opcjonalne `userId` oraz instancję klienta Supabase.
+     - Przygotuj obiekt do zapisu, mapując `CreateContactSubmissionCommand` na `TablesInsert<"contact_form_submissions">`.
+     - Użyj `supabase.from('contact_form_submissions').insert({...submissionData, user_id: userId}).select().single()`.
+     - Obsłuż potencjalne błędy z Supabase (np. opakowując wywołanie w `try...catch` i rzucając niestandardowy błąd lub pozwalając na propagację).
+     - Zwróć zmapowane dane jako `ContactSubmissionDto`.
 6. **Wywołanie serwisu z handlera API:**
-    - W handlerze `POST`, po pomyślnej walidacji, wywołaj `contactSubmissionsService.createSubmission(validatedData.data, userId, locals.supabase)`.
+   - W handlerze `POST`, po pomyślnej walidacji, wywołaj `contactSubmissionsService.createSubmission(validatedData.data, userId, locals.supabase)`.
 7. **Obsługa odpowiedzi i błędów:**
-    - Jeśli serwis zwróci dane, zwróć odpowiedź `201 Created` z tymi danymi (`ContactSubmissionDto`).
-    - Jeśli serwis rzuci błąd lub wystąpi inny nieoczekiwany błąd, zaloguj go i zwróć odpowiedź `500 Internal Server Error`.
+   - Jeśli serwis zwróci dane, zwróć odpowiedź `201 Created` z tymi danymi (`ContactSubmissionDto`).
+   - Jeśli serwis rzuci błąd lub wystąpi inny nieoczekiwany błąd, zaloguj go i zwróć odpowiedź `500 Internal Server Error`.
 8. **Definicja typów:**
-    - Upewnij się, że typy `CreateContactSubmissionCommand` i `ContactSubmissionDto` w `src/types.ts` są zgodne ze specyfikacją i schematem bazy danych.
-    - Upewnij się, że typ `SupabaseClient` jest importowany z `src/db/supabase.client.ts` (lub odpowiedniego miejsca zgodnie z projektem).
+   - Upewnij się, że typy `CreateContactSubmissionCommand` i `ContactSubmissionDto` w `src/types.ts` są zgodne ze specyfikacją i schematem bazy danych.
+   - Upewnij się, że typ `SupabaseClient` jest importowany z `src/db/supabase.client.ts` (lub odpowiedniego miejsca zgodnie z projektem).
 9. **Testowanie:**
-    - Przetestuj endpoint przy użyciu narzędzia takiego jak Postman lub curl.
-    - Sprawdź przypadki:
-        - Poprawne zgłoszenie od użytkownika anonimowego.
-        - Poprawne zgłoszenie od użytkownika zalogowanego (weryfikacja `userId` w bazie).
-        - Zgłoszenie z brakującymi wymaganymi polami (`emailAddress`, `messageBody`).
-        - Zgłoszenie z nieprawidłowym formatem `emailAddress`.
-        - Zgłoszenie z opcjonalnym polem `subject` i bez niego.
-    - Sprawdź kody odpowiedzi i formaty JSON odpowiedzi.
+   - Przetestuj endpoint przy użyciu narzędzia takiego jak Postman lub curl.
+   - Sprawdź przypadki:
+     - Poprawne zgłoszenie od użytkownika anonimowego.
+     - Poprawne zgłoszenie od użytkownika zalogowanego (weryfikacja `userId` w bazie).
+     - Zgłoszenie z brakującymi wymaganymi polami (`emailAddress`, `messageBody`).
+     - Zgłoszenie z nieprawidłowym formatem `emailAddress`.
+     - Zgłoszenie z opcjonalnym polem `subject` i bez niego.
+   - Sprawdź kody odpowiedzi i formaty JSON odpowiedzi.
 10. **Dokumentacja (opcjonalnie, jeśli wymagane):**
     - Zaktualizuj dokumentację API (np. Swagger/OpenAPI), jeśli jest prowadzona.

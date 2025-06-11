@@ -180,7 +180,7 @@ Ten test jest trudny do bezpośredniego zasymulowania przez cURL bez modyfikacji
   "emailAddress": "podany.email@example.com",
   "subject": "Podany temat lub null",
   "messageBody": "Podana treść wiadomości.",
-  "submittedAt": "timestamp-string-w-formacie-iso" 
+  "submittedAt": "timestamp-string-w-formacie-iso"
 }
 ```
 
@@ -208,7 +208,7 @@ Ten test jest trudny do bezpośredniego zasymulowania przez cURL bez modyfikacji
 
 ```json
 {
-  "error": "Internal Server Error" 
+  "error": "Internal Server Error"
   // lub bardziej szczegółowy błąd, jeśli jest zwracany np. "Database connection error."
 }
 ```
@@ -232,4 +232,4 @@ Ten test jest trudny do bezpośredniego zasymulowania przez cURL bez modyfikacji
 
 - **Wrażliwość na wielkość liter w emailu:** Standardowo adresy email nie są wrażliwe na wielkość liter po stronie serwera pocztowego, ale Supabase i PostgreSQL będą przechowywać je tak, jak zostały podane. Walidacja Zod `.email()` nie normalizuje wielkości liter.
 - **Duplikaty zgłoszeń:** Obecna implementacja nie ma wbudowanej logiki zapobiegania duplikatom zgłoszeń (np. ten sam email i treść w krótkim czasie). Jeśli jest to wymagane, należałoby dodać taką logikę w serwisie lub na poziomie bazy danych (np. unikalny constraint na kombinację pól, co mogłoby prowadzić do błędów 400 jeśli serwis rzuci odpowiedni wyjątek).
-- **RLS Policies:** Testowanie RLS wymaga sprawdzenia, czy polityka INSERT (`Allow anyone to submit a contact form` lub `Allow public inserts to contact form`) działa poprawnie, oraz czy polityki SELECT/UPDATE/DELETE (`Allow admin access`) poprawnie ograniczają dostęp dla zwykłych użytkowników/anonimowych. 
+- **RLS Policies:** Testowanie RLS wymaga sprawdzenia, czy polityka INSERT (`Allow anyone to submit a contact form` lub `Allow public inserts to contact form`) działa poprawnie, oraz czy polityki SELECT/UPDATE/DELETE (`Allow admin access`) poprawnie ograniczają dostęp dla zwykłych użytkowników/anonimowych.

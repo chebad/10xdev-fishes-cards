@@ -27,7 +27,7 @@ Widok Strony Głównej (`/`) jest pierwszym punktem kontaktu użytkownika z apli
                   └── RegisterButton (src/components/ui/Button.tsx)
 ```
 
-*Logika sprawdzania statusu autentykacji i przekierowania będzie zaimplementowana w `src/pages/index.astro` (preferowana metoda serwerowa) lub w `src/middleware/index.ts`.*
+_Logika sprawdzania statusu autentykacji i przekierowania będzie zaimplementowana w `src/pages/index.astro` (preferowana metoda serwerowa) lub w `src/middleware/index.ts`._
 
 ## 4. Szczegóły komponentów
 
@@ -123,17 +123,18 @@ Ten widok nie wykonuje bezpośrednich wywołań do API zdefiniowanych w `api-pla
 Integracja dotyczy systemu autentykacji Supabase:
 
 - **Sprawdzenie sesji:** Wykorzystanie SDK Supabase (serwerowego lub klienckiego) do pobrania aktualnej sesji użytkownika.
+
   - Na serwerze (w `src/pages/index.astro` lub middleware): Dostęp do sesji poprzez cookies lub serwerowy klient Supabase.
   - Jeśli konieczne na kliencie (mniej preferowane dla początkowego przekierowania):
 
-      ```javascript
-      // import { supabase } from '../db/supabase'; // klient kliencki
-      // supabase.auth.getSession().then(({ data: { session } }) => {
-      //   if (session) {
-      //     window.location.href = '/app';
-      //   }
-      // });
-      ```
+    ```javascript
+    // import { supabase } from '../db/supabase'; // klient kliencki
+    // supabase.auth.getSession().then(({ data: { session } }) => {
+    //   if (session) {
+    //     window.location.href = '/app';
+    //   }
+    // });
+    ```
 
 - **Typy żądania/odpowiedzi:** Zależne od implementacji Supabase SDK (np. `AuthSession`).
 
@@ -167,86 +168,96 @@ Integracja dotyczy systemu autentykacji Supabase:
 ## 11. Kroki implementacji
 
 1. **Przygotowanie środowiska Astro:**
-    - Upewnij się, że projekt Astro jest skonfigurowany z React (`@astrojs/react`) i Tailwind CSS.
-    - Zainicjuj Shadcn/ui w projekcie, jeśli jeszcze nie zostało to zrobione (`npx shadcn-ui@latest init`).
-    - Dodaj komponent `Button` z Shadcn/ui (`npx shadcn-ui@latest add button`).
-    - Skonfiguruj integrację z Supabase (kliencką i serwerową, jeśli to możliwe, np. poprzez zmienne środowiskowe).
+
+   - Upewnij się, że projekt Astro jest skonfigurowany z React (`@astrojs/react`) i Tailwind CSS.
+   - Zainicjuj Shadcn/ui w projekcie, jeśli jeszcze nie zostało to zrobione (`npx shadcn-ui@latest init`).
+   - Dodaj komponent `Button` z Shadcn/ui (`npx shadcn-ui@latest add button`).
+   - Skonfiguruj integrację z Supabase (kliencką i serwerową, jeśli to możliwe, np. poprzez zmienne środowiskowe).
 
 2. **Implementacja logiki autentykacji i przekierowania w `src/pages/index.astro`:**
-    - Dodaj skrypt po stronie serwera (w sekcji frontmatter `---`) do sprawdzania sesji Supabase.
-    - Użyj `Astro.redirect('/app')` jeśli użytkownik jest zalogowany.
-    - Przykład:
 
-        ```astro
-        ---
-        import MarketingLayout from '../layouts/MarketingLayout.astro';
-        import MainPageContent from '../components/landing/MainPageContent.astro';
-        // import { supabase } from '../db/supabase'; // Załóżmy, że masz klienta Supabase
-                                                  // zdolnego do działania na serwerze
-                                                  // lub odpowiednią konfigurację dla Astro
+   - Dodaj skrypt po stronie serwera (w sekcji frontmatter `---`) do sprawdzania sesji Supabase.
+   - Użyj `Astro.redirect('/app')` jeśli użytkownik jest zalogowany.
+   - Przykład:
 
-        // const session = await supabase.auth.getSession(); // Logika do pobrania sesji
-        // if (session && session.data.session) {
-        //   return Astro.redirect('/app');
-        // }
+     ```astro
+     ---
+     import MarketingLayout from "../layouts/MarketingLayout.astro";
+     import MainPageContent from "../components/landing/MainPageContent.astro";
+     // import { supabase } from '../db/supabase'; // Załóżmy, że masz klienta Supabase
+     // zdolnego do działania na serwerze
+     // lub odpowiednią konfigurację dla Astro
 
-        // Symulacja dla celów demonstracyjnych - zastąp rzeczywistą logiką Supabase
-        const isAuthenticated = false; // Zastąp to rzeczywistym sprawdzeniem sesji
-        if (isAuthenticated) {
-          return Astro.redirect('/app');
-        }
-        ---
-        <MarketingLayout title="Witaj w 10xdevs-fishes-cards!">
-          <MainPageContent />
-        </MarketingLayout>
-        ```
+     // const session = await supabase.auth.getSession(); // Logika do pobrania sesji
+     // if (session && session.data.session) {
+     //   return Astro.redirect('/app');
+     // }
 
-    - *Alternatywa:* Rozważ użycie Astro Middleware (`src/middleware/index.ts`) dla czystszej obsługi przekierowań na podstawie autentykacji dla wielu stron.
+     // Symulacja dla celów demonstracyjnych - zastąp rzeczywistą logiką Supabase
+     const isAuthenticated = false; // Zastąp to rzeczywistym sprawdzeniem sesji
+     if (isAuthenticated) {
+       return Astro.redirect("/app");
+     }
+     ---
+
+     <MarketingLayout title="Witaj w 10xdevs-fishes-cards!">
+       <MainPageContent />
+     </MarketingLayout>
+     ```
+
+   - _Alternatywa:_ Rozważ użycie Astro Middleware (`src/middleware/index.ts`) dla czystszej obsługi przekierowań na podstawie autentykacji dla wielu stron.
 
 3. **Stworzenie Layoutu (`src/layouts/MarketingLayout.astro`):**
-    - Utwórz prosty layout zawierający `<slot />` oraz komponent `MarketingHeader.astro`.
-    - Może zawierać podstawowe tagi `<html>`, `<head>` (z `title`), `<body>`.
+
+   - Utwórz prosty layout zawierający `<slot />` oraz komponent `MarketingHeader.astro`.
+   - Może zawierać podstawowe tagi `<html>`, `<head>` (z `title`), `<body>`.
 
 4. **Stworzenie Nagłówka (`src/components/MarketingHeader.astro`):**
-    - Dodaj komponent `AppLogo.astro` i tekst z nazwą aplikacji.
-    - Stylizuj za pomocą Tailwind CSS.
+
+   - Dodaj komponent `AppLogo.astro` i tekst z nazwą aplikacji.
+   - Stylizuj za pomocą Tailwind CSS.
 
 5. **Stworzenie Komponentu Logo (`src/components/AppLogo.astro`):**
-    - Implementuj wyświetlanie logo (np. jako SVG inline lub plik obrazu).
+
+   - Implementuj wyświetlanie logo (np. jako SVG inline lub plik obrazu).
 
 6. **Stworzenie Głównej Treści Strony (`src/components/landing/MainPageContent.astro`):**
-    - Dodaj sekcję "Hero" z krótkim opisem wartości aplikacji.
-    - Dodaj przyciski (jako komponenty Astro lub bezpośrednio komponenty React `Button` z `client:load`):
-        - Przycisk "Logowanie" (`<a href="/login">...</a>` ostylowany jako przycisk Shadcn).
-        - Przycisk "Rejestracja" (`<a href="/register">...</a>` ostylowany jako przycisk Shadcn).
-    - Do stylizacji użyj Tailwind CSS. Można opakować przyciski Shadcn/ui w komponenty Astro lub użyć ich bezpośrednio jako komponenty React z odpowiednią dyrektywą `client:`.
-    - Przykład użycia przycisku Shadcn/ui jako linku w Astro:
 
-        ```astro
-        ---
-        import { Button } from '@/components/ui/button'; // Upewnij się, że ścieżka jest poprawna
-        ---
-        <a href="/login">
-          <Button variant="outline">Logowanie</Button>
-        </a>
-        <a href="/register">
-          <Button>Rejestracja</Button>
-        </a>
-        ```
+   - Dodaj sekcję "Hero" z krótkim opisem wartości aplikacji.
+   - Dodaj przyciski (jako komponenty Astro lub bezpośrednio komponenty React `Button` z `client:load`):
+     - Przycisk "Logowanie" (`<a href="/login">...</a>` ostylowany jako przycisk Shadcn).
+     - Przycisk "Rejestracja" (`<a href="/register">...</a>` ostylowany jako przycisk Shadcn).
+   - Do stylizacji użyj Tailwind CSS. Można opakować przyciski Shadcn/ui w komponenty Astro lub użyć ich bezpośrednio jako komponenty React z odpowiednią dyrektywą `client:`.
+   - Przykład użycia przycisku Shadcn/ui jako linku w Astro:
+
+     ```astro
+     ---
+     import { Button } from "@/components/ui/button"; // Upewnij się, że ścieżka jest poprawna
+     ---
+
+     <a href="/login">
+       <Button variant="outline">Logowanie</Button>
+     </a>
+     <a href="/register">
+       <Button>Rejestracja</Button>
+     </a>
+     ```
 
 7. **Styling:**
-    - Dostosuj wygląd strony i komponentów za pomocą Tailwind CSS, aby był minimalistyczny i skupiony na konwersji.
-    - Zapewnij odpowiedni kontrast i responsywność.
+
+   - Dostosuj wygląd strony i komponentów za pomocą Tailwind CSS, aby był minimalistyczny i skupiony na konwersji.
+   - Zapewnij odpowiedni kontrast i responsywność.
 
 8. **Dostępność (A11y):**
-    - Użyj semantycznych tagów HTML.
-    - Zapewnij poprawną strukturę nagłówków (H1, H2 itd.).
-    - Upewnij się, że wszystkie interaktywne elementy (linki, przyciski) są dostępne z klawiatury i mają wyraźne stany focus.
-    - Sprawdź kontrast kolorów.
+
+   - Użyj semantycznych tagów HTML.
+   - Zapewnij poprawną strukturę nagłówków (H1, H2 itd.).
+   - Upewnij się, że wszystkie interaktywne elementy (linki, przyciski) są dostępne z klawiatury i mają wyraźne stany focus.
+   - Sprawdź kontrast kolorów.
 
 9. **Testowanie:**
-    - Przetestuj przekierowanie dla zalogowanych użytkowników.
-    - Przetestuj wyświetlanie strony dla niezalogowanych użytkowników.
-    - Sprawdź działanie linków do logowania i rejestracji.
-    - Przetestuj responsywność na różnych rozmiarach ekranu.
-    - Przetestuj dostępność (np. nawigacja klawiaturą).
+   - Przetestuj przekierowanie dla zalogowanych użytkowników.
+   - Przetestuj wyświetlanie strony dla niezalogowanych użytkowników.
+   - Sprawdź działanie linków do logowania i rejestracji.
+   - Przetestuj responsywność na różnych rozmiarach ekranu.
+   - Przetestuj dostępność (np. nawigacja klawiaturą).

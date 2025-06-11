@@ -11,11 +11,13 @@ export default function AiSuggestionsList({ suggestions, onAccept, onReject }: A
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [showBulkActions, setShowBulkActions] = useState(false);
 
-  const suggestionsWithKeys = useMemo(() => 
-    suggestions.map((suggestion, index) => ({
-      ...suggestion,
-      key: `${suggestion.suggestedQuestion.slice(0, 50)}-${index}`,
-    })), [suggestions]
+  const suggestionsWithKeys = useMemo(
+    () =>
+      suggestions.map((suggestion, index) => ({
+        ...suggestion,
+        key: `${suggestion.suggestedQuestion.slice(0, 50)}-${index}`,
+      })),
+    [suggestions]
   );
 
   const stats = useMemo(() => {
@@ -23,51 +25,61 @@ export default function AiSuggestionsList({ suggestions, onAccept, onReject }: A
     const remaining = total;
     const completed = acceptedCount;
     const progress = total > 0 ? Math.round((completed / (total + completed)) * 100) : 0;
-    
+
     return { total, remaining, completed, progress };
   }, [suggestionsWithKeys.length, acceptedCount]);
 
-  const handleAccept = useCallback(async (suggestion: AiFlashcardSuggestionItem): Promise<FlashcardDto | null> => {
-    const key = `${suggestion.suggestedQuestion.slice(0, 50)}-${suggestions.indexOf(suggestion)}`;
-    
-    setProcessing(prev => new Set(prev).add(key));
-    
-    try {
-      const result = await onAccept(suggestion);
-      if (result) {
-        setAcceptedCount(prev => prev + 1);
-      }
-      return result;
-    } finally {
-      setProcessing(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(key);
-        return newSet;
-      });
-    }
-  }, [onAccept, suggestions]);
+  const handleAccept = useCallback(
+    async (suggestion: AiFlashcardSuggestionItem): Promise<FlashcardDto | null> => {
+      const key = `${suggestion.suggestedQuestion.slice(0, 50)}-${suggestions.indexOf(suggestion)}`;
 
-  const handleReject = useCallback((suggestion: AiFlashcardSuggestionItem) => {
-    onReject(suggestion);
-  }, [onReject]);
+      setProcessing((prev) => new Set(prev).add(key));
+
+      try {
+        const result = await onAccept(suggestion);
+        if (result) {
+          setAcceptedCount((prev) => prev + 1);
+        }
+        return result;
+      } finally {
+        setProcessing((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(key);
+          return newSet;
+        });
+      }
+    },
+    [onAccept, suggestions]
+  );
+
+  const handleReject = useCallback(
+    (suggestion: AiFlashcardSuggestionItem) => {
+      onReject(suggestion);
+    },
+    [onReject]
+  );
 
   const handleAcceptAll = useCallback(async () => {
     const confirmMessage = `Czy na pewno chcesz zapisać wszystkie ${suggestionsWithKeys.length} fiszek?\n\nWszystkie sugestie zostaną dodane do Twojej kolekcji bez możliwości edycji.`;
-    
+
     if (!confirm(confirmMessage)) return;
 
-    setProcessing(new Set(suggestionsWithKeys.map(s => s.key)));
-    
+    setProcessing(new Set(suggestionsWithKeys.map((s) => s.key)));
+
     try {
       const batchSize = 3;
       for (let i = 0; i < suggestionsWithKeys.length; i += batchSize) {
         const batch = suggestionsWithKeys.slice(i, i + batchSize);
         await Promise.all(
-          batch.map(suggestion => handleAccept(suggestion).catch(console.error))
+          batch.map((suggestion) =>
+            handleAccept(suggestion).catch(() => {
+              // Silent error handling for batch processing
+            })
+          )
         );
-        
+
         if (i + batchSize < suggestionsWithKeys.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
     } finally {
@@ -77,10 +89,10 @@ export default function AiSuggestionsList({ suggestions, onAccept, onReject }: A
 
   const handleRejectAll = useCallback(() => {
     const confirmMessage = `Czy na pewno chcesz odrzucić wszystkie ${suggestionsWithKeys.length} fiszek?\n\nTa akcja jest nieodwracalna.`;
-    
+
     if (!confirm(confirmMessage)) return;
 
-    suggestionsWithKeys.forEach(suggestion => {
+    suggestionsWithKeys.forEach((suggestion) => {
       handleReject(suggestion);
     });
   }, [suggestionsWithKeys, handleReject]);
@@ -104,13 +116,12 @@ export default function AiSuggestionsList({ suggestions, onAccept, onReject }: A
               </Badge>
             </CardTitle>
             <CardDescription>
-              Wygenerowano {stats.total} {" "}
-              {stats.total === 1 ? "fiszkę" : stats.total < 5 ? "fiszki" : "fiszek"}. 
-              {stats.completed > 0 && ` Zapisano już ${stats.completed}.`}
-              {" "}Przejrzyj każdą i wybierz te, które chcesz zachować.
+              Wygenerowano {stats.total} {stats.total === 1 ? "fiszkę" : stats.total < 5 ? "fiszki" : "fiszek"}.
+              {stats.completed > 0 && ` Zapisano już ${stats.completed}.`} Przejrzyj każdą i wybierz te, które chcesz
+              zachować.
             </CardDescription>
           </div>
-          
+
           {stats.completed > 0 && (
             <div className="text-sm text-gray-600 bg-green-50 px-3 py-1 rounded-full">
               ✅ Postęp: {stats.completed}/{stats.total + stats.completed}
@@ -128,7 +139,7 @@ export default function AiSuggestionsList({ suggestions, onAccept, onReject }: A
           >
             {showBulkActions ? "🔽 Ukryj akcje" : "🔼 Akcje grupowe"}
           </Button>
-          
+
           {showBulkActions && (
             <>
               <Button
@@ -167,8 +178,8 @@ export default function AiSuggestionsList({ suggestions, onAccept, onReject }: A
             <AlertDescription className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
               <span>
-                <strong>Przetwarzanie...</strong> Zapisywanie {processingCount} fiszek do kolekcji.
-                Może to potrwać kilka sekund.
+                <strong>Przetwarzanie...</strong> Zapisywanie {processingCount} fiszek do kolekcji. Może to potrwać
+                kilka sekund.
               </span>
             </AlertDescription>
           </Alert>
@@ -189,9 +200,7 @@ export default function AiSuggestionsList({ suggestions, onAccept, onReject }: A
         <div className="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="space-y-2">
-              <h4 className="font-semibold text-purple-900 flex items-center gap-2">
-                🎯 Jakość fiszek
-              </h4>
+              <h4 className="font-semibold text-purple-900 flex items-center gap-2">🎯 Jakość fiszek</h4>
               <ul className="text-purple-800 space-y-1 text-xs">
                 <li>• Sprawdź czy pytania są jednoznaczne</li>
                 <li>• Upewnij się, że odpowiedzi są kompletne</li>
@@ -200,22 +209,20 @@ export default function AiSuggestionsList({ suggestions, onAccept, onReject }: A
               </ul>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold text-purple-900 flex items-center gap-2">
-                ⚡ Personalizacja
-              </h4>
+              <h4 className="font-semibold text-purple-900 flex items-center gap-2">⚡ Personalizacja</h4>
               <ul className="text-purple-800 space-y-1 text-xs">
                 <li>• Dostosuj język do swojego poziomu</li>
-                <li>• Zmień format pytań (np. "Co to?" → "Zdefiniuj")</li>
+                <li>• Zmień format pytań (np. &ldquo;Co to?&rdquo; → &ldquo;Zdefiniuj&rdquo;)</li>
                 <li>• Dodaj mnemoniki lub skojarzenia</li>
                 <li>• Połącz powiązane koncepcje</li>
               </ul>
             </div>
           </div>
-          
+
           <div className="mt-3 pt-3 border-t border-purple-200">
             <p className="text-xs text-purple-700 flex items-center gap-2">
-              💡 <strong>Wskazówka:</strong> Najlepiej działają fiszki, które edytujesz pod swoje potrzeby!
-              Używaj <kbd className="px-1 py-0.5 bg-purple-100 rounded text-xs">Ctrl+Enter</kbd> dla szybkiego zapisywania.
+              💡 <strong>Wskazówka:</strong> Najlepiej działają fiszki, które edytujesz pod swoje potrzeby! Używaj{" "}
+              <kbd className="px-1 py-0.5 bg-purple-100 rounded text-xs">Ctrl+Enter</kbd> dla szybkiego zapisywania.
             </p>
           </div>
         </div>

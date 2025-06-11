@@ -1,26 +1,15 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { ContactFormField } from './ContactFormField';
-import { useContactForm } from '../lib/hooks/useContactForm';
-import type { ContactFormProps } from '../types';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { ContactFormField } from "./ContactFormField";
+import { useContactForm } from "../lib/hooks/useContactForm";
+import type { ContactFormProps } from "../types";
 
 /**
  * Główny formularz kontaktowy z pełną logiką walidacji i obsługą API
  */
-export const ContactForm: React.FC<ContactFormProps> = ({
-  onSubmit,
-  initialData = {}
-}) => {
-  const {
-    formData,
-    formState,
-    isFormValid,
-    hasErrors,
-    handleFieldChange,
-    handleFieldBlur,
-    submitForm,
-    resetForm
-  } = useContactForm();
+export const ContactForm: React.FC<ContactFormProps> = ({ onSubmit, initialData = {} }) => {
+  const { formData, formState, isFormValid, hasErrors, handleFieldChange, handleFieldBlur, submitForm, resetForm } =
+    useContactForm();
 
   // Ustaw dane początkowe jeśli zostały podane
   React.useEffect(() => {
@@ -35,7 +24,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const success = await submitForm();
     if (success && onSubmit) {
       await onSubmit(formData);
@@ -46,14 +35,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {/* Komunikat błędu ogólnego */}
       {formState.errors?.general && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className="p-4 bg-destructive/10 border border-destructive/20 rounded-md"
-        >
-          <div className="text-sm text-destructive font-medium">
-            {formState.errors.general}
-          </div>
+        <div role="alert" aria-live="polite" className="p-4 bg-destructive/10 border border-destructive/20 rounded-md">
+          <div className="text-sm text-destructive font-medium">{formState.errors.general}</div>
         </div>
       )}
 
@@ -63,8 +46,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         label="Adres email"
         type="email"
         value={formData.email}
-        onChange={(value) => handleFieldChange('email', value)}
-        onBlur={() => handleFieldBlur('email')}
+        onChange={(value) => handleFieldChange("email", value)}
+        onBlur={() => handleFieldBlur("email")}
         error={formState.errors?.email}
         required
         placeholder="twoj@email.com"
@@ -76,8 +59,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         label="Temat"
         type="text"
         value={formData.subject}
-        onChange={(value) => handleFieldChange('subject', value)}
-        onBlur={() => handleFieldBlur('subject')}
+        onChange={(value) => handleFieldChange("subject", value)}
+        onBlur={() => handleFieldBlur("subject")}
         error={formState.errors?.subject}
         required={false}
         placeholder="Krótko opisz temat swojej wiadomości"
@@ -90,8 +73,8 @@ export const ContactForm: React.FC<ContactFormProps> = ({
         label="Wiadomość"
         type="textarea"
         value={formData.messageBody}
-        onChange={(value) => handleFieldChange('messageBody', value)}
-        onBlur={() => handleFieldBlur('messageBody')}
+        onChange={(value) => handleFieldChange("messageBody", value)}
+        onBlur={() => handleFieldBlur("messageBody")}
         error={formState.errors?.messageBody}
         required
         placeholder="Opisz szczegółowo swoje pytanie, problem lub sugestię..."
@@ -100,11 +83,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
 
       {/* Przyciski */}
       <div className="flex flex-col sm:flex-row gap-3 pt-4">
-        <Button
-          type="submit"
-          disabled={formState.isSubmitting || !isFormValid}
-          className="flex-1 sm:flex-none"
-        >
+        <Button type="submit" disabled={formState.isSubmitting || !isFormValid} className="flex-1 sm:flex-none">
           {formState.isSubmitting ? (
             <>
               <svg
@@ -114,14 +93,7 @@ export const ContactForm: React.FC<ContactFormProps> = ({
                 viewBox="0 0 24 24"
                 aria-hidden="true"
               >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -131,18 +103,13 @@ export const ContactForm: React.FC<ContactFormProps> = ({
               Wysyłanie...
             </>
           ) : (
-            'Wyślij wiadomość'
+            "Wyślij wiadomość"
           )}
         </Button>
 
         {/* Przycisk reset - tylko gdy formularz ma dane */}
         {(formData.email || formData.subject || formData.messageBody) && !formState.isSubmitting && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={resetForm}
-            className="flex-1 sm:flex-none"
-          >
+          <Button type="button" variant="outline" onClick={resetForm} className="flex-1 sm:flex-none">
             Wyczyść formularz
           </Button>
         )}
@@ -150,14 +117,10 @@ export const ContactForm: React.FC<ContactFormProps> = ({
 
       {/* Dodatkowe informacje o wymaganych polach */}
       {formState.submitAttempted && hasErrors && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className="text-sm text-muted-foreground text-center"
-        >
+        <div role="alert" aria-live="polite" className="text-sm text-muted-foreground text-center">
           Sprawdź poprawność wypełnienia wszystkich wymaganych pól oznaczonych gwiazdką (*).
         </div>
       )}
     </form>
   );
-}; 
+};

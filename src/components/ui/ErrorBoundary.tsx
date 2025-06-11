@@ -29,7 +29,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary złapał błąd:", error, errorInfo);
-    
+
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
@@ -55,11 +55,11 @@ export default class ErrorBoundary extends Component<Props, State> {
                     <span className="text-2xl">⚠️</span>
                     <h3 className="font-semibold">Wystąpił nieoczekiwany błąd</h3>
                   </div>
-                  
+
                   <p className="text-sm">
                     Przepraszamy, coś poszło nie tak. Spróbuj odświeżyć stronę lub skontaktuj się z pomocą techniczną.
                   </p>
-                  
+
                   {this.state.error && process.env.NODE_ENV === "development" && (
                     <details className="mt-4">
                       <summary className="cursor-pointer text-xs font-mono">
@@ -76,22 +76,12 @@ export default class ErrorBoundary extends Component<Props, State> {
                       </pre>
                     </details>
                   )}
-                  
+
                   <div className="flex space-x-2 pt-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={this.handleRetry}
-                      className="flex-1"
-                    >
+                    <Button variant="outline" size="sm" onClick={this.handleRetry} className="flex-1">
                       🔄 Spróbuj ponownie
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => window.location.reload()}
-                      className="flex-1"
-                    >
+                    <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="flex-1">
                       🔃 Odśwież stronę
                     </Button>
                   </div>
@@ -110,10 +100,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 /**
  * Hook-based Error Boundary dla komponentów funkcyjnych
  */
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  errorFallback?: ReactNode
-) {
+export function withErrorBoundary<P extends object>(Component: React.ComponentType<P>, errorFallback?: ReactNode) {
   return function WrappedComponent(props: P) {
     return (
       <ErrorBoundary fallback={errorFallback}>
@@ -121,4 +108,4 @@ export function withErrorBoundary<P extends object>(
       </ErrorBoundary>
     );
   };
-} 
+}

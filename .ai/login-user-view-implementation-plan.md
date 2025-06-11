@@ -100,7 +100,7 @@ export interface LoginFormData {
 Interfejs propsów dla komponentu `LoginForm`.
 
 ```typescript
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface LoginFormProps {
   supabaseClient: SupabaseClient;
@@ -117,8 +117,8 @@ Zarządzanie stanem w komponencie `LoginForm.tsx` będzie realizowane przy użyc
 
 1. **`react-hook-form`**: Do zarządzania stanem pól formularza, ich walidacją i procesem wysyłania.
 2. **Lokalny stan React (`useState`)** lub **custom hook (`useLoginForm`)**:
-    - `isLoading (boolean)`: Stan wskazujący, czy proces logowania jest w toku. Używany do wyświetlania wskaźnika ładowania na przycisku i ewentualnego blokowania ponownego wysłania formularza.
-    - `apiError (string | null)`: Przechowuje komunikaty błędów zwrócone przez Supabase Auth lub inne błędy związane z procesem logowania. Wyświetlany użytkownikowi za pomocą komponentu Toast.
+   - `isLoading (boolean)`: Stan wskazujący, czy proces logowania jest w toku. Używany do wyświetlania wskaźnika ładowania na przycisku i ewentualnego blokowania ponownego wysłania formularza.
+   - `apiError (string | null)`: Przechowuje komunikaty błędów zwrócone przez Supabase Auth lub inne błędy związane z procesem logowania. Wyświetlany użytkownikowi za pomocą komponentu Toast.
 
 Sugerowane jest stworzenie custom hooka `useLoginForm`, który hermetyzuje logikę formularza, interakcję z Supabase, oraz zarządzanie stanami `isLoading` i `apiError`.
 
@@ -126,15 +126,18 @@ Sugerowane jest stworzenie custom hooka `useLoginForm`, który hermetyzuje logik
 
 ```typescript
 // hooks/useLoginForm.ts (propozycja)
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { LoginFormData } from '../types'; // Załóżmy, że LoginFormData jest zdefiniowane
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { LoginFormData } from "../types"; // Załóżmy, że LoginFormData jest zdefiniowane
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Nieprawidłowy format adresu email." }).min(1, { message: "Adres email jest wymagany." }),
+  email: z
+    .string()
+    .email({ message: "Nieprawidłowy format adresu email." })
+    .min(1, { message: "Adres email jest wymagany." }),
   password: z.string().min(6, { message: "Hasło musi mieć co najmniej 6 znaków." }), // Długość do weryfikacji z Supabase
 });
 
@@ -145,8 +148,8 @@ export function useLoginForm(supabaseClient: SupabaseClient, onLoginSuccess?: ()
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
@@ -161,12 +164,11 @@ export function useLoginForm(supabaseClient: SupabaseClient, onLoginSuccess?: ()
 
       if (error) {
         // Mapowanie błędów Supabase na bardziej przyjazne komunikaty
-        if (error.message === 'Invalid login credentials') {
+        if (error.message === "Invalid login credentials") {
           setApiError("Nieprawidłowy email lub hasło.");
-        } else if (error.message.includes('Email not confirmed')) {
+        } else if (error.message.includes("Email not confirmed")) {
           setApiError("Proszę potwierdzić swój adres email przed zalogowaniem.");
-        }
-        else {
+        } else {
           setApiError("Wystąpił błąd podczas logowania. Spróbuj ponownie.");
         }
         console.error("Supabase login error:", error);
@@ -176,7 +178,7 @@ export function useLoginForm(supabaseClient: SupabaseClient, onLoginSuccess?: ()
           onLoginSuccess();
         } else {
           // Domyślne przekierowanie, jeśli nie ma onLoginSuccess
-          window.location.href = '/dashboard'; // Przykładowa ścieżka
+          window.location.href = "/dashboard"; // Przykładowa ścieżka
         }
       }
     } catch (e) {
@@ -213,21 +215,7 @@ Komponent `LoginForm` (lub hook `useLoginForm`) wywoła tę metodę, przekazują
 - **Wprowadzanie danych:** Użytkownik wpisuje email i hasło w odpowiednie pola formularza.
   - Reakcja: Dane są aktualizowane w stanie formularza (`react-hook-form`). Komunikaty walidacji mogą pojawiać się na bieżąco (on blur/on change).
 - **Kliknięcie przycisku "Zaloguj":**
-  - Reakcja:
-        1. Uruchamiana jest walidacja po stronie klienta.
-        2. Jeśli walidacja nie powiedzie się, wyświetlane są błędy przy odpowiednich polach, a wysyłanie jest blokowane.
-        3. Jeśli walidacja powiedzie się:
-            - Ustawiany jest stan `isLoading` na `true`.
-            - Przycisk "Zaloguj" może wyświetlać wskaźnik ładowania i być zablokowany.
-            - Wywoływana jest funkcja `supabaseClient.auth.signInWithPassword()`.
-            - **W przypadku sukcesu:**
-                - Stan `isLoading` ustawiany jest na `false`.
-                - Użytkownik jest przekierowywany na stronę główną aplikacji (np. `/dashboard`) lub wywoływany jest callback `onLoginSuccess`.
-                - Sesja użytkownika jest zarządzana przez Supabase SDK (JWT zapisywany w local storage/cookies).
-            - **W przypadku błędu:**
-                - Stan `isLoading` ustawiany jest na `false`.
-                - Stan `apiError` jest aktualizowany odpowiednim komunikatem.
-                - Komunikat błędu jest wyświetlany użytkownikowi (np. za pomocą komponentu Toast).
+  - Reakcja: 1. Uruchamiana jest walidacja po stronie klienta. 2. Jeśli walidacja nie powiedzie się, wyświetlane są błędy przy odpowiednich polach, a wysyłanie jest blokowane. 3. Jeśli walidacja powiedzie się: - Ustawiany jest stan `isLoading` na `true`. - Przycisk "Zaloguj" może wyświetlać wskaźnik ładowania i być zablokowany. - Wywoływana jest funkcja `supabaseClient.auth.signInWithPassword()`. - **W przypadku sukcesu:** - Stan `isLoading` ustawiany jest na `false`. - Użytkownik jest przekierowywany na stronę główną aplikacji (np. `/dashboard`) lub wywoływany jest callback `onLoginSuccess`. - Sesja użytkownika jest zarządzana przez Supabase SDK (JWT zapisywany w local storage/cookies). - **W przypadku błędu:** - Stan `isLoading` ustawiany jest na `false`. - Stan `apiError` jest aktualizowany odpowiednim komunikatem. - Komunikat błędu jest wyświetlany użytkownikowi (np. za pomocą komponentu Toast).
 - **Kliknięcie linku "Nie masz konta? Zarejestruj się":**
   - Reakcja: Użytkownik jest przekierowywany na stronę rejestracji (`/register`).
 
@@ -276,42 +264,42 @@ Komponent `Toast` z Shadcn/ui będzie używany do wyświetlania błędów serwer
 ## 11. Kroki implementacji
 
 1. **Utworzenie struktury plików:**
-    - Strona Astro: `src/pages/login.astro`
-    - Komponent React formularza: `src/components/auth/LoginForm.tsx`
-    - (Opcjonalnie) Custom hook: `src/hooks/useLoginForm.ts`
-    - (Jeśli nie istnieje) Komponent `HeaderUnauthenticated`.
+   - Strona Astro: `src/pages/login.astro`
+   - Komponent React formularza: `src/components/auth/LoginForm.tsx`
+   - (Opcjonalnie) Custom hook: `src/hooks/useLoginForm.ts`
+   - (Jeśli nie istnieje) Komponent `HeaderUnauthenticated`.
 2. **Zainicjowanie `LoginPage.astro`:**
-    - Dodać podstawowy layout (np. `MainLayout.astro`).
-    - Osadzić komponent `<LoginForm client:load />`, przekazując instancję klienta Supabase (jeśli nie jest dostępny globalnie w komponencie React przez Context lub inaczej).
+   - Dodać podstawowy layout (np. `MainLayout.astro`).
+   - Osadzić komponent `<LoginForm client:load />`, przekazując instancję klienta Supabase (jeśli nie jest dostępny globalnie w komponencie React przez Context lub inaczej).
 3. **Implementacja `LoginForm.tsx`:**
-    - Zdefiniować schemat walidacji Zod dla `LoginFormData`.
-    - Skonfigurować `react-hook-form` z `zodResolver` i domyślnymi wartościami.
-    - Zbudować strukturę formularza używając komponentów Shadcn/ui: `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `Input`, `FormMessage`, `Button`.
-    - Dodać link do strony rejestracji (`/register`).
+   - Zdefiniować schemat walidacji Zod dla `LoginFormData`.
+   - Skonfigurować `react-hook-form` z `zodResolver` i domyślnymi wartościami.
+   - Zbudować strukturę formularza używając komponentów Shadcn/ui: `Form`, `FormField`, `FormItem`, `FormLabel`, `FormControl`, `Input`, `FormMessage`, `Button`.
+   - Dodać link do strony rejestracji (`/register`).
 4. **Implementacja logiki logowania (w `LoginForm.tsx` lub `useLoginForm.ts`):**
-    - Zaimplementować funkcję `onSubmit`.
-    - W funkcji `onSubmit`:
-        - Ustawić `isLoading` na `true` i wyczyścić poprzednie `apiError`.
-        - Wywołać `supabaseClient.auth.signInWithPassword()` z danymi z formularza.
-        - Obsłużyć odpowiedź:
-            - W przypadku sukcesu: wywołać `onLoginSuccess` (np. `Astro.redirect('/dashboard')` lub `window.location.href = '/dashboard'`) lub przekierować.
-            - W przypadku błędu: zmapować błąd Supabase na przyjazny komunikat i ustawić `apiError`.
-        - W bloku `finally` ustawić `isLoading` na `false`.
+   - Zaimplementować funkcję `onSubmit`.
+   - W funkcji `onSubmit`:
+     - Ustawić `isLoading` na `true` i wyczyścić poprzednie `apiError`.
+     - Wywołać `supabaseClient.auth.signInWithPassword()` z danymi z formularza.
+     - Obsłużyć odpowiedź:
+       - W przypadku sukcesu: wywołać `onLoginSuccess` (np. `Astro.redirect('/dashboard')` lub `window.location.href = '/dashboard'`) lub przekierować.
+       - W przypadku błędu: zmapować błąd Supabase na przyjazny komunikat i ustawić `apiError`.
+     - W bloku `finally` ustawić `isLoading` na `false`.
 5. **Wyświetlanie stanu ładowania i błędów:**
-    - Powiązać stan `isLoading` z atrybutem `disabled` przycisku "Zaloguj" i wyświetlić w nim wskaźnik ładowania (np. spinner).
-    - Wyświetlać `apiError` za pomocą komponentu `Toast` (np. poprzez wywołanie funkcji `toast()` z `sonner` lub `react-hot-toast` jeśli jest używane z Shadcn/ui, lub natywnego `Toast` z Shadcn). Upewnić się, że `Toaster` jest dodany do layoutu aplikacji.
+   - Powiązać stan `isLoading` z atrybutem `disabled` przycisku "Zaloguj" i wyświetlić w nim wskaźnik ładowania (np. spinner).
+   - Wyświetlać `apiError` za pomocą komponentu `Toast` (np. poprzez wywołanie funkcji `toast()` z `sonner` lub `react-hot-toast` jeśli jest używane z Shadcn/ui, lub natywnego `Toast` z Shadcn). Upewnić się, że `Toaster` jest dodany do layoutu aplikacji.
 6. **Styling:**
-    - Dostosować wygląd formularza i strony za pomocą Tailwind CSS, zgodnie z ogólnym stylem aplikacji.
+   - Dostosować wygląd formularza i strony za pomocą Tailwind CSS, zgodnie z ogólnym stylem aplikacji.
 7. **Testowanie:**
-    - Przetestować przypadki pomyślnego logowania.
-    - Przetestować różne scenariusze błędów (nieprawidłowe dane, błędy serwera - jeśli możliwe do symulacji).
-    - Sprawdzić walidację po stronie klienta.
-    - Sprawdzić responsywność widoku.
-    - Sprawdzić działanie linku do rejestracji.
+   - Przetestować przypadki pomyślnego logowania.
+   - Przetestować różne scenariusze błędów (nieprawidłowe dane, błędy serwera - jeśli możliwe do symulacji).
+   - Sprawdzić walidację po stronie klienta.
+   - Sprawdzić responsywność widoku.
+   - Sprawdzić działanie linku do rejestracji.
 8. **Dostępność (A11y):**
-    - Upewnić się, że formularz jest dostępny (etykiety dla pól, nawigacja klawiaturą, odpowiednie atrybuty ARIA tam, gdzie to konieczne). Komponenty Shadcn/ui zazwyczaj dbają o podstawową dostępność.
+   - Upewnić się, że formularz jest dostępny (etykiety dla pól, nawigacja klawiaturą, odpowiednie atrybuty ARIA tam, gdzie to konieczne). Komponenty Shadcn/ui zazwyczaj dbają o podstawową dostępność.
 9. **Integracja `HeaderUnauthenticated`:**
-    - Upewnić się, że nagłówek dla niezalogowanych użytkowników jest poprawnie wyświetlany na stronie `/login` i zawiera link do `/register`.
+   - Upewnić się, że nagłówek dla niezalogowanych użytkowników jest poprawnie wyświetlany na stronie `/login` i zawiera link do `/register`.
 10. **Obsługa przekierowania po zalogowaniu:**
     - Zdecydować o strategii przekierowania (np. na `/dashboard` lub ostatnio odwiedzoną stronę chronioną). `onLoginSuccess` może przyjmować URL jako parametr lub być skonfigurowane globalnie.
     - Jeśli użytkownik jest już zalogowany i trafi na `/login`, powinien zostać przekierowany do aplikacji (np. `/dashboard`). Można to obsłużyć w `load` funkcji strony Astro lub na początku renderowania komponentu React.

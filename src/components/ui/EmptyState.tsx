@@ -30,21 +30,13 @@ export default function EmptyState({
     <div className={`text-center py-12 px-6 ${className}`}>
       <div className="max-w-md mx-auto space-y-4">
         {/* Ikona */}
-        <div className="text-6xl mb-4">
-          {icon}
-        </div>
+        <div className="text-6xl mb-4">{icon}</div>
 
         {/* Tytuł */}
-        <h3 className="text-xl font-semibold text-gray-900">
-          {title}
-        </h3>
+        <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
 
         {/* Opis */}
-        {description && (
-          <p className="text-gray-600 leading-relaxed">
-            {description}
-          </p>
-        )}
+        {description && <p className="text-gray-600 leading-relaxed">{description}</p>}
 
         {/* Akcja */}
         {action && (
@@ -60,12 +52,8 @@ export default function EmptyState({
         )}
 
         {/* Dodatkowa zawartość */}
-        {children && (
-          <div className="pt-4">
-            {children}
-          </div>
-        )}
+        {children && <div className="pt-4">{children}</div>}
       </div>
     </div>
   );
-} 
+}

@@ -26,8 +26,8 @@ export default function MyFlashcardsTab() {
             Zarządzaj swoimi fiszkami
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Przeglądaj, edytuj i organizuj swoje fiszki edukacyjne. 
-            Używaj filtrów i wyszukiwania żeby szybko znaleźć to czego szukasz.
+            Przeglądaj, edytuj i organizuj swoje fiszki edukacyjne. Używaj filtrów i wyszukiwania żeby szybko znaleźć to
+            czego szukasz.
           </p>
         </div>
 

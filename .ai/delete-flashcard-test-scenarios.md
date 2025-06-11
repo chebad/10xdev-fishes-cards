@@ -20,6 +20,7 @@ curl -X DELETE "http://localhost:3000/api/flashcards/FLASHCARD_ID_TO_DELETE" \
 ```
 
 **Oczekiwany wynik:**
+
 - Kod statusu: `204 No Content`
 - Brak ciała odpowiedzi.
 - W bazie danych: dla fiszki o podanym ID, `is_deleted` powinno być `true`, a `deleted_at` powinno zawierać timestamp.
@@ -32,6 +33,7 @@ curl -X DELETE "http://localhost:3000/api/flashcards/FLASHCARD_ID_TO_DELETE" \
 ```
 
 **Oczekiwany wynik:**
+
 - Kod statusu: `401 Unauthorized`
 - Ciało odpowiedzi może zawierać komunikat o błędzie, np.: `{"error":"User not authenticated."}`
 
@@ -46,13 +48,14 @@ curl -X DELETE "http://localhost:3000/api/flashcards/invalid-uuid-format" \
 ```
 
 **Oczekiwany wynik:**
+
 - Kod statusu: `400 Bad Request`
 - Ciało odpowiedzi powinno zawierać szczegóły błędu walidacji, np.: `{"error":"Invalid flashcard ID format.","details":["Flashcard ID must be a valid UUID."]}`
 
 ### 2.2. `flashcardId` jako pusty string (zwykle problem z routingiem, może być 404 lub błąd frameworka)
 
 ```bash
-# Ten test może nie być bezpośrednio obsługiwany przez logikę aplikacji, 
+# Ten test może nie być bezpośrednio obsługiwany przez logikę aplikacji,
 # a raczej przez mechanizmy routingu Astro/serwera HTTP.
 curl -X DELETE "http://localhost:3000/api/flashcards/" \
   -H "Authorization: Bearer PUT_BEARER_TOKEN_HERE" \
@@ -66,6 +69,7 @@ curl -X DELETE "http://localhost:3000/api/flashcards/" \
 ### 3.1. Próba usunięcia nieistniejącej fiszki (404 Not Found)
 
 Użyj UUID, który na pewno nie istnieje w bazie danych.
+
 ```bash
 curl -X DELETE "http://localhost:3000/api/flashcards/123e4567-e89b-12d3-a456-426614174999" \
   -H "Authorization: Bearer PUT_BEARER_TOKEN_HERE" \
@@ -73,6 +77,7 @@ curl -X DELETE "http://localhost:3000/api/flashcards/123e4567-e89b-12d3-a456-426
 ```
 
 **Oczekiwany wynik:**
+
 - Kod statusu: `404 Not Found`
 - Ciało odpowiedzi może zawierać komunikat, np.: `{"error":"Flashcard not found or already deleted."}`
 
@@ -87,6 +92,7 @@ curl -X DELETE "http://localhost:3000/api/flashcards/OTHER_USER_FLASHCARD_ID" \
 ```
 
 **Oczekiwany wynik:**
+
 - Kod statusu: `404 Not Found` (dzięki politykom RLS i logice serwisu, która nie powinna ujawniać istnienia zasobu)
 
 ### 3.3. Próba usunięcia już usuniętej fiszki (404 Not Found)
@@ -104,6 +110,7 @@ curl -X DELETE "http://localhost:3000/api/flashcards/FLASHCARD_ID_TO_DELETE" \
 ```
 
 **Oczekiwany wynik:**
+
 - Kod statusu: `404 Not Found`
 - Ciało odpowiedzi może zawierać komunikat, np.: `{"error":"Flashcard not found or already deleted."}` (ponieważ serwis sprawdza `is_deleted = false`)
 
@@ -126,6 +133,7 @@ curl -X GET "http://localhost:3000/api/flashcards/FLASHCARD_ID_DELETED_FOR_GET_T
 ```
 
 **Oczekiwany wynik:**
+
 - Kod statusu: `404 Not Found` (zakładając, że endpoint GET /api/flashcards/{id} honoruje flagę `is_deleted` lub jest objęty RLS filtrującym `is_deleted = false`).
 
 ### 4.2. Sprawdzenie listy fiszek (usunięta fiszka nie powinna być widoczna)
@@ -143,6 +151,7 @@ curl -X GET "http://localhost:3000/api/flashcards" \
 ```
 
 **Oczekiwany wynik:**
+
 - Kod statusu: `200 OK`
 - W odpowiedzi JSON (w tablicy `data`), usunięta fiszka (`FLASHCARD_ID_DELETED_FOR_LIST_TEST`) nie powinna się znajdować.
 
@@ -153,9 +162,7 @@ curl -X GET "http://localhost:3000/api/flashcards" \
 ```json
 {
   "error": "Invalid flashcard ID format.",
-  "details": [
-    "Flashcard ID must be a valid UUID."
-  ]
+  "details": ["Flashcard ID must be a valid UUID."]
 }
 ```
 
@@ -176,6 +183,7 @@ curl -X GET "http://localhost:3000/api/flashcards" \
 // lub bardziej generyczny, jeśli RLS ukrywa przyczynę
 // {
 //   "error": "Flashcard not found."
+
 // }
 ```
 
@@ -207,6 +215,7 @@ curl -X POST "http://localhost:3000/api/flashcards" \
     "answer": "Test answer for DELETE"
   }'
 ```
+
 Zwrócone ID można użyć jako `FLASHCARD_ID_TO_DELETE`.
 
 ## 7. Checklist Weryfikacji
@@ -230,4 +239,4 @@ Zwrócone ID można użyć jako `FLASHCARD_ID_TO_DELETE`.
 3.  **Użyj flagi `-v` w cURL:** Aby zobaczyć pełne nagłówki żądania i odpowiedzi HTTP.
 4.  **Weryfikuj stan w bazie danych Supabase:** Bezpośrednio sprawdzaj wartości `is_deleted` i `deleted_at` dla testowanej fiszki po wykonaniu operacji DELETE.
 5.  **Sprawdź polityki RLS (Row Level Security) w Supabase:** Upewnij się, że polityki dla tabeli `flashcards` (szczególnie dla operacji `UPDATE` i `SELECT`) są poprawnie skonfigurowane i aktywne.
-6.  **Sprawdź ważność tokenu JWT:** Upewnij się, że używany token jest aktualny i poprawny. 
+6.  **Sprawdź ważność tokenu JWT:** Upewnij się, że używany token jest aktualny i poprawny.

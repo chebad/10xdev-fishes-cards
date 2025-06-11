@@ -14,7 +14,7 @@ export default function FlashcardItem({ flashcard, onEdit, onDelete }: Flashcard
       try {
         await onDelete(flashcard.id);
       } catch (error) {
-        console.error("Błąd podczas usuwania fiszki:", error);
+        console.error("Failed to delete flashcard:", error);
       } finally {
         setIsDeleting(false);
       }
@@ -25,7 +25,7 @@ export default function FlashcardItem({ flashcard, onEdit, onDelete }: Flashcard
     onEdit(flashcard);
   };
 
-  const toggleExpanded = () => {
+  const handleExpand = () => {
     setIsExpanded(!isExpanded);
   };
 
@@ -75,7 +75,7 @@ export default function FlashcardItem({ flashcard, onEdit, onDelete }: Flashcard
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={toggleExpanded}
+                  onClick={handleExpand}
                   className="text-xs text-blue-600 hover:text-blue-800"
                 >
                   {isExpanded ? "Zwiń" : "Rozwiń"}

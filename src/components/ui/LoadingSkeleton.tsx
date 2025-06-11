@@ -9,11 +9,7 @@ interface LoadingSkeletonProps {
 /**
  * Komponent skeleton loading dla różnych wariantów UI
  */
-export default function LoadingSkeleton({ 
-  variant = "card", 
-  count = 1, 
-  className = "" 
-}: LoadingSkeletonProps) {
+export default function LoadingSkeleton({ variant = "card", count = 1, className = "" }: LoadingSkeletonProps) {
   const renderSkeleton = () => {
     switch (variant) {
       case "card":
@@ -120,9 +116,5 @@ export default function LoadingSkeleton({
     }
   };
 
-  return (
-    <div className="w-full">
-      {renderSkeleton()}
-    </div>
-  );
-} 
+  return <div className="w-full">{renderSkeleton()}</div>;
+}

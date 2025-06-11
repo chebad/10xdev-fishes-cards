@@ -58,13 +58,13 @@ curl -X POST http://localhost:4321/api/flashcards \
 ```json
 {
   "id": "uuid",
-  "userId": "uuid", 
+  "userId": "uuid",
   "question": "What is polymorphism in programming?",
   "answer": "Polymorphism is the ability of objects of different types to be treated as instances of the same type through a common interface.",
   "sourceTextForAi": "Polymorphism is one of the core principles...",
   "isAiGenerated": true,
   "aiAcceptedAt": "2024-01-01T12:00:00Z",
-  "createdAt": "2024-01-01T12:00:00Z", 
+  "createdAt": "2024-01-01T12:00:00Z",
   "updatedAt": "2024-01-01T12:00:00Z",
   "isDeleted": false
 }
@@ -302,29 +302,29 @@ curl -X POST http://localhost:4321/api/flashcards \
 
 ```typescript
 // Przykład testu dla FlashcardService
-describe('FlashcardService', () => {
-  it('should create flashcard with correct data mapping', async () => {
+describe("FlashcardService", () => {
+  it("should create flashcard with correct data mapping", async () => {
     const mockSupabase = {
       from: jest.fn().mockReturnValue({
         insert: jest.fn().mockReturnValue({
           select: jest.fn().mockReturnValue({
             single: jest.fn().mockResolvedValue({
               data: mockFlashcardData,
-              error: null
-            })
-          })
-        })
-      })
+              error: null,
+            }),
+          }),
+        }),
+      }),
     };
-    
+
     const service = new FlashcardService(mockSupabase as any);
     const command: CreateFlashcardCommand = {
       question: "Test question",
-      answer: "Test answer"
+      answer: "Test answer",
     };
-    
+
     const result = await service.createFlashcard(command, "user-id");
-    
+
     expect(mockSupabase.from).toHaveBeenCalledWith("flashcards");
     expect(result.question).toBe("Test question");
   });
@@ -335,23 +335,23 @@ describe('FlashcardService', () => {
 
 ```typescript
 // Przykład testu integracyjnego dla całego endpointu
-describe('POST /api/flashcards', () => {
-  it('should create flashcard and return 201', async () => {
-    const response = await fetch('/api/flashcards', {
-      method: 'POST',
+describe("POST /api/flashcards", () => {
+  it("should create flashcard and return 201", async () => {
+    const response = await fetch("/api/flashcards", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
-        question: 'Integration test question',
-        answer: 'Integration test answer'
-      })
+        question: "Integration test question",
+        answer: "Integration test answer",
+      }),
     });
-    
+
     expect(response.status).toBe(201);
     const data = await response.json();
-    expect(data.question).toBe('Integration test question');
+    expect(data.question).toBe("Integration test question");
     expect(data.isDeleted).toBe(false);
   });
 });

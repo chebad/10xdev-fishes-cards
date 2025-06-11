@@ -1,113 +1,113 @@
 # 10xdevs-fishes-cards
 
-## 1. Project Name
+## 1. Nazwa Projektu
 
 10xdevs-fishes-cards
 
-## 2. Project Description
+## 2. Opis Projektu
 
-This project is a web application called **10xdevs-fishes-cards**, designed for quickly creating high-quality educational flashcards. The application allows users to generate flashcards using AI, as well as manually create, edit, review, and delete them. It includes a simple user account management system, user notifications for operations, a static FAQ section, and a contact form. The primary goal is to help users efficiently create flashcards, especially from academic texts, to support learning via spaced repetition.
+Ten projekt to aplikacja webowa o nazwie **10xdevs-fishes-cards**, zaprojektowana do szybkiego tworzenia wysokiej jakości fiszek edukacyjnych. Aplikacja pozwala użytkownikom generować fiszki za pomocą AI, a także ręcznie tworzyć, edytować, przeglądać i usuwać je. Zawiera prosty system zarządzania kontami użytkowników, powiadomienia użytkowników dla operacji, statyczną sekcję FAQ oraz formularz kontaktowy. Głównym celem jest pomoc użytkownikom w efektywnym tworzeniu fiszek, szczególnie z tekstów akademickich, w celu wsparcia nauki poprzez powtórki odstępowe.
 
-This repository contains the foundational codebase for the `10xdevs-fishes-cards` application.
+To repozytorium zawiera podstawowy kod aplikacji `10xdevs-fishes-cards`.
 
-## 3. Tech Stack
+## 3. Stack Technologiczny
 
 - **Frontend:**
   - Astro 5
-  - React 19 (for interactive components)
+  - React 19 (dla interaktywnych komponentów)
   - TypeScript 5
   - Tailwind CSS 4
-  - Shadcn/ui (for UI components)
+  - Shadcn/ui (dla komponentów UI)
 - **Backend:**
-  - Supabase (PostgreSQL database, SDKs, Authentication)
-- **AI Integration:**
+  - Supabase (baza danych PostgreSQL, SDK, Autentykacja)
+- **Integracja AI:**
   - OpenAI Platform (GPT-3.5-turbo, GPT-4)
-- **CI/CD & Hosting:**
+- **CI/CD i Hosting:**
   - GitHub Actions
-  - DigitalOcean (via Docker image)
+  - DigitalOcean (za pomocą obrazu Docker)
 
-## 4. Getting Started Locally
+## 4. Rozpoczynanie Pracy Lokalnie
 
-To get a local copy up and running, follow these simple steps.
+Aby uruchomić lokalną kopię, wykonaj następujące proste kroki.
 
-### Prerequisites
+### Wymagania Wstępne
 
-- Node.js version `22.14.0` (as specified in `.nvmrc`). It's recommended to use a Node version manager like `nvm`.
+- Node.js w wersji `22.14.0` (jak określono w `.nvmrc`). Zaleca się używanie menedżera wersji Node.js, takiego jak `nvm`.
 
   ```bash
   nvm use
   ```
 
-- npm, yarn, or pnpm as a package manager. The examples below use `npm`.
+- npm, yarn lub pnpm jako menedżer pakietów. Poniższe przykłady używają `npm`.
 
-### Installation
+### Instalacja
 
-1. **Install NPM packages:**
+1. **Zainstaluj pakiety NPM:**
 
    ```bash
    npm install
    ```
 
-2. **Set up environment variables:**
-   Create a `.env` file in the root of the project. This file will contain necessary API keys and configuration for services like Supabase and OpenAI. You might need to refer to an `.env.example` file if available, or set up the following (actual variable names might differ):
+2. **Skonfiguruj zmienne środowiskowe:**
+   Utwórz plik `.env` w głównym katalogu projektu. Ten plik będzie zawierał niezbędne klucze API i konfigurację dla usług takich jak Supabase i OpenAI. Możesz potrzebować odwołać się do pliku `.env.example`, jeśli jest dostępny, lub skonfigurować następujące (rzeczywiste nazwy zmiennych mogą się różnić):
 
    ```env
-   # Example variables (replace with actual ones needed for the project)
-   PUBLIC_SUPABASE_URL=your_supabase_url
-   PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   OPENAI_API_KEY=your_openai_api_key
+   # Przykładowe zmienne (zastąp rzeczywistymi potrzebnymi dla projektu)
+   PUBLIC_SUPABASE_URL=twoj_supabase_url
+   PUBLIC_SUPABASE_ANON_KEY=twoj_supabase_anon_key
+   OPENAI_API_KEY=twoj_openai_api_key
    ```
 
-3. **Run the development server:**
+3. **Uruchom serwer deweloperski:**
 
    ```bash
    npm run dev
    ```
 
-   Open [http://localhost:3000](http://localhost:3000) (or the port specified in your Astro config/console output) to view it in the browser.
+   Otwórz [http://localhost:3000](http://localhost:3000) (lub port określony w konfiguracji Astro/wyjściu konsoli), aby wyświetlić aplikację w przeglądarce.
 
-## 5. Available Scripts
+## 5. Dostępne Skrypty
 
-In the project directory, you can run the following scripts:
+W katalogu projektu możesz uruchomić następujące skrypty:
 
-- `npm run dev`: Runs the app in development mode.
-- `npm run build`: Builds the app for production.
-- `npm run preview`: Starts a local server to preview the production build.
-- `npm run astro`: Access Astro CLI commands.
-- `npm run lint`: Lints the codebase using ESLint.
-- `npm run lint:fix`: Lints the codebase and attempts to fix issues automatically.
-- `npm run format`: Formats the code using Prettier.
+- `npm run dev`: Uruchamia aplikację w trybie deweloperskim.
+- `npm run build`: Buduje aplikację dla produkcji.
+- `npm run preview`: Uruchamia lokalny serwer do podglądu wersji produkcyjnej.
+- `npm run astro`: Dostęp do poleceń CLI Astro.
+- `npm run lint`: Sprawdza kod za pomocą ESLint.
+- `npm run lint:fix`: Sprawdza kod i próbuje automatycznie naprawić problemy.
+- `npm run format`: Formatuje kod za pomocą Prettier.
 
-## 6. Project Scope
+## 6. Zakres Projektu
 
-### Key Features
+### Kluczowe Funkcjonalności
 
-- **AI-Powered Flashcard Generation:** Users can input text (between 1,000 and 10,000 characters) for AI to generate flashcards.
-- **Manual Flashcard Creation:** Users can create flashcards by manually entering questions and answers.
-- **Flashcard Management:** Edit, delete, and review saved flashcards.
-- **User Accounts:** Registration and login functionality, including privacy policy acceptance.
-- **User Notifications:** Feedback mechanisms (e.g., toast notifications) for successful operations.
+- **Generowanie Fiszek za pomocą AI:** Użytkownicy mogą wprowadzić tekst (od 1000 do 10000 znaków), aby AI wygenerowało fiszki.
+- **Ręczne Tworzenie Fiszek:** Użytkownicy mogą tworzyć fiszki poprzez ręczne wprowadzanie pytań i odpowiedzi.
+- **Zarządzanie Fiszkami:** Edytowanie, usuwanie i przeglądanie zapisanych fiszek.
+- **Konta Użytkowników:** Funkcjonalność rejestracji i logowania, w tym akceptacja polityki prywatności.
+- **Powiadomienia Użytkowników:** Mechanizmy informacji zwrotnej (np. powiadomienia toast) dla pomyślnych operacji.
 
-### Out of Scope (for the current phase)
+### Poza Zakresem (dla obecnej fazy)
 
-- Implementation of an advanced spaced repetition algorithm (like SuperMemo or Anki).
-- Support for importing various file formats (PDF, DOCX, etc.).
-- Sharing flashcard sets between users.
-- Integration with other educational platforms.
-- Full integration with a spaced repetition algorithm (at this stage).
-- Mobile application version.
-- Advanced UI customization options (e.g., dark mode, keyboard shortcuts).
-- Flashcards with multimedia content (initially text-only).
+- Implementacja zaawansowanego algorytmu powtórek odstępowych (jak SuperMemo lub Anki).
+- Wsparcie dla importowania różnych formatów plików (PDF, DOCX, itp.).
+- Udostępnianie zestawów fiszek między użytkownikami.
+- Integracja z innymi platformami edukacyjnymi.
+- Pełna integracja z algorytmem powtórek odstępowych (na tym etapie).
+- Wersja aplikacji mobilnej.
+- Zaawansowane opcje personalizacji UI (np. tryb ciemny, skróty klawiszowe).
+- Fiszki z treścią multimedialną (początkowo tylko tekst).
 
-## 7. Project Status
+## 7. Status Projektu
 
-The project is currently in its early stages of development (Version `0.0.1`). Key functionalities are being built, focusing on delivering a Minimum Viable Product (MVP).
+Projekt znajduje się obecnie we wczesnych etapach rozwoju (Wersja `0.0.1`). Kluczowe funkcjonalności są budowane, skupiając się na dostarczeniu Minimum Viable Product (MVP).
 
-## 8. License
+## 8. Licencja
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
+Ten projekt jest objęty licencją MIT. Zobacz plik [LICENSE](LICENSE.md) po szczegóły.
 
-## 9. Additional Information
+## 9. Dodatkowe Informacje
 
 ### OpenAI API
 
@@ -122,7 +122,7 @@ Aplikacja używa OpenAI API do automatycznego generowania fiszek na podstawie te
 
 #### Gdzie uzyskać klucze API:
 
-1. **OpenAI API Key:**
+1. **Klucz OpenAI API:**
 
    - Zarejestruj się na [OpenAI Platform](https://platform.openai.com/)
    - Przejdź do [API Keys](https://platform.openai.com/api-keys)
@@ -134,15 +134,15 @@ Aplikacja używa OpenAI API do automatycznego generowania fiszek na podstawie te
    - W ustawieniach projektu znajdź URL i anon key
    - Dodaj je do odpowiednich zmiennych środowiskowych
 
-### API Documentation
+### Dokumentacja API
 
 Szczegółowa dokumentacja API dostępna w katalogu `.ai/`.
 
-## 🔗 API Endpoints
+## 🔗 Endpointy API
 
-Aplikacja posiada w pełni funkcjonalne API endpoints dla zarządzania fiszkami:
+Aplikacja posiada w pełni funkcjonalne endpointy API dla zarządzania fiszkami:
 
-### Flashcards API
+### API Fiszek
 
 - **`POST /api/flashcards/generate-ai`** - Generowanie fiszek przez AI
 
@@ -169,7 +169,7 @@ Aplikacja posiada w pełni funkcjonalne API endpoints dla zarządzania fiszkami:
 
 ### Autoryzacja
 
-Wszystkie endpoints wymagają autoryzacji przez Supabase session w cookies.
+Wszystkie endpointy wymagają autoryzacji przez sesję Supabase w cookies.
 
 ## ⚙️ Konfiguracja
 
@@ -178,15 +178,15 @@ Wszystkie endpoints wymagają autoryzacji przez Supabase session w cookies.
 Utwórz plik `.env` w głównym katalogu projektu:
 
 ```env
-# Supabase Configuration
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
+# Konfiguracja Supabase
+SUPABASE_URL=twoj_supabase_project_url
+SUPABASE_ANON_KEY=twoj_supabase_anon_key
 
-# OpenAI API Configuration (opcjonalne - w dev mode używa mock service)
-OPENAI_API_KEY=your_openai_api_key
+# Konfiguracja OpenAI API (opcjonalne - w trybie dev używa mock service)
+OPENAI_API_KEY=twoj_openai_api_key
 ```
 
-### AI Service
+### Serwis AI
 
 - **Z OPENAI_API_KEY**: Używa prawdziwego OpenAI API (GPT-3.5-turbo)
 - **Bez OPENAI_API_KEY**: Automatycznie przełącza na Mock AI Service w trybie development
